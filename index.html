@@ -1,0 +1,867 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>PES 2021 RE Dashboard</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;600;700&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --bg: #0d1117;
+            --bg-elevated: #161b22;
+            --bg-hover: #1f2428;
+            --border: #30363d;
+            --border-bright: #484f58;
+            --fg: #e6edf3;
+            --fg-muted: #8b949e;
+            --accent: #58a6ff;
+            --accent-dim: #1f6feb;
+            --success: #3fb950;
+            --warning: #d29922;
+            --danger: #f85149;
+            --purple: #a371f7;
+            --orange: #f78166;
+            --font-mono: 'JetBrains Mono', monospace;
+            --font-ui: 'Inter', system-ui, sans-serif;
+            --radius: 6px;
+            --radius-lg: 10px;
+            --shadow: 0 8px 24px rgba(0,0,0,0.4);
+            --transition: 150ms ease;
+        }
+
+        * { box-sizing: border-box; margin: 0; padding: 0; }
+        
+        body {
+            font-family: var(--font-ui);
+            background: var(--bg);
+            color: var(--fg);
+            line-height: 1.6;
+            min-height: 100vh;
+        }
+
+        /* Layout */
+        .app {
+            display: grid;
+            grid-template-rows: auto 1fr auto;
+            min-height: 100vh;
+        }
+
+        /* Header */
+        header {
+            background: var(--bg-elevated);
+            border-bottom: 1px solid var(--border);
+            padding: 12px 24px;
+            position: sticky;
+            top: 0;
+            z-index: 100;
+        }
+
+        .header-content {
+            max-width: 1800px;
+            margin: 0 auto;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 24px;
+            flex-wrap: wrap;
+        }
+
+        .logo {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            text-decoration: none;
+            color: var(--fg);
+        }
+
+        .logo-icon {
+            width: 36px;
+            height: 36px;
+            background: linear-gradient(135deg, var(--accent), var(--purple));
+            border-radius: 8px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: 700;
+            font-size: 16px;
+            font-family: var(--font-mono);
+        }
+
+        .logo-text h1 {
+            font-size: 16px;
+            font-weight: 600;
+            letter-spacing: -0.02em;
+        }
+
+        .logo-text span {
+            font-size: 11px;
+            color: var(--fg-muted);
+            font-family: var(--font-mono);
+        }
+
+        .nav-tabs {
+            display: flex;
+            gap: 4px;
+            background: var(--bg);
+            padding: 4px;
+            border-radius: var(--radius);
+            border: 1px solid var(--border);
+        }
+
+        .nav-tab {
+            padding: 8px 16px;
+            border: none;
+            background: transparent;
+            color: var(--fg-muted);
+            font-family: var(--font-ui);
+            font-size: 13px;
+            font-weight: 500;
+            border-radius: 4px;
+            cursor: pointer;
+            transition: all var(--transition);
+            white-space: nowrap;
+        }
+
+        .nav-tab:hover { color: var(--fg); background: var(--bg-hover); }
+        .nav-tab.active { color: var(--fg); background: var(--accent-dim); }
+
+        .header-actions {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+
+        .search-box {
+            position: relative;
+        }
+
+        .search-box input {
+            padding: 8px 16px 8px 36px;
+            border: 1px solid var(--border);
+            border-radius: var(--radius);
+            background: var(--bg);
+            color: var(--fg);
+            font-family: var(--font-ui);
+            font-size: 13px;
+            width: 280px;
+            transition: all var(--transition);
+        }
+
+        .search-box input:focus {
+            outline: none;
+            border-color: var(--accent);
+            box-shadow: 0 0 0 3px rgba(88, 166, 255, 0.15);
+        }
+
+        .search-box svg {
+            position: absolute;
+            left: 10px;
+            top: 50%;
+            transform: translateY(-50%);
+            color: var(--fg-muted);
+            width: 16px;
+            height: 16px;
+        }
+
+        .status-indicators {
+            display: flex;
+            gap: 8px;
+        }
+
+        .status-dot {
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            padding: 4px 10px;
+            background: var(--bg);
+            border: 1px solid var(--border);
+            border-radius: var(--radius);
+            font-size: 11px;
+            font-family: var(--font-mono);
+            color: var(--fg-muted);
+        }
+
+        .status-dot::before {
+            content: '';
+            width: 6px;
+            height: 6px;
+            border-radius: 50%;
+            background: var(--fg-muted);
+        }
+
+        .status-dot.mac::before { background: var(--success); }
+        .status-dot.win::before { background: var(--warning); }
+        .status-dot.track-a::before { background: var(--orange); }
+        .status-dot.track-b::before { background: var(--accent); }
+        .status-dot.track-c::before { background: var(--purple); }
+
+        /* Main Content */
+        main {
+            max-width: 1800px;
+            margin: 0 auto;
+            padding: 24px;
+            width: 100%;
+        }
+
+        .view { display: none; }
+        .view.active { display: block; animation: fadeIn 200ms ease; }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(8px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        /* Section Headers */
+        .section-header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            margin-bottom: 20px;
+            flex-wrap: wrap;
+            gap: 16px;
+        }
+
+        .section-header h2 {
+            font-size: 20px;
+            font-weight: 600;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .section-header h2 .track-badge {
+            font-size: 11px;
+            padding: 2px 8px;
+            border-radius: 4px;
+            font-weight: 600;
+            font-family: var(--font-mono);
+        }
+
+        .track-badge.a { background: rgba(247, 129, 102, 0.2); color: var(--orange); }
+        .track-badge.b { background: rgba(88, 166, 255, 0.2); color: var(--accent); }
+        .track-badge.c { background: rgba(163, 113, 247, 0.2); color: var(--purple); }
+
+        .section-controls {
+            display: flex;
+            gap: 8px;
+            flex-wrap: wrap;
+        }
+
+        .btn {
+            padding: 6px 14px;
+            border: 1px solid var(--border);
+            border-radius: var(--radius);
+            background: var(--bg-elevated);
+            color: var(--fg);
+            font-family: var(--font-ui);
+            font-size: 12px;
+            font-weight: 500;
+            cursor: pointer;
+            transition: all var(--transition);
+        }
+
+        .btn:hover { border-color: var(--border-bright); background: var(--bg-hover); }
+        .btn.primary { background: var(--accent-dim); border-color: var(--accent); color: white; }
+        .btn.primary:hover { background: var(--accent); }
+        .btn.small { padding: 4px 10px; font-size: 11px; }
+
+        /* Cards Grid */
+        .cards-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(380px, 1fr));
+            gap: 16px;
+        }
+
+        .card {
+            background: var(--bg-elevated);
+            border: 1px solid var(--border);
+            border-radius: var(--radius-lg);
+            padding: 20px;
+            transition: all var(--transition);
+        }
+
+        .card:hover { border-color: var(--border-bright); box-shadow: var(--shadow); }
+
+        .card-header {
+            display: flex;
+            align-items: flex-start;
+            justify-content: space-between;
+            margin-bottom: 12px;
+            gap: 12px;
+        }
+
+        .card-title {
+            font-size: 14px;
+            font-weight: 600;
+            color: var(--fg);
+        }
+
+        .card-meta {
+            display: flex;
+            gap: 8px;
+            flex-wrap: wrap;
+        }
+
+        .badge {
+            font-size: 10px;
+            padding: 2px 6px;
+            border-radius: 3px;
+            font-weight: 600;
+            font-family: var(--font-mono);
+            text-transform: uppercase;
+        }
+
+        .badge.confirmed { background: rgba(63, 185, 80, 0.15); color: var(--success); }
+        .badge.probable { background: rgba(210, 153, 34, 0.15); color: var(--warning); }
+        .badge.guess { background: rgba(248, 81, 73, 0.15); color: var(--danger); }
+        .badge.track-a { background: rgba(247, 129, 102, 0.15); color: var(--orange); }
+        .badge.track-b { background: rgba(88, 166, 255, 0.15); color: var(--accent); }
+        .badge.track-c { background: rgba(163, 113, 247, 0.15); color: var(--purple); }
+        .badge.mac { background: rgba(63, 185, 80, 0.15); color: var(--success); }
+        .badge.win { background: rgba(210, 153, 34, 0.15); color: var(--warning); }
+
+        .card-body {
+            font-size: 13px;
+            color: var(--fg-muted);
+            line-height: 1.7;
+        }
+
+        .card-body code {
+            font-family: var(--font-mono);
+            font-size: 12px;
+            background: var(--bg);
+            padding: 1px 4px;
+            border-radius: 3px;
+            color: var(--accent);
+        }
+
+        .card-body .evidence {
+            margin-top: 8px;
+            padding-top: 8px;
+            border-top: 1px solid var(--border);
+            font-size: 12px;
+        }
+
+        .card-footer {
+            margin-top: 16px;
+            padding-top: 12px;
+            border-top: 1px solid var(--border);
+            display: flex;
+            gap: 8px;
+            flex-wrap: wrap;
+        }
+
+        /* Data Table */
+        .table-container {
+            overflow-x: auto;
+            border: 1px solid var(--border);
+            border-radius: var(--radius-lg);
+            background: var(--bg-elevated);
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            font-size: 12px;
+        }
+
+        th, td {
+            padding: 10px 12px;
+            text-align: left;
+            border-bottom: 1px solid var(--border);
+        }
+
+        th {
+            background: var(--bg);
+            font-weight: 600;
+            color: var(--fg-muted);
+            font-size: 11px;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+            position: sticky;
+            top: 0;
+            z-index: 10;
+        }
+
+        tr:hover td { background: var(--bg-hover); }
+
+        td code { font-family: var(--font-mono); background: var(--bg); padding: 1px 4px; border-radius: 3px; }
+        td .addr { color: var(--accent); }
+        td .name { color: var(--fg); font-weight: 500; }
+
+        /* Milestone Cards */
+        .milestone-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+            gap: 12px;
+        }
+
+        .milestone-card {
+            background: var(--bg-elevated);
+            border: 1px solid var(--border);
+            border-radius: var(--radius-lg);
+            padding: 16px;
+            position: relative;
+        }
+
+        .milestone-card.completed { border-left: 3px solid var(--success); }
+        .milestone-card.in-progress { border-left: 3px solid var(--accent); }
+        .milestone-card.pending { border-left: 3px solid var(--border); opacity: 0.7; }
+
+        .milestone-num {
+            font-family: var(--font-mono);
+            font-size: 24px;
+            font-weight: 700;
+            color: var(--fg-muted);
+            opacity: 0.3;
+        }
+
+        .milestone-title { font-weight: 600; margin: 8px 0 4px; }
+        .milestone-desc { font-size: 12px; color: var(--fg-muted); }
+        .milestone-track { position: absolute; top: 16px; right: 16px; }
+
+        /* Workflow View */
+        .workflow-container {
+            display: grid;
+            grid-template-columns: 320px 1fr;
+            gap: 24px;
+        }
+
+        @media (max-width: 1100px) {
+            .workflow-container { grid-template-columns: 1fr; }
+        }
+
+        .subsystem-tree {
+            background: var(--bg-elevated);
+            border: 1px solid var(--border);
+            border-radius: var(--radius-lg);
+            padding: 16px;
+            height: fit-content;
+            max-height: 70vh;
+            overflow-y: auto;
+        }
+
+        .tree-node {
+            margin: 4px 0;
+        }
+
+        .tree-node summary {
+            cursor: pointer;
+            padding: 8px 10px;
+            border-radius: var(--radius);
+            font-size: 13px;
+            font-weight: 500;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            transition: background var(--transition);
+        }
+
+        .tree-node summary:hover { background: var(--bg-hover); }
+        .tree-node summary::marker { color: var(--accent); }
+
+        .tree-node[open] > summary { background: var(--bg-hover); }
+
+        .tree-node ul { margin-left: 16px; margin-top: 4px; border-left: 1px solid var(--border); padding-left: 12px; }
+
+        .tree-leaf {
+            padding: 6px 10px;
+            border-radius: var(--radius);
+            font-size: 12px;
+            cursor: pointer;
+            transition: all var(--transition);
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .tree-leaf:hover { background: var(--bg-hover); }
+        .tree-leaf.selected { background: var(--accent-dim); color: white; }
+
+        .leaf-confidence { font-size: 9px; padding: 1px 4px; border-radius: 2px; font-family: var(--font-mono); }
+
+        .detail-panel {
+            background: var(--bg-elevated);
+            border: 1px solid var(--border);
+            border-radius: var(--radius-lg);
+            padding: 24px;
+        }
+
+        .detail-placeholder {
+            text-align: center;
+            padding: 60px 20px;
+            color: var(--fg-muted);
+        }
+
+        .detail-placeholder svg { width: 48px; height: 48px; margin-bottom: 16px; opacity: 0.5; }
+
+        /* Mac/Windows Split View */
+        .platform-split {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 16px;
+        }
+
+        @media (max-width: 900px) {
+            .platform-split { grid-template-columns: 1fr; }
+        }
+
+        .platform-panel {
+            background: var(--bg-elevated);
+            border: 1px solid var(--border);
+            border-radius: var(--radius-lg);
+            overflow: hidden;
+        }
+
+        .platform-header {
+            padding: 16px 20px;
+            border-bottom: 1px solid var(--border);
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+        }
+
+        .platform-panel.mac .platform-header { background: linear-gradient(90deg, rgba(63, 185, 80, 0.1), transparent); }
+        .platform-panel.win .platform-header { background: linear-gradient(90deg, rgba(210, 153, 34, 0.1), transparent); }
+
+        .platform-title {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            font-weight: 600;
+        }
+
+        .platform-icon { width: 28px; height: 28px; border-radius: 6px; display: flex; align-items: center; justify-content: center; }
+
+        .platform-panel.mac .platform-icon { background: rgba(63, 185, 80, 0.2); color: var(--success); }
+        .platform-panel.win .platform-icon { background: rgba(210, 153, 34, 0.2); color: var(--warning); }
+
+        .platform-content { padding: 16px; max-height: 60vh; overflow-y: auto; }
+
+        .platform-item {
+            padding: 12px;
+            margin-bottom: 8px;
+            background: var(--bg);
+            border: 1px solid var(--border);
+            border-radius: var(--radius);
+            font-size: 12px;
+        }
+
+        .platform-item-title { font-weight: 600; margin-bottom: 4px; display: flex; align-items: center; gap: 8px; }
+        .platform-item-desc { color: var(--fg-muted); font-family: var(--font-mono); font-size: 11px; }
+
+        /* Findings Timeline */
+        .timeline {
+            position: relative;
+            padding-left: 24px;
+        }
+
+        .timeline::before {
+            content: '';
+            position: absolute;
+            left: 8px;
+            top: 0;
+            bottom: 0;
+            width: 2px;
+            background: var(--border);
+        }
+
+        .timeline-entry {
+            position: relative;
+            padding-bottom: 24px;
+        }
+
+        .timeline-entry::before {
+            content: '';
+            position: absolute;
+            left: -24px;
+            top: 4px;
+            width: 14px;
+            height: 14px;
+            border-radius: 50%;
+            border: 2px solid var(--bg);
+            background: var(--accent);
+            z-index: 1;
+        }
+
+        .timeline-entry.track-a::before { background: var(--orange); }
+        .timeline-entry.track-b::before { background: var(--accent); }
+        .timeline-entry.track-c::before { background: var(--purple); }
+
+        .timeline-date {
+            font-family: var(--font-mono);
+            font-size: 11px;
+            color: var(--fg-muted);
+            margin-bottom: 4px;
+        }
+
+        .timeline-title { font-weight: 600; margin-bottom: 8px; }
+
+        .timeline-body { font-size: 13px; color: var(--fg-muted); }
+
+        .timeline-tags { display: flex; gap: 6px; margin-top: 8px; flex-wrap: wrap; }
+
+        /* Footer */
+        footer {
+            background: var(--bg-elevated);
+            border-top: 1px solid var(--border);
+            padding: 16px 24px;
+            text-align: center;
+            color: var(--fg-muted);
+            font-size: 12px;
+        }
+
+        /* Scrollbar */
+        ::-webkit-scrollbar { width: 8px; height: 8px; }
+        ::-webkit-scrollbar-track { background: var(--bg); }
+        ::-webkit-scrollbar-thumb { background: var(--border-bright); border-radius: 4px; }
+        ::-webkit-scrollbar-thumb:hover { background: var(--fg-muted); }
+
+        /* Loading */
+        .loading { display: flex; align-items: center; justify-content: center; padding: 60px; color: var(--fg-muted); }
+        .spinner { width: 24px; height: 24px; border: 2px solid var(--border); border-top-color: var(--accent); border-radius: 50%; animation: spin 1s linear infinite; margin-right: 12px; }
+        @keyframes spin { to { transform: rotate(360deg); } }
+
+        /* Empty State */
+        .empty-state { text-align: center; padding: 60px 20px; color: var(--fg-muted); }
+        .empty-state svg { width: 48px; height: 48px; margin-bottom: 16px; opacity: 0.5; }
+
+        /* Confidence Legend */
+        .confidence-legend {
+            display: flex;
+            gap: 16px;
+            padding: 12px;
+            background: var(--bg);
+            border-radius: var(--radius);
+            border: 1px solid var(--border);
+            font-size: 11px;
+            font-family: var(--font-mono);
+        }
+
+        .legend-item { display: flex; align-items: center; gap: 6px; }
+        .legend-dot { width: 8px; height: 8px; border-radius: 50%; }
+    </style>
+</head>
+<body>
+    <div class="app">
+        <header>
+            <div class="header-content">
+                <a href="#" class="logo">
+                    <div class="logo-icon">PES</div>
+                    <div class="logo-text">
+                        <h1>PES 2021 RE Dashboard</h1>
+                        <span>Reverse Engineering & Portable Engine</span>
+                    </div>
+                </a>
+                <nav class="nav-tabs" role="tablist">
+                    <button class="nav-tab active" role="tab" data-view="overview" aria-selected="true">Overview</button>
+                    <button class="nav-tab" role="tab" data-view="findings" aria-selected="false">Findings</button>
+                    <button class="nav-tab" role="tab" data-view="naming" aria-selected="false">Naming DB</button>
+                    <button class="nav-tab" role="tab" data-view="tests" aria-selected="false">Tests</button>
+                    <button class="nav-tab" role="tab" data-view="milestones" aria-selected="false">Milestones</button>
+                    <button class="nav-tab" role="tab" data-view="workflow" aria-selected="false">Workflow</button>
+                    <button class="nav-tab" role="tab" data-view="platforms" aria-selected="false">Mac / Win</button>
+                    <button class="nav-tab" role="tab" data-view="questions" aria-selected="false">Open Qs</button>
+                </nav>
+                <div class="header-actions">
+                    <div class="search-box">
+                        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.3-4.3"/></svg>
+                        <input type="search" id="global-search" placeholder="Search findings, functions, tests..." aria-label="Global search">
+                    </div>
+                    <div class="status-indicators">
+                        <span class="status-dot mac">Mac M1</span>
+                        <span class="status-dot win">Win x64</span>
+                        <span class="status-dot track-a">Track A</span>
+                        <span class="status-dot track-b">Track B</span>
+                        <span class="status-dot track-c">Track C</span>
+                    </div>
+                </div>
+            </div>
+        </header>
+
+        <main id="main-content">
+            <!-- Overview View -->
+            <section class="view active" id="view-overview" role="tabpanel">
+                <div class="section-header">
+                    <h2>Project Overview</h2>
+                    <div class="confidence-legend">
+                        <span class="legend-item"><span class="legend-dot" style="background: var(--success)"></span> Confirmed</span>
+                        <span class="legend-item"><span class="legend-dot" style="background: var(--warning)"></span> Probable</span>
+                        <span class="legend-item"><span class="legend-dot" style="background: var(--danger)"></span> Guess</span>
+                        <span class="legend-item"><span class="legend-dot" style="background: var(--orange)"></span> Track A</span>
+                        <span class="legend-item"><span class="legend-dot" style="background: var(--accent)"></span> Track B</span>
+                        <span class="legend-item"><span class="legend-dot" style="background: var(--purple)"></span> Track C</span>
+                    </div>
+                </div>
+                <div class="cards-grid" id="overview-stats"></div>
+                <div class="section-header" style="margin-top: 32px;">
+                    <h2>Recent Activity</h2>
+                </div>
+                <div class="timeline" id="recent-timeline"></div>
+            </section>
+
+            <!-- Findings View -->
+            <section class="view" id="view-findings" role="tabpanel">
+                <div class="section-header">
+                    <h2>Findings Notebook <span class="track-badge">B</span><span class="track-badge">C</span></h2>
+                    <div class="section-controls">
+                        <select id="findings-track-filter" class="btn" style="padding: 6px 12px;">
+                            <option value="">All Tracks</option>
+                            <option value="A">Track A</option>
+                            <option value="B">Track B</option>
+                            <option value="C">Track C</option>
+                        </select>
+                        <select id="findings-confidence-filter" class="btn" style="padding: 6px 12px;">
+                            <option value="">All Confidence</option>
+                            <option value="confirmed">Confirmed</option>
+                            <option value="probable">Probable</option>
+                            <option value="guess">Guess</option>
+                        </select>
+                    </div>
+                </div>
+                <div class="timeline" id="findings-timeline"></div>
+            </section>
+
+            <!-- Naming DB View -->
+            <section class="view" id="view-naming" role="tabpanel">
+                <div class="section-header">
+                    <h2>Naming Database <span class="track-badge">B</span></h2>
+                    <div class="section-controls">
+                        <select id="naming-seed-filter" class="btn" style="padding: 6px 12px;">
+                            <option value="">All Seed Files</option>
+                        </select>
+                        <select id="naming-confidence-filter" class="btn" style="padding: 6px 12px;">
+                            <option value="">All Confidence</option>
+                            <option value="confirmed">Confirmed</option>
+                            <option value="probable">Probable</option>
+                            <option value="guess">Guess</option>
+                        </select>
+                        <button class="btn" id="export-naming">Export CSV</button>
+                    </div>
+                </div>
+                <div class="table-container">
+                    <table id="naming-table">
+                        <thead>
+                            <tr>
+                                <th>Address</th>
+                                <th>Name</th>
+                                <th>Confidence</th>
+                                <th>Reviewed</th>
+                                <th>Evidence</th>
+                                <th>Source File</th>
+                            </tr>
+                        </thead>
+                        <tbody></tbody>
+                    </table>
+                </div>
+            </section>
+
+            <!-- Tests View -->
+            <section class="view" id="view-tests" role="tabpanel">
+                <div class="section-header">
+                    <h2>Test Suite <span class="track-badge">B</span><span class="track-badge">C</span></h2>
+                    <div class="section-controls">
+                        <select id="test-category-filter" class="btn" style="padding: 6px 12px;">
+                            <option value="">All Categories</option>
+                            <option value="unit">Unit Tests</option>
+                            <option value="golden">Golden Tests</option>
+                            <option value="behaviour">Behaviour Tests</option>
+                            <option value="host">Host Integration</option>
+                        </select>
+                    </div>
+                </div>
+                <div class="cards-grid" id="tests-grid"></div>
+            </section>
+
+            <!-- Milestones View -->
+            <section class="view" id="view-milestones" role="tabpanel">
+                <div class="section-header">
+                    <h2>Milestones <span class="track-badge">A</span><span class="track-badge">B</span><span class="track-badge">C</span></h2>
+                </div>
+                <div class="milestone-grid" id="milestones-grid"></div>
+            </section>
+
+            <!-- Workflow View -->
+            <section class="view" id="view-workflow" role="tabpanel">
+                <div class="section-header">
+                    <h2>Next Subsystem Picker <span class="track-badge">B</span><span class="track-badge">C</span></h2>
+                    <p style="color: var(--fg-muted); font-size: 13px;">Select a subsystem or function to investigate next. Priority based on milestone order, dependencies, and platform readiness.</p>
+                </div>
+                <div class="workflow-container">
+                    <div class="subsystem-tree" id="subsystem-tree">
+                        <details class="tree-node" open>
+                            <summary>🎯 Track B: Oracle (PC Hook & Verify)</summary>
+                            <ul id="track-b-subsystems"></ul>
+                        </details>
+                        <details class="tree-node" open>
+                            <summary>🚀 Track C: Portable Host (Mac/iPad → All)</summary>
+                            <ul id="track-c-subsystems"></ul>
+                        </details>
+                        <details class="tree-node">
+                            <summary>📊 Track A: Data & Formats</summary>
+                            <ul id="track-a-subsystems"></ul>
+                        </details>
+                    </div>
+                    <div class="detail-panel" id="workflow-detail">
+                        <div class="detail-placeholder">
+                            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><circle cx="12" cy="12" r="10"/><path d="M12 16v-4"/><path d="M12 8h.01"/></svg>
+                            <h3>Select a subsystem</h3>
+                            <p>Click a leaf node to see investigation details, dependencies, and suggested next steps.</p>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Platforms View -->
+            <section class="view" id="view-platforms" role="tabpanel">
+                <div class="section-header">
+                    <h2>MacBook Air M1 ↔ Windows x64 Separation</h2>
+                    <p style="color: var(--fg-muted); font-size: 13px;">Clear separation between coordination work (Mac) and authoritative execution/debugging (Windows VM).</p>
+                </div>
+                <div class="platform-split">
+                    <div class="platform-panel mac">
+                        <div class="platform-header">
+                            <div class="platform-title">
+                                <div class="platform-icon"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="2" y="3" width="20" height="14" rx="2"/><path d="M8 21h8"/><path d="M12 17v4"/></svg></div>
+                                <span>MacBook Air M1 (Coordination)</span>
+                            </div>
+                            <span class="badge mac">Host Builds</span>
+                        </div>
+                        <div class="platform-content" id="mac-content"></div>
+                    </div>
+                    <div class="platform-panel win">
+                        <div class="platform-header">
+                            <div class="platform-title">
+                                <div class="platform-icon"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="2" y="3" width="20" height="14" rx="2"/><path d="M8 21h8"/><path d="M12 17v4"/></svg></div>
+                                <span>Windows x64 VM (Authoritative)</span>
+                            </div>
+                            <span class="badge win">Runtime Probes</span>
+                        </div>
+                        <div class="platform-content" id="win-content"></div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Open Questions View -->
+            <section class="view" id="view-questions" role="tabpanel">
+                <div class="section-header">
+                    <h2>Open Questions</h2>
+                </div>
+                <div class="cards-grid" id="questions-grid"></div>
+            </section>
+        </main>
+
+        <footer>
+            <p>PES 2021 Reverse Engineering Dashboard — Portable Native C++ Engine • No Interpreter, JIT, or Wine Fallback • Data updated: <span id="last-updated">-</span></p>
+        </footer>
+    </div>
+
+    <script type="module">
+        import { Dashboard } from './dashboard.js';
+        const app = new Dashboard();
+        await app.init();
+    </script>
+</body>
+</html>
