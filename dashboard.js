@@ -1,6 +1,7 @@
 /**
  * PES 2021 RE Dashboard - Main Application Module
  * Handles data loading, view rendering, search, and interactivity
+ * Uses Blueprint theme variables
  */
 
 export class Dashboard {
@@ -36,12 +37,10 @@ export class Dashboard {
     }
 
     setupEventListeners() {
-        // Navigation tabs
         document.querySelectorAll('.nav-tab').forEach(tab => {
             tab.addEventListener('click', () => this.switchView(tab.dataset.view));
         });
 
-        // Global search
         const searchInput = document.getElementById('global-search');
         let searchDebounce;
         searchInput.addEventListener('input', (e) => {
@@ -52,40 +51,33 @@ export class Dashboard {
             }, 150);
         });
 
-        // View-specific filters
         this.setupViewFilters();
     }
 
     setupViewFilters() {
-        // Findings filters
         const findingsTrackFilter = document.getElementById('findings-track-filter');
         const findingsConfidenceFilter = document.getElementById('findings-confidence-filter');
         if (findingsTrackFilter) findingsTrackFilter.addEventListener('change', () => this.renderView('findings'));
         if (findingsConfidenceFilter) findingsConfidenceFilter.addEventListener('change', () => this.renderView('findings'));
 
-        // Naming filters
         const namingSeedFilter = document.getElementById('naming-seed-filter');
         const namingConfidenceFilter = document.getElementById('naming-confidence-filter');
         if (namingSeedFilter) namingSeedFilter.addEventListener('change', () => this.renderView('naming'));
         if (namingConfidenceFilter) namingConfidenceFilter.addEventListener('change', () => this.renderView('naming'));
 
-        // Test filters
         const testCategoryFilter = document.getElementById('test-category-filter');
         if (testCategoryFilter) testCategoryFilter.addEventListener('change', () => this.renderView('tests'));
 
-        // Export naming
         const exportBtn = document.getElementById('export-naming');
         if (exportBtn) exportBtn.addEventListener('click', () => this.exportNamingCSV());
     }
 
     switchView(viewName) {
-        // Update tabs
         document.querySelectorAll('.nav-tab').forEach(tab => {
             tab.classList.toggle('active', tab.dataset.view === viewName);
             tab.setAttribute('aria-selected', tab.dataset.view === viewName);
         });
 
-        // Update views
         document.querySelectorAll('.view').forEach(view => {
             view.classList.toggle('active', view.id === `view-${viewName}`);
         });
@@ -117,6 +109,7 @@ export class Dashboard {
     renderOverview() {
         const statsContainer = document.getElementById('overview-stats');
         const timelineContainer = document.getElementById('recent-timeline');
+        const trackProgressContainer = document.getElementById('track-progress');
 
         if (!statsContainer || !timelineContainer) return;
 
@@ -125,7 +118,6 @@ export class Dashboard {
         const milestones = this.data.milestones || [];
         const seeds = this.data.seeds || {};
 
-        // Stats cards
         const completedMilestones = milestones.filter(m => this.isMilestoneCompleted(m)).length;
         const totalSeeds = Object.values(seeds).reduce((sum, arr) => sum + arr.length, 0);
         const totalTests = this.data.cmake?.tests?.length || 0;
@@ -136,10 +128,10 @@ export class Dashboard {
                     <h3 class="card-title">Functions in DB</h3>
                     <div class="card-meta"><span class="badge track-b">Track B</span></div>
                 </div>
-                <div class="card-body" style="font-size: 36px; font-weight: 700; font-family: var(--font-mono); color: var(--accent);">
+                <div class="card-body" style="font-size: 36px; font-weight: 700; font-family: var(--font-outlier); color: var(--color-accent);">
                     ${(db.count || 0).toLocaleString()}
                 </div>
-                <div class="card-body" style="font-size: 12px; margin-top: 8px;">
+                <div class="card-body" style="font-size: 12px; margin-top: 8px; color: var(--color-muted);">
                     ${(db.by_confidence?.confirmed || 0).toLocaleString()} confirmed · 
                     ${(db.by_confidence?.probable || 0).toLocaleString()} probable · 
                     ${(db.by_confidence?.guess || 0).toLocaleString()} guess
@@ -151,10 +143,10 @@ export class Dashboard {
                     <h3 class="card-title">Named Functions (Seeds)</h3>
                     <div class="card-meta"><span class="badge track-b">Track B</span></div>
                 </div>
-                <div class="card-body" style="font-size: 36px; font-weight: 700; font-family: var(--font-mono); color: var(--orange);">
+                <div class="card-body" style="font-size: 36px; font-weight: 700; font-family: var(--font-outlier); color: var(--color-accent);">
                     ${totalSeeds.toLocaleString()}
                 </div>
-                <div class="card-body" style="font-size: 12px; margin-top: 8px;">
+                <div class="card-body" style="font-size: 12px; margin-top: 8px; color: var(--color-muted);">
                     Across ${Object.keys(seeds).length} seed files
                 </div>
             </article>
@@ -164,10 +156,10 @@ export class Dashboard {
                     <h3 class="card-title">Test Suite</h3>
                     <div class="card-meta"><span class="badge track-b">Track B</span><span class="badge track-c">Track C</span></div>
                 </div>
-                <div class="card-body" style="font-size: 36px; font-weight: 700; font-family: var(--mono); color: var(--purple);">
+                <div class="card-body" style="font-size: 36px; font-weight: 700; font-family: var(--font-outlier); color: var(--color-accent);">
                     ${totalTests}
                 </div>
-                <div class="card-body" style="font-size: 12px; margin-top: 8px;">
+                <div class="card-body" style="font-size: 12px; margin-top: 8px; color: var(--color-muted);">
                     Unit, golden, behaviour & host integration tests
                 </div>
             </article>
@@ -177,10 +169,10 @@ export class Dashboard {
                     <h3 class="card-title">Milestones</h3>
                     <div class="card-meta"><span class="badge track-a">A</span><span class="badge track-b">B</span><span class="badge track-c">C</span></div>
                 </div>
-                <div class="card-body" style="font-size: 36px; font-weight: 700; font-family: var(--font-mono); color: var(--success);">
+                <div class="card-body" style="font-size: 36px; font-weight: 700; font-family: var(--font-outlier); color: var(--color-success);">
                     ${completedMilestones} / ${milestones.length}
                 </div>
-                <div class="card-body" style="font-size: 12px; margin-top: 8px;">
+                <div class="card-body" style="font-size: 12px; margin-top: 8px; color: var(--color-muted);">
                     ${Math.round((completedMilestones / Math.max(1, milestones.length)) * 100)}% complete
                 </div>
             </article>
@@ -190,10 +182,10 @@ export class Dashboard {
                     <h3 class="card-title">Findings Entries</h3>
                     <div class="card-meta"><span class="badge track-b">Track B</span><span class="badge track-c">Track C</span></div>
                 </div>
-                <div class="card-body" style="font-size: 36px; font-weight: 700; font-family: var(--font-mono); color: var(--fg);">
+                <div class="card-body" style="font-size: 36px; font-weight: 700; font-family: var(--font-outlier); color: var(--color-ink);">
                     ${findings.length}
                 </div>
-                <div class="card-body" style="font-size: 12px; margin-top: 8px;">
+                <div class="card-body" style="font-size: 12px; margin-top: 8px; color: var(--color-muted);">
                     ${findings.filter(f => f.track === 'B').length} Track B · ${findings.filter(f => f.track === 'C').length} Track C
                 </div>
             </article>
@@ -203,14 +195,37 @@ export class Dashboard {
                     <h3 class="card-title">Open Questions</h3>
                     <div class="card-meta"><span class="badge track-b">Track B</span></div>
                 </div>
-                <div class="card-body" style="font-size: 36px; font-weight: 700; font-family: var(--font-mono); color: var(--warning);">
+                <div class="card-body" style="font-size: 36px; font-weight: 700; font-family: var(--font-outlier); color: var(--color-warning);">
                     ${this.data.open_questions?.length || 0}
                 </div>
-                <div class="card-body" style="font-size: 12px; margin-top: 8px;">
+                <div class="card-body" style="font-size: 12px; margin-top: 8px; color: var(--color-muted);">
                     Blocking or unresolved investigations
                 </div>
             </article>
         `;
+
+        // Track progress
+        if (trackProgressContainer) {
+            const tracks = [
+                { id: 'a', name: 'Track A: Data', color: 'var(--color-accent)', completed: 2, total: 4 },
+                { id: 'b', name: 'Track B: Oracle', color: 'var(--color-ink)', completed: 3, total: 5 },
+                { id: 'c', name: 'Track C: Host', color: 'var(--color-accent)', completed: 4, total: 6 }
+            ];
+            trackProgressContainer.innerHTML = tracks.map(t => `
+                <article class="card">
+                    <div class="card-header">
+                        <h3 class="card-title">${t.name}</h3>
+                        <div class="card-meta"><span class="badge track-${t.id}">${t.id.toUpperCase()}</span></div>
+                    </div>
+                    <div class="card-body" style="font-size: 28px; font-weight: 700; font-family: var(--font-outlier); color: ${t.color};">
+                        ${t.completed} / ${t.total}
+                    </div>
+                    <div class="card-body" style="font-size: 12px; margin-top: 8px; color: var(--color-muted);">
+                        ${Math.round((t.completed / t.total) * 100)}% complete
+                    </div>
+                </article>
+            `).join('');
+        }
 
         // Recent timeline (last 10 findings)
         const recent = findings.slice(0, 10);
@@ -218,7 +233,6 @@ export class Dashboard {
     }
 
     isMilestoneCompleted(milestone) {
-        // Simple heuristic: check if "done" keywords appear in recent findings
         const doneWhen = milestone.done_when?.toLowerCase() || '';
         const keywords = ['done', 'confirmed', 'pass', 'complete', 'met'];
         return keywords.some(k => doneWhen.includes(k));
@@ -279,11 +293,10 @@ export class Dashboard {
         if (confidence.probable) badges.push(`<span class="badge probable">${confidence.probable} probable</span>`);
         if (confidence.guess) badges.push(`<span class="badge guess">${confidence.guess} guess</span>`);
 
-        // Highlight search terms
         let body = this.escapeHtml(entry.body || '');
         if (this.searchQuery) {
             const regex = new RegExp(`(${this.escapeRegex(this.searchQuery)})`, 'gi');
-            body = body.replace(regex, '<mark style="background: var(--warning); color: var(--bg); padding: 0 2px; border-radius: 2px;">$1</mark>');
+            body = body.replace(regex, '<mark style="background: var(--color-warning); color: var(--color-accent-ink); padding: 0 var(--space-3xs);">$1</mark>');
         }
 
         return `
@@ -307,7 +320,6 @@ export class Dashboard {
 
         if (!tbody) return;
 
-        // Populate seed filter dropdown
         if (seedFilter && seedFilter.options.length <= 1) {
             const seeds = this.data.seeds || {};
             Object.keys(seeds).forEach(key => {
@@ -340,7 +352,6 @@ export class Dashboard {
             );
         }
 
-        // Sort by address
         allRows.sort((a, b) => parseInt(a.pc_addr, 16) - parseInt(b.pc_addr, 16));
 
         tbody.innerHTML = allRows.map(row => `
@@ -349,7 +360,7 @@ export class Dashboard {
                 <td><code class="name">${this.escapeHtml(row.name)}</code></td>
                 <td><span class="badge ${row.confidence}">${row.confidence}</span></td>
                 <td>${row.reviewed ? '✓' : '—'}</td>
-                <td style="max-width: 300px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; font-size: 11px; color: var(--fg-muted);">${this.escapeHtml(row.evidence)}</td>
+                <td style="max-width: 300px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; font-size: 11px; color: var(--color-muted);">${this.escapeHtml(row.evidence)}</td>
                 <td><code style="font-size: 10px;">${this.escapeHtml(row.sourceFile)}</code></td>
             </tr>
         `).join('');
@@ -384,7 +395,6 @@ export class Dashboard {
 
         let cards = [];
 
-        // CMake tests
         if (!categoryFilter || categoryFilter === 'unit') {
             tests.filter(t => !t.name.includes('golden') && !t.name.includes('host')).forEach(test => {
                 cards.push(this.renderTestCard({
@@ -396,7 +406,6 @@ export class Dashboard {
             });
         }
 
-        // Golden tests
         if (!categoryFilter || categoryFilter === 'golden') {
             Object.entries(golden).forEach(([name, data]) => {
                 cards.push(this.renderTestCard({
@@ -408,7 +417,6 @@ export class Dashboard {
             });
         }
 
-        // Behaviour tests
         if (!categoryFilter || categoryFilter === 'behaviour') {
             Object.entries(behaviour).forEach(([cat, files]) => {
                 files.forEach(f => {
@@ -422,7 +430,6 @@ export class Dashboard {
             });
         }
 
-        // Host integration tests
         if (!categoryFilter || categoryFilter === 'host') {
             tests.filter(t => t.name.includes('host')).forEach(test => {
                 cards.push(this.renderTestCard({
@@ -462,7 +469,7 @@ export class Dashboard {
                 </div>
                 <div class="card-body">
                     ${test.detail ? `<div>${this.escapeHtml(test.detail)}</div>` : ''}
-                    ${test.command ? `<div style="margin-top: 8px; font-family: var(--font-mono); font-size: 10px; color: var(--fg-muted);">${this.escapeHtml(test.command)}</div>` : ''}
+                    ${test.command ? `<div style="margin-top: 8px; font-family: var(--font-outlier); font-size: 10px; color: var(--color-muted);">${this.escapeHtml(test.command)}</div>` : ''}
                 </div>
             </article>
         `;
@@ -490,7 +497,6 @@ export class Dashboard {
     }
 
     getMilestoneStatus(milestone, findings) {
-        // Check if any recent finding mentions this milestone as done
         const keywords = milestone.done_when?.toLowerCase().split(/[,\s]+/).filter(w => w.length > 3) || [];
         const relevantFindings = findings.filter(f => 
             keywords.some(k => f.body.toLowerCase().includes(k)) ||
@@ -505,7 +511,6 @@ export class Dashboard {
     // ============ WORKFLOW ============
     renderWorkflow() {
         this.renderSubsystemTree();
-        // Detail panel starts empty
     }
 
     renderSubsystemTree() {
@@ -515,7 +520,6 @@ export class Dashboard {
 
         if (!trackB || !trackC || !trackA) return;
 
-        // Define subsystem hierarchy based on milestones and findings
         const subsystems = {
             'Track B: Oracle (PC Hook & Verify)': [
                 { id: 'referee', name: 'Referee & Card System', status: 'in-progress', confidence: 'probable', deps: [], detail: 'Foul thresholds, severity scoring, DOGSO, card packaging. P1-P4 probes defined. 2/3 matches captured for P1 acceptance.' },
@@ -547,7 +551,6 @@ export class Dashboard {
         trackC.innerHTML = this.renderSubsystemList(subsystems['Track C: Portable Host (Mac/iPad → All)'], 'c');
         trackA.innerHTML = this.renderSubsystemList(subsystems['Track A: Data & Formats'], 'a');
 
-        // Add click handlers
         document.querySelectorAll('.tree-leaf').forEach(leaf => {
             leaf.addEventListener('click', (e) => {
                 e.stopPropagation();
@@ -561,7 +564,7 @@ export class Dashboard {
             <li class="tree-leaf ${item.status}" data-id="${item.id}" data-track="${track}">
                 <span>${this.escapeHtml(item.name)}</span>
                 <span class="leaf-confidence badge ${item.confidence}">${item.confidence}</span>
-                <span class="leaf-status" style="font-size: 9px; color: var(--fg-muted); margin-left: auto;">
+                <span class="leaf-status" style="font-size: 9px; color: var(--color-muted); margin-left: auto;">
                     ${item.status === 'completed' ? '✓' : item.status === 'in-progress' ? '⟳' : '○'}
                 </span>
             </li>
@@ -569,12 +572,10 @@ export class Dashboard {
     }
 
     selectWorkflowItem(id, track) {
-        // Update selection
         document.querySelectorAll('.tree-leaf').forEach(l => l.classList.remove('selected'));
         const leaf = document.querySelector(`.tree-leaf[data-id="${id}"]`);
         if (leaf) leaf.classList.add('selected');
 
-        // Find item data
         const allItems = {
             'referee': { name: 'Referee & Card System', track: 'b', status: 'in-progress', confidence: 'probable', deps: [], detail: 'Foul thresholds (40/80/110, 60/80/110), severity scoring (0-4), DOGSO detection, card packaging. P1-P4 probes defined in tests/behaviour/probes.tsv. 2/3 matches captured for P1 acceptance. Portable C++ in src/game/referee/foul_severity.{h,cpp}. Contract tests pass. Next: 3rd match for P1, capture fouling team + attack direction, capture ScoreToSeverity outputs.' },
             'competition': { name: 'Competition Engine', track: 'b', status: 'in-progress', confidence: 'probable', deps: ['referee'], detail: 'Season builder (EventDriver 0x141314FC0), fixture generator, regulation parser (212 rows), promotion/relegation. FL addresses carried over (98/140 match). Season selection ported to host with exact fidelity (91/91 ids match). Next: fixture generator port, regulation parser port, knockout draw.' },
@@ -607,15 +608,15 @@ export class Dashboard {
         const panel = document.getElementById('workflow-detail');
         if (!panel) return;
 
-        const trackColors = { a: 'var(--orange)', b: 'var(--accent)', c: 'var(--purple)' };
+        const trackColors = { a: 'var(--color-accent)', b: 'var(--color-ink)', c: 'var(--color-accent)' };
         const trackLabels = { a: 'Track A: Data', b: 'Track B: Oracle', c: 'Track C: Host' };
         const statusIcons = { completed: '✓', 'in-progress': '⟳', pending: '○' };
-        const statusColors = { completed: 'var(--success)', 'in-progress': 'var(--accent)', pending: 'var(--fg-muted)' };
+        const statusColors = { completed: 'var(--color-success)', 'in-progress': 'var(--color-ink)', pending: 'var(--color-muted)' };
 
         panel.innerHTML = `
             <div style="display: flex; align-items: flex-start; justify-content: space-between; margin-bottom: 16px; gap: 16px; flex-wrap: wrap;">
                 <div>
-                    <h3 style="font-size: 18px; margin-bottom: 4px;">${this.escapeHtml(item.name)}</h3>
+                    <h3 style="font-size: 18px; margin-bottom: 4px; font-family: var(--font-display); text-transform: uppercase; letter-spacing: var(--tracking-display);">${this.escapeHtml(item.name)}</h3>
                     <div style="display: flex; gap: 8px; flex-wrap: wrap; align-items: center;">
                         <span class="badge track-${item.track}" style="background: ${trackColors[item.track]}20; color: ${trackColors[item.track]};">${trackLabels[item.track]}</span>
                         <span class="badge ${item.confidence}">${item.confidence}</span>
@@ -626,16 +627,16 @@ export class Dashboard {
                     </div>
                 </div>
             </div>
-            <div style="color: var(--fg-muted); line-height: 1.7; margin-bottom: 20px;">${this.escapeHtml(item.detail)}</div>
+            <div style="color: var(--color-muted); line-height: 1.7; margin-bottom: 20px;">${this.escapeHtml(item.detail)}</div>
             ${item.deps.length > 0 ? `
-                <div style="padding: 12px; background: var(--bg); border-radius: var(--radius); border: 1px solid var(--border);">
-                    <strong style="color: var(--fg);">Dependencies:</strong>
+                <div style="padding: 12px; background: var(--color-paper-2); border-radius: var(--radius-card); border: var(--rule-hair) solid var(--color-rule);">
+                    <strong style="color: var(--color-ink);">Dependencies:</strong>
                     <div style="margin-top: 8px; display: flex; gap: 8px; flex-wrap: wrap;">
                         ${item.deps.map(dep => `<span class="badge track-${item.track}">${dep}</span>`).join('')}
                     </div>
                 </div>
             ` : ''}
-            <div style="margin-top: 20px; padding: 12px; background: var(--bg); border-radius: var(--radius); border: 1px solid var(--border); font-size: 12px; color: var(--fg-muted);">
+            <div style="margin-top: 20px; padding: 12px; background: var(--color-paper-2); border-radius: var(--radius-card); border: var(--rule-hair) solid var(--color-rule); font-size: 12px; color: var(--color-muted);">
                 <strong>Suggested Next Steps:</strong>
                 <ul style="margin: 8px 0 0 16px;">
                     ${this.getSuggestedSteps(item).map(s => `<li>${s}</li>`).join('')}
@@ -703,7 +704,6 @@ export class Dashboard {
 
         if (!macContent || !winContent) return;
 
-        // Mac items
         const macItems = [
             { title: 'Host Build (pes_host)', desc: 'SDL3 + Metal • cmake -B build && cmake --build build -j2 • --frames N for headless', status: 'completed' },
             { title: 'VFS Mount', desc: '29 CPKs • 80,516 files • 44.9 MB RSS • Duplicate: last wins', status: 'completed' },
@@ -717,7 +717,6 @@ export class Dashboard {
             { title: 'Render Pipeline', desc: 'SDL3 GPU API • Metal/Vulkan/D3D12 • SPIRV-Cross • Tier: free', status: 'pending' }
         ];
 
-        // Windows items
         const winItems = [
             { title: 'VM (unraidvm)', desc: 'Win10 19045 • 8 GB RAM • Intel Arc B580 • Tailscale 100.88.38.86', status: 'completed' },
             { title: 'Display/Streaming', desc: 'VDD virtual display • Sunshine → Moonlight • Fixed startup crash', status: 'completed' },
@@ -735,7 +734,7 @@ export class Dashboard {
     }
 
     renderPlatformItem(item) {
-        const statusColors = { completed: 'var(--success)', 'in-progress': 'var(--accent)', pending: 'var(--fg-muted)' };
+        const statusColors = { completed: 'var(--color-success)', 'in-progress': 'var(--color-ink)', pending: 'var(--color-muted)' };
         const statusIcons = { completed: '✓', 'in-progress': '⟳', pending: '○' };
         return `
             <div class="platform-item">
@@ -799,9 +798,9 @@ export class Dashboard {
         const main = document.getElementById('main-content');
         if (main) {
             main.innerHTML = `
-                <div class="empty-state" style="color: var(--danger);">
-                    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
-                    <h3>Error Loading Dashboard</h3>
+                <div class="empty-state" style="color: var(--color-error);">
+                    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" aria-hidden="true"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
+                    <h3 style="font-family: var(--font-display); text-transform: uppercase; letter-spacing: var(--tracking-display);">Error Loading Dashboard</h3>
                     <p>${this.escapeHtml(message)}</p>
                 </div>
             `;
