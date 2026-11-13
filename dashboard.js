@@ -9,14 +9,28 @@ export class Dashboard {
         this.data = null;
         this.currentView = 'overview';
         this.searchQuery = '';
+        this.coverageQuery = '';
+        this.publicSummary = null;
         this.selectedWorkflowItem = null;
     }
 
     async init() {
         await this.loadData();
+        await this.loadPublicSummary();
         this.setupEventListeners();
         this.renderCurrentView();
         this.updateLastUpdated();
+    }
+
+    async loadPublicSummary() {
+        try {
+            const response = await fetch('summary.json');
+            if (!response.ok) throw new Error(`HTTP ${response.status}`);
+            this.publicSummary = await response.json();
+        } catch (e) {
+            console.warn('Current project summary unavailable; using the detailed dashboard snapshot.', e);
+            this.publicSummary = null;
+        }
     }
 
     async loadData() {
@@ -52,6 +66,22 @@ export class Dashboard {
         });
 
         this.setupViewFilters();
+        document.getElementById('coverage-query')?.addEventListener('input', (event) => {
+            this.coverageQuery = event.target.value.trim().toLowerCase();
+            this.renderCoverage();
+        });
+        document.getElementById('coverage-status-filter')?.addEventListener('change', () => this.renderCoverage());
+        document.addEventListener('keydown', (event) => {
+            if (event.key === '/' && !['INPUT', 'TEXTAREA', 'SELECT'].includes(document.activeElement?.tagName)) {
+                event.preventDefault();
+                document.getElementById('global-search')?.focus();
+            }
+            if (event.key === 'Escape' && document.activeElement?.id === 'global-search') {
+                document.getElementById('global-search').value = '';
+                this.searchQuery = '';
+                this.renderCurrentView();
+            }
+        });
     }
 
     setupViewFilters() {
@@ -95,6 +125,7 @@ export class Dashboard {
 
         switch (viewName) {
             case 'overview': this.renderOverview(); break;
+            case 'coverage': this.renderCoverage(); break;
             case 'findings': this.renderFindings(); break;
             case 'naming': this.renderNaming(); break;
             case 'tests': this.renderTests(); break;
@@ -105,6 +136,127 @@ export class Dashboard {
         }
     }
 
+    renderCoverage() {
+        const host = document.getElementById('coverage-content');
+        if (!host) return;
+        const summary = this.publicSummary;
+        const counts = summary?.counts || {};
+        const ports = counts.port_rows_by_status || {};
+        const fidelity = counts.port_rows_by_fidelity || {};
+        const matchMetrics = summary?.match_metrics || {};
+        const checks = summary?.checks?.items || [];
+        const areas = summary?.areas || [];
+        const stamp = document.getElementById('summary-updated');
+        if (stamp) stamp.textContent = summary?.updated ? `Source snapshot · ${summary.updated}` : 'Detailed archive snapshot';
+
+        const statusFilter = document.getElementById('coverage-status-filter')?.value || '';
+        const visibleAreas = areas.filter(area => !statusFilter || area.status === statusFilter);
+        const pairedChecks = checks.filter(check => /\bof\b/.test(check.value)).length;
+        const areasMarkup = visibleAreas.map(area => `
+            <article class="coverage-area">
+                <div class="coverage-area-top"><h4>${this.escapeHtml(area.name)}</h4><span class="state-tag ${this.escapeHtml(area.status)}">${this.escapeHtml(area.status)}</span></div>
+                <p>${this.escapeHtml(area.text)}</p>
+            </article>`).join('') || '<p class="empty-state">No subsystems match this status.</p>';
+        const checkMarkup = checks.map(check => {
+            const isComparison = /\bof\b/.test(check.value);
+            return `<div class="validation-row ${isComparison ? 'comparison' : 'standalone'}"><strong>${this.escapeHtml(check.value)}</strong><span>${this.escapeHtml(check.label)}${isComparison ? '' : ' · standalone run, not a comparison'}</span></div>`;
+        }).join('');
+
+        const evidence = [];
+        (summary?.timeline || []).forEach(entry => evidence.push({date: entry.date, title: entry.title, text: entry.text, source: 'Current project summary'}));
+        areas.forEach(area => evidence.push({date: summary?.updated || '', title: area.name, text: area.text, source: 'Subsystem summary'}));
+        checks.forEach(check => evidence.push({date: summary?.updated || '', title: check.value, text: check.label, source: 'Validation result'}));
+        Object.entries(matchMetrics).forEach(([key, metric]) => evidence.push({date: metric.as_of || '', title: metric.label || key, text: `${metric.matched} of ${metric.total}. ${metric.scope || ''}`, source: 'Function / byte match record'}));
+        (this.data?.findings || []).forEach(entry => evidence.push({date: entry.date, title: entry.title, text: entry.body, source: 'Detailed findings archive'}));
+        const query = this.coverageQuery;
+        const matching = query
+            ? evidence.filter(item => `${item.title} ${item.text} ${item.date}`.toLowerCase().includes(query))
+            : evidence.slice(0, 6);
+        const evidenceMarkup = matching.slice(0, 10).map(item => `
+            <article class="evidence-result">
+                <div class="evidence-meta"><span>${this.escapeHtml(item.source)}</span><time>${this.escapeHtml(item.date)}</time></div>
+                <h4>${this.escapeHtml(item.title)}</h4><p>${this.escapeHtml(item.text)}</p>
+            </article>`).join('') || '<p class="empty-state">No evidence matches that search. Try a subsystem, validation name, or keyword.</p>';
+
+        host.innerHTML = `
+            <div class="coverage-intro">
+                <div><p class="coverage-deck">A traceable view of what has been named, rebuilt, hosted and checked. Estimates, port records and measured comparisons are kept separate.</p>
+                    <p class="coverage-caveat">${this.escapeHtml(summary?.headline?.note || 'Percentages are owner estimates, not measured test coverage.')}</p></div>
+                <div class="coverage-estimates">
+                    <div><span>Simulation scope</span><strong>${summary?.headline?.sim_percent?.[0] ?? '—'}–${summary?.headline?.sim_percent?.[1] ?? '—'}%</strong><small>owner estimate · not a test result</small></div>
+                    <div><span>Whole mode scope</span><strong>${summary?.headline?.mode_percent ?? '—'}%</strong><small>owner estimate · not a test result</small></div>
+                </div>
+            </div>
+
+            <section class="metric-ledger" aria-label="Function matching and port inventory">
+                <div class="ledger-heading"><h3>Function & byte evidence</h3><span>Project summary · ${this.escapeHtml(summary?.updated || 'date unavailable')}</span></div>
+                <div class="ledger-grid">
+                    <div class="ledger-cell"><span>Named function addresses</span><strong>${counts.named_addresses ?? '—'}</strong><small>Curated unique addresses</small></div>
+                    <div class="ledger-cell"><span>Port records</span><strong>${counts.port_rows_total ?? '—'}</strong><small>${ports.reimplemented ?? 0} reimplemented · ${ports['in host'] ?? 0} in host</small></div>
+                    <div class="ledger-cell"><span>Fidelity targets</span><strong>${fidelity.exact ?? 0} / ${fidelity.behavioural ?? 0}</strong><small>Exact / behavioural labels</small></div>
+                    <div class="ledger-cell"><span>Unique signatures found</span><strong>${matchMetrics.unique_signatures ? `${matchMetrics.unique_signatures.matched} / ${matchMetrics.unique_signatures.total}` : 'Not tracked'}</strong><small>${this.escapeHtml(matchMetrics.unique_signatures?.scope || 'Signature lookup result not recorded.')}</small></div>
+                    <div class="ledger-cell"><span>Function-start address overlap</span><strong>${matchMetrics.function_start_overlap ? `${matchMetrics.function_start_overlap.matched} / ${matchMetrics.function_start_overlap.total}` : 'Not tracked'}</strong><small>${this.escapeHtml(matchMetrics.function_start_overlap?.scope || 'Cross-version address overlap not recorded.')}</small></div>
+                    <div class="ledger-cell"><span>Version-comparator bytes</span><strong>${matchMetrics.version_comparator_bytes ? `${matchMetrics.version_comparator_bytes.matched} / ${matchMetrics.version_comparator_bytes.total}` : 'Not tracked'}</strong><small>${this.escapeHtml(matchMetrics.version_comparator_bytes?.scope || 'Version comparison byte count not recorded.')}</small></div>
+                    <div class="ledger-cell not-measured"><span>Reconstructed functions verified</span><strong>Not tracked</strong><small>No aggregate count of ported functions proven equivalent to the target.</small></div>
+                    <div class="ledger-cell not-measured"><span>AOT output bytes matched</span><strong>Not tracked</strong><small>No aggregate native-output byte comparison is recorded.</small></div>
+                    <div class="ledger-cell not-measured"><span>Observed-block coverage</span><strong>No denominator</strong><small>The function catalogue is not runtime block coverage. Per-block hit counts are absent.</small></div>
+                </div>
+            </section>
+
+            <section class="cycle-section" aria-labelledby="cycle-heading">
+                <div class="ledger-heading"><h3 id="cycle-heading">Lift → build → verify</h3><span>${counts.findings_entries ?? '—'} dated notes · ${counts.port_rows_total ?? '—'} port records · ${pairedChecks} paired results</span></div>
+                <div class="cycle-rail">
+                    <article><span class="cycle-index">LIFT</span><h4>Observe on Windows x64</h4><p>Runtime snapshots and logged draws anchor target behavior. Coordination and evidence indexing happen on the MacBook Air M1.</p><b>${counts.findings_entries ?? '—'} dated findings</b></article>
+                    <article><span class="cycle-index">BUILD</span><h4>Reconstruct in native C++</h4><p>Readable, buildable portable code, with no interpreter, JIT or Wine fallback.</p><b>${ports.reimplemented ?? 0} reimplemented · ${ports['in host'] ?? 0} in host</b></article>
+                    <article><span class="cycle-index">VERIFY</span><h4>Compare against captures</h4><p>${this.escapeHtml(summary?.checks?.intro || 'Compare portable output with recorded target behavior.')}</p><b>${pairedChecks} paired result rows below</b></article>
+                </div>
+            </section>
+
+            <section class="validation-section" aria-labelledby="validation-heading">
+                <div class="ledger-heading"><h3 id="validation-heading">Differential validation</h3><span>Paired comparisons and standalone measurements are labelled</span></div>
+                <div class="validation-list">${checkMarkup}</div>
+            </section>
+
+            <section class="areas-section" aria-labelledby="areas-heading">
+                <div class="ledger-heading"><h3 id="areas-heading">Subsystem reconstruction status</h3><label class="filter-label" for="coverage-status-filter">Show <select id="coverage-status-filter" class="btn"><option value="">All statuses</option><option value="exact">Exact</option><option value="mixed">Mixed</option><option value="approximate">Approximate</option></select></label></div>
+                <div class="areas-list">${areasMarkup}</div>
+            </section>
+
+            <section class="lane-section" aria-labelledby="lane-heading">
+                <div class="ledger-heading"><h3 id="lane-heading">Research lanes</h3><span>MacBook Air M1 coordinates · Windows x64 executes and debugs authoritatively</span></div>
+                <div class="lane-list"><div><b>A</b><strong>Data & formats</strong><span>Readers, tables and assets</span></div><div><b>B</b><strong>Oracle & lift</strong><span>Target observations and behavioral captures</span></div><div><b>C</b><strong>Portable host</strong><span>Native C++ ports and platform integration</span></div></div>
+            </section>
+
+            <section class="gaps-section" aria-labelledby="gaps-heading">
+                <div class="ledger-heading"><h3 id="gaps-heading">Next gaps to close</h3><span>Current project work list</span></div>
+                <div class="gap-columns">${(summary?.left || []).map(group => `<article><h4>${this.escapeHtml(group.group)}</h4><ul>${group.items.map(item => `<li>${this.escapeHtml(item)}</li>`).join('')}</ul></article>`).join('')}</div>
+            </section>
+
+            <section class="evidence-section" aria-labelledby="evidence-heading">
+                <div class="ledger-heading"><h3 id="evidence-heading">Search evidence & notes</h3><span>${query ? `${matching.length} matches` : 'Latest summary and detailed archive'}</span></div>
+                <label class="coverage-search"><span class="sr-only">Search project evidence and notes</span><input id="coverage-query" type="search" placeholder="Search checks, subsystem notes, findings…" value="${this.escapeHtml(this.coverageQuery)}"><kbd>/</kbd></label>
+                <div class="evidence-results">${evidenceMarkup}</div>
+                <p class="archive-note">Dated counts and validation results use the ${this.escapeHtml(summary?.updated || 'available')} project summary. The detailed findings archive is an earlier dashboard snapshot.</p>
+            </section>
+        `;
+
+        const search = document.getElementById('coverage-query');
+        search?.addEventListener('input', event => {
+            this.coverageQuery = event.target.value.trim().toLowerCase();
+            const position = event.target.selectionStart;
+            this.renderCoverage();
+            const nextSearch = document.getElementById('coverage-query');
+            nextSearch?.focus();
+            nextSearch?.setSelectionRange(position, position);
+        });
+        document.getElementById('coverage-status-filter')?.addEventListener('change', event => {
+            const value = event.target.value;
+            this.renderCoverage();
+            const nextFilter = document.getElementById('coverage-status-filter');
+            if (nextFilter) nextFilter.value = value;
+        });
+    }
+
     // ============ OVERVIEW ============
     renderOverview() {
         const statsContainer = document.getElementById('overview-stats');
@@ -113,41 +265,41 @@ export class Dashboard {
 
         if (!statsContainer || !timelineContainer) return;
 
-        const db = this.data.functions_db || {};
         const findings = this.data.findings || [];
         const milestones = this.data.milestones || [];
         const seeds = this.data.seeds || {};
+        const summaryCounts = this.publicSummary?.counts || {};
 
-        const completedMilestones = milestones.filter(m => this.isMilestoneCompleted(m)).length;
-        const totalSeeds = Object.values(seeds).reduce((sum, arr) => sum + arr.length, 0);
-        const totalTests = this.data.cmake?.tests?.length || 0;
+        const totalSeeds = summaryCounts.named_addresses ?? Object.values(seeds).reduce((sum, arr) => sum + arr.length, 0);
+        const totalTests = summaryCounts.tests ?? this.data.cmake?.tests?.length ?? 0;
+        const noteCount = summaryCounts.findings_entries ?? findings.length;
+        const scope = document.getElementById('project-scope');
+        if (scope) scope.textContent = `${totalSeeds.toLocaleString()} named addresses · ${summaryCounts.port_rows_total ?? '—'} C++ port records · ${totalTests} defined tests · ${milestones.length} milestones · ${noteCount} dated findings`;
 
         statsContainer.innerHTML = `
             <article class="card">
                 <div class="card-header">
-                    <h3 class="card-title">Functions in DB</h3>
-                    <div class="card-meta"><span class="badge track-b">Track B</span></div>
-                </div>
-                <div class="card-body" style="font-size: 36px; font-weight: 700; font-family: var(--font-outlier); color: var(--color-accent);">
-                    ${(db.count || 0).toLocaleString()}
-                </div>
-                <div class="card-body" style="font-size: 12px; margin-top: 8px; color: var(--color-muted);">
-                    ${(db.by_confidence?.confirmed || 0).toLocaleString()} confirmed · 
-                    ${(db.by_confidence?.probable || 0).toLocaleString()} probable · 
-                    ${(db.by_confidence?.guess || 0).toLocaleString()} guess
-                </div>
-            </article>
-
-            <article class="card">
-                <div class="card-header">
-                    <h3 class="card-title">Named Functions (Seeds)</h3>
+                    <h3 class="card-title">Named addresses</h3>
                     <div class="card-meta"><span class="badge track-b">Track B</span></div>
                 </div>
                 <div class="card-body" style="font-size: 36px; font-weight: 700; font-family: var(--font-outlier); color: var(--color-accent);">
                     ${totalSeeds.toLocaleString()}
                 </div>
                 <div class="card-body" style="font-size: 12px; margin-top: 8px; color: var(--color-muted);">
-                    Across ${Object.keys(seeds).length} seed files
+                    Curated names from the current project summary
+                </div>
+            </article>
+
+            <article class="card">
+                <div class="card-header">
+                    <h3 class="card-title">Portable C++ ports</h3>
+                    <div class="card-meta"><span class="badge track-b">Track B</span></div>
+                </div>
+                <div class="card-body" style="font-size: 36px; font-weight: 700; font-family: var(--font-outlier); color: var(--color-accent);">
+                    ${(summaryCounts.port_rows_total ?? 0).toLocaleString()}
+                </div>
+                <div class="card-body" style="font-size: 12px; margin-top: 8px; color: var(--color-muted);">
+                    Portable C++ port records
                 </div>
             </article>
 
@@ -170,10 +322,10 @@ export class Dashboard {
                     <div class="card-meta"><span class="badge track-a">A</span><span class="badge track-b">B</span><span class="badge track-c">C</span></div>
                 </div>
                 <div class="card-body" style="font-size: 36px; font-weight: 700; font-family: var(--font-outlier); color: var(--color-success);">
-                    ${completedMilestones} / ${milestones.length}
+                    ${milestones.length}
                 </div>
                 <div class="card-body" style="font-size: 12px; margin-top: 8px; color: var(--color-muted);">
-                    ${Math.round((completedMilestones / Math.max(1, milestones.length)) * 100)}% complete
+                    Defined in the workflow; completion is not inferred
                 </div>
             </article>
 
@@ -183,10 +335,10 @@ export class Dashboard {
                     <div class="card-meta"><span class="badge track-b">Track B</span><span class="badge track-c">Track C</span></div>
                 </div>
                 <div class="card-body" style="font-size: 36px; font-weight: 700; font-family: var(--font-outlier); color: var(--color-ink);">
-                    ${findings.length}
+                    ${noteCount.toLocaleString()}
                 </div>
                 <div class="card-body" style="font-size: 12px; margin-top: 8px; color: var(--color-muted);">
-                    ${findings.filter(f => f.track === 'B').length} Track B · ${findings.filter(f => f.track === 'C').length} Track C
+                    Dated research entries in the current project summary
                 </div>
             </article>
 
@@ -207,9 +359,9 @@ export class Dashboard {
         // Track progress
         if (trackProgressContainer) {
             const tracks = [
-                { id: 'a', name: 'Track A: Data', color: 'var(--color-accent)', completed: 2, total: 4 },
-                { id: 'b', name: 'Track B: Oracle', color: 'var(--color-ink)', completed: 3, total: 5 },
-                { id: 'c', name: 'Track C: Host', color: 'var(--color-accent)', completed: 4, total: 6 }
+                { id: 'a', name: 'Track A: Data', color: 'var(--color-accent)', detail: 'Readers, tables & formats', value: 'DATA' },
+                { id: 'b', name: 'Track B: Oracle', color: 'var(--color-ink)', detail: 'Windows x64 observation & debugging', value: 'LIFT' },
+                { id: 'c', name: 'Track C: Host', color: 'var(--color-accent)', detail: `${summaryCounts.port_rows_total ?? '—'} port records · ${summaryCounts.port_rows_by_status?.['in host'] ?? 0} in host`, value: 'BUILD' }
             ];
             trackProgressContainer.innerHTML = tracks.map(t => `
                 <article class="card">
@@ -218,18 +370,24 @@ export class Dashboard {
                         <div class="card-meta"><span class="badge track-${t.id}">${t.id.toUpperCase()}</span></div>
                     </div>
                     <div class="card-body" style="font-size: 28px; font-weight: 700; font-family: var(--font-outlier); color: ${t.color};">
-                        ${t.completed} / ${t.total}
+                        ${t.value}
                     </div>
                     <div class="card-body" style="font-size: 12px; margin-top: 8px; color: var(--color-muted);">
-                        ${Math.round((t.completed / t.total) * 100)}% complete
+                        ${t.detail}
                     </div>
                 </article>
             `).join('');
         }
 
-        // Recent timeline (last 10 findings)
-        const recent = findings.slice(0, 10);
-        timelineContainer.innerHTML = recent.map(f => this.renderTimelineEntry(f)).join('');
+        const currentTimeline = this.publicSummary?.timeline || [];
+        timelineContainer.innerHTML = currentTimeline.length
+            ? currentTimeline.slice(-6).reverse().map(entry => `
+                <div class="timeline-entry track-c summary-line">
+                    <div class="timeline-date">${this.escapeHtml(entry.date)} · Current project summary</div>
+                    <div class="timeline-title">${this.escapeHtml(entry.title)}</div>
+                    <div class="timeline-body">${this.escapeHtml(entry.text)}</div>
+                </div>`).join('')
+            : findings.slice(0, 6).map(f => this.renderTimelineEntry(f)).join('');
     }
 
     isMilestoneCompleted(milestone) {
@@ -481,31 +639,18 @@ export class Dashboard {
         if (!container) return;
 
         const milestones = this.data.milestones || [];
-        const findings = this.data.findings || [];
-
-        container.innerHTML = milestones.map((m, idx) => {
-            const status = this.getMilestoneStatus(m, findings);
+        container.innerHTML = milestones.map(m => {
+            const status = 'status-unrecorded';
             return `
                 <article class="milestone-card ${status}">
                     <div class="milestone-num">${String(m.number).padStart(2, '0')}</div>
                     <span class="milestone-track badge track-${m.track?.toLowerCase()}">Track ${m.track}</span>
                     <div class="milestone-title">${this.escapeHtml(m.milestone)}</div>
                     <div class="milestone-desc">${this.escapeHtml(m.done_when)}</div>
+                    <div class="milestone-state">Current completion status is not recorded in the source summary.</div>
                 </article>
             `;
         }).join('');
-    }
-
-    getMilestoneStatus(milestone, findings) {
-        const keywords = milestone.done_when?.toLowerCase().split(/[,\s]+/).filter(w => w.length > 3) || [];
-        const relevantFindings = findings.filter(f => 
-            keywords.some(k => f.body.toLowerCase().includes(k)) ||
-            f.title.toLowerCase().includes(milestone.milestone.toLowerCase())
-        );
-
-        if (relevantFindings.some(f => f.confidence_counts?.confirmed > 0)) return 'completed';
-        if (relevantFindings.length > 0) return 'in-progress';
-        return 'pending';
     }
 
     // ============ WORKFLOW ============
@@ -718,15 +863,15 @@ export class Dashboard {
         ];
 
         const winItems = [
-            { title: 'VM (unraidvm)', desc: 'Win10 19045 • 8 GB RAM • Intel Arc B580 • Tailscale 100.88.38.86', status: 'completed' },
+            { title: 'Windows x64 target VM', desc: 'Original-game execution and debugging authority. Runtime observations are captured here.', status: 'completed' },
             { title: 'Display/Streaming', desc: 'VDD virtual display • Sunshine → Moonlight • Fixed startup crash', status: 'completed' },
             { title: 'cdb Debugger', desc: '10.0.26100.1 • Hardware breakpoints (ba e1) • No code bytes changed', status: 'completed' },
             { title: 'P1: Foul Thresholds', desc: '6 calls • word@0x1482B3DC8=0x00C0 confirmed • T3=110 • bit 11 selects 60/80', status: 'completed' },
             { title: 'P2-P4: ML Creation', desc: 'BuildSeason 91 ids • EventDriver 30 calls • GetOrBlank 400 calls (mode 0→2)', status: 'completed' },
             { title: 'Include List Source', desc: 'Static table @0x14298CB60 (246×20B) • Filtered by EditData regs • FL "static" confirmed', status: 'completed' },
             { title: 'Team Direction', desc: 'Match_Team_SetDirection (0x140A42570) • Flips at half-time • Bit 11 = penalty in own box', status: 'completed' },
-            { title: 'Next: P1 Match 3', desc: 'Need 3rd CPU-vs-CPU match for P1 acceptance • Capture team + direction', status: 'in-progress' },
-            { title: 'Next: ScoreToSeverity', desc: 'Capture exit outputs • Verify severity mapping (0-4) • Promote to confirmed', status: 'pending' }
+            { title: 'Captured validation', desc: 'Windows runtime snapshots and logged random draws provide the reference for differential checks.', status: 'completed' },
+            { title: 'Runtime gaps', desc: 'Group-draw values, filing draws, scouting and the computer-club transfer search still need target captures.', status: 'in-progress' }
         ];
 
         macContent.innerHTML = macItems.map(item => this.renderPlatformItem(item)).join('');
@@ -769,10 +914,10 @@ export class Dashboard {
     escapeHtml(text) {
         if (!text) return '';
         return text
-            .replace(/&/g, '&')
-            .replace(/</g, '<')
-            .replace(/>/g, '>')
-            .replace(/"/g, '"')
+            .replace(/&/g, '&amp;')
+            .replace(/</g, '&lt;')
+            .replace(/>/g, '&gt;')
+            .replace(/"/g, '&quot;')
             .replace(/'/g, '&#039;');
     }
 
@@ -790,7 +935,7 @@ export class Dashboard {
         const el = document.getElementById('last-updated');
         if (el && this.data?.generated_at) {
             const date = new Date(this.data.generated_at);
-            el.textContent = date.toLocaleString();
+            el.textContent = this.publicSummary?.updated || date.toLocaleString();
         }
     }
 

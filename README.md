@@ -5,6 +5,7 @@ Interactive dashboard for the PES 2021 reverse-engineering and portable engine p
 ## Features
 
 - **Overview**: Project stats, recent activity timeline
+- **Coverage & Cycles**: Named addresses, port counts, signature and byte checks, observed-block coverage gaps, differential results, subsystem estimates, and searchable evidence
 - **Findings**: Searchable, filterable findings notebook (Track B/C)
 - **Naming DB**: Browse all seeded function names with confidence levels, evidence, and source files
 - **Tests**: Unit, golden, behaviour, and host integration tests organized by category
@@ -31,24 +32,13 @@ python3 -m http.server 8000
 
 ## Data Sources
 
-The dashboard reads from:
-- `FINDINGS.md` - Running notebook with dated entries
-- `db/seeds/*.tsv` - Function naming seeds with confidence
-- `db/functions.sqlite` - Naming database (233,322 functions)
-- `CMakeLists.txt` - Test definitions and build targets
-- `tests/behaviour/probes.tsv` - Hardware probe definitions
-- `tests/golden/` - Golden test hashes
-- `pes-workflow-guide-v3.md` - Milestones and open questions
+The dashboard reads the current aggregate project snapshot from `summary.json` and searchable detailed entries from `data.json`. The summary records 652 named function addresses, 76 portable port records, 115/115 unique signature lookups, 98/140 cross-version function-start address overlaps, and 42/42 bytes in one narrow version comparison. Those are distinct checks, not an aggregate count of AOT-equivalent functions or bytes.
 
 ## Deployment
 
 Automatic deployment to GitHub Pages on push to `main` via `.github/workflows/deploy-pages.yml`.
 
-The workflow:
-1. Checks out the repo
-2. Runs `python3 docs/build_data.py` to generate `docs/data.json`
-3. Uploads the `docs/` folder as a Pages artifact
-4. Deploys to GitHub Pages
+The workflow checks out the repository, uploads the static dashboard files as a Pages artifact, and deploys them to GitHub Pages. Refresh `summary.json` from the current PES project summary before publishing updated metrics.
 
 ## Project Constraints (Preserved)
 
@@ -62,7 +52,6 @@ The workflow:
 ## Keyboard Shortcuts
 
 - `/` - Focus global search
-- `1-8` - Switch views (1=Overview, 2=Findings, 3=Naming, 4=Tests, 5=Milestones, 6=Workflow, 7=Platforms, 8=Questions)
 - `Escape` - Clear search
 
 ## Browser Support

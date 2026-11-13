@@ -1,0 +1,192 @@
+{
+  "updated": "2026-11-12",
+  "headline": {
+    "sim_percent": [
+      60,
+      65
+    ],
+    "mode_percent": 25,
+    "note": "Both figures are our own estimates, not measurements. The simulation is the rules engine behind Master League (matches, injuries, money, calendar). The whole mode also needs menus, transfer negotiation, news and saving, which are not started."
+  },
+  "areas": [
+    {
+      "name": "Match results for computer teams",
+      "status": "exact",
+      "text": "Computer-versus-computer matches reproduce the real game's results and dice rolls, including cup extra time and penalties."
+    },
+    {
+      "name": "Daily player condition",
+      "status": "exact",
+      "text": "Stamina, form, injury countdowns and the daily chance of a tiring injury follow the real game day by day. Morale after matches is mostly right but not fully."
+    },
+    {
+      "name": "Competition calendar",
+      "status": "exact",
+      "text": "Leagues, domestic cups, promotion playoffs, Champions League, Europa League, Libertadores, AFC Champions League, Club World Cup and World Cup groups are built and scheduled as the game does. Draws for the next season's continental lists are exact."
+    },
+    {
+      "name": "Finances",
+      "status": "exact",
+      "text": "Monthly income, prize money, match bonuses, gate receipts, the owner's reward and the fan count are modelled. Several of these match the game to the cent on the checked months."
+    },
+    {
+      "name": "Player events",
+      "status": "exact",
+      "text": "The daily roll that decides which players get a special event is exact, provided the model is told the state the game tracks. Rebuilding that state from scratch is still being checked."
+    },
+    {
+      "name": "Contracts and the season switch",
+      "status": "mixed",
+      "text": "Retirements and loan returns match the game. Player development, contract renewals and youth intake are approximate."
+    },
+    {
+      "name": "Computer-club transfers",
+      "status": "approximate",
+      "text": "A rough behaviour model reproduces the shape of what computer clubs do at the season switch. It is not the game's own search."
+    }
+  ],
+  "checks": {
+    "intro": "We saved snapshots of the real game on a Windows virtual machine, logged every random dice roll it made between them, and replayed the same days in our own engine. A result only counts when the model lands on the same numbers.",
+    "items": [
+      {
+        "value": "661 of 662",
+        "label": "computer-team match results reproduced roll for roll across the logged match days"
+      },
+      {
+        "value": "20,329 of 20,329",
+        "label": "player condition levels correct across the off-season days checked"
+      },
+      {
+        "value": "240 of 240",
+        "label": "Champions League and Europa League group fixtures built correctly"
+      },
+      {
+        "value": "1,187 of 1,187",
+        "label": "player-event dice rolls matched, given the tracked state"
+      },
+      {
+        "value": "8,022",
+        "label": "matches played by the model in one simulated second season (a run of the model alone, not a comparison)"
+      },
+      {
+        "value": "775 of 775",
+        "label": "players retiring at the season switch identified correctly"
+      }
+    ]
+  },
+  "left": [
+    {
+      "group": "Needs the Windows VM",
+      "items": [
+        "Verifying the Champions League and Europa League group-draw values.",
+        "Verifying how those competitions file their matches.",
+        "Scouting and the computer clubs' real transfer search.",
+        "Further runs to confirm the approximate season-switch parts."
+      ]
+    },
+    {
+      "group": "Offline work that remains",
+      "items": [
+        "Tightening the approximate parts: development, renewals, youth intake, morale.",
+        "A few smaller competitions and the January list refills.",
+        "More consistency replays over several seasons."
+      ]
+    },
+    {
+      "group": "Not started",
+      "items": [
+        "Menus and screens for Master League.",
+        "The transfer negotiation flow for the user.",
+        "News and messages.",
+        "Saving and loading a career.",
+        "A real search for CPU transfers (replacing the rough model)."
+      ]
+    }
+  ],
+  "timeline": [
+    {
+      "date": "2026-11-02",
+      "title": "Project set up",
+      "text": "Tools, notes and a first naming database exist; the host program starts on a Mac."
+    },
+    {
+      "date": "2026-11-03",
+      "title": "Game data readers and first competition rules",
+      "text": "Archive and texture readers match reference tools; the first league and cup rules are read from the game."
+    },
+    {
+      "date": "2026-11-04",
+      "title": "League schedules and cups replay",
+      "text": "Fixture lists and every knockout cup built at career start match the game."
+    },
+    {
+      "date": "2026-11-05",
+      "title": "Season set-up draws",
+      "text": "The shuffles and draws used when a career season is built replay exactly."
+    },
+    {
+      "date": "2026-11-06",
+      "title": "Computer match simulation",
+      "text": "The engine plays computer matches the way the game does, roll for roll, and updates daily condition."
+    },
+    {
+      "date": "2026-11-07",
+      "title": "A whole day, and the first season switch",
+      "text": "Day-by-day driver, injuries, stamina and the first look at transfers and the season rollover."
+    },
+    {
+      "date": "2026-11-08",
+      "title": "Calendar, finances and contracts",
+      "text": "Continental competitions, playoffs, a full free-running season, the first finance layers and contract expiry."
+    },
+    {
+      "date": "2026-11-09",
+      "title": "Player events and consistency",
+      "text": "The daily player-event roll, Italy's playoff and the year-turn behaviour are added; replays are re-checked end to end."
+    },
+    {
+      "date": "2026-11-12",
+      "title": "World Cup draw and pending events",
+      "text": "The World Cup draw is exact on two captures, and the list of pending player events is kept by the model."
+    }
+  ],
+  "counts": {
+    "named_addresses": 652,
+    "tests": 45,
+    "port_rows_total": 76,
+    "port_rows_by_status": {
+      "reimplemented": 65,
+      "in host": 11,
+      "verified": 0,
+      "named": 0
+    },
+    "port_rows_by_fidelity": {
+      "exact": 57,
+      "behavioural": 19
+    },
+    "findings_entries": 148
+  },
+  "match_metrics": {
+    "unique_signatures": {
+      "matched": 115,
+      "total": 115,
+      "label": "Unique function signatures found once in the pinned executable image",
+      "scope": "Signature location check only; this is not a count of reconstructed functions proven equivalent.",
+      "as_of": "2026-11-03"
+    },
+    "function_start_overlap": {
+      "matched": 98,
+      "total": 140,
+      "label": "Cross-version function-start address overlap",
+      "scope": "Address overlap only; 42 compared addresses are documented interior sites. Not function-body or AOT equivalence.",
+      "as_of": "2026-11-02"
+    },
+    "version_comparator_bytes": {
+      "matched": 42,
+      "total": 42,
+      "label": "Reference-version comparator bytes matched",
+      "scope": "A narrow version check, not total byte coverage or AOT output equivalence.",
+      "as_of": "2026-11-02"
+    }
+  }
+}

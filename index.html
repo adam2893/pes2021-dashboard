@@ -3,8 +3,8 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <meta name="description" content="PES 2021 Reverse Engineering Dashboard — Track findings, naming database, tests, milestones, and workflow for the portable native C++ engine project.">
-    <title>PES 2021 RE Dashboard</title>
+    <meta name="description" content="PES 2021 reverse-engineering and AOT recompilation dashboard. Track function matches, byte checks, portable native C++ ports, differential results, evidence, and platform gaps.">
+    <title>PES 2021 RE / AOT Dashboard</title>
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Chakra+Petch:wght@600&family=IBM+Plex+Sans:wght@400;500&family=IBM+Plex+Mono:wght@500&display=swap" rel="stylesheet">
@@ -147,6 +147,16 @@
 
         .search-box {
             position: relative;
+        }
+
+        .search-box svg {
+            position: absolute;
+            left: var(--space-sm);
+            top: 50%;
+            transform: translateY(-50%);
+            color: var(--color-muted);
+            width: 14px;
+            height: 14px;
         }
 
         .search-box input {
@@ -933,6 +943,7 @@ select.btn {
         ::-webkit-scrollbar-thumb { background: var(--color-rule); border-radius: 0; }
         ::-webkit-scrollbar-thumb:hover { background: var(--color-muted); }
     </style>
+    <link rel="stylesheet" href="./dashboard-refresh.css">
 </head>
 <body>
     <div class="app">
@@ -940,10 +951,11 @@ select.btn {
             <div class="header-inner container">
                 <a href="#" class="logo">
                     <span class="logo-mark">PES</span>
-                    <span class="logo-text">2021 RE Dashboard</span>
+                    <span class="logo-text">2021 RE / AOT Notebook</span>
                 </a>
                 <nav class="nav-tabs" role="tablist" aria-label="Dashboard views">
                     <button class="nav-tab active" role="tab" data-view="overview" aria-selected="true">Overview</button>
+                    <button class="nav-tab" role="tab" data-view="coverage" aria-selected="false">Coverage & Cycles</button>
                     <button class="nav-tab" role="tab" data-view="findings" aria-selected="false">Findings</button>
                     <button class="nav-tab" role="tab" data-view="naming" aria-selected="false">Naming DB</button>
                     <button class="nav-tab" role="tab" data-view="tests" aria-selected="false">Tests</button>
@@ -955,7 +967,7 @@ select.btn {
                 <div class="header-actions">
                     <div class="search-box">
                         <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.3-4.3"/></svg>
-                        <input type="search" id="global-search" placeholder="Search findings, functions, tests..." aria-label="Global search">
+                    <input type="search" id="global-search" placeholder="Search evidence, functions, tests…" aria-label="Global search">
                     </div>
                     <div class="status-indicators">
                         <span class="status-dot mac">Mac M1</span>
@@ -973,7 +985,7 @@ select.btn {
                 <!-- Overview View -->
                 <section class="view active" id="view-overview" role="tabpanel" aria-labelledby="overview-heading">
                     <header class="section-header">
-                        <h2 id="overview-heading">Project Overview</h2>
+                        <h2 id="overview-heading">PES 2021 RE / AOT Project</h2>
                         <div class="confidence-legend">
                             <span class="legend-item"><span class="legend-dot" style="background: var(--color-success)"></span> Confirmed</span>
                             <span class="legend-item"><span class="legend-dot" style="background: var(--color-warning)"></span> Probable</span>
@@ -985,7 +997,7 @@ select.btn {
                     </header>
 
 <div class="dimension-string">
-            <span class="dim-label">Project Scope: 233,322 functions, 9 seed files, 43 tests, 14 milestones, 66 findings, 9 open questions</span>
+            <span class="dim-label" id="project-scope">Project summary loading…</span>
         </div>
 
         <div class="stats-grid" id="overview-stats"></div>
@@ -999,6 +1011,15 @@ select.btn {
             <h2>Recent Activity</h2>
         </header>
         <div class="timeline" id="recent-timeline"></div>
+                </section>
+
+                <!-- Coverage and verification view -->
+                <section class="view" id="view-coverage" role="tabpanel" aria-labelledby="coverage-heading">
+                    <header class="section-header">
+                        <h2 id="coverage-heading">Coverage & Cycles</h2>
+                        <span class="data-stamp" id="summary-updated">Project summary</span>
+                    </header>
+                    <div id="coverage-content"></div>
                 </section>
 
                 <!-- Findings View -->
@@ -1154,7 +1175,7 @@ select.btn {
         </main>
 
         <footer>
-            <p>PES 2021 Reverse Engineering Dashboard, Portable Native C++ Engine, No Interpreter, JIT, or Wine Fallback, Data updated: <span id="last-updated">-</span></p>
+            <p>PES 2021 Reverse Engineering & AOT Recompilation · Portable Native C++ · No Interpreter, JIT, or Wine Fallback · Data updated: <span id="last-updated">-</span></p>
         </footer>
     </div>
 
