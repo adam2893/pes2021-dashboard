@@ -24,7 +24,7 @@ export class Dashboard {
 
     async loadPublicSummary() {
         try {
-            const response = await fetch('summary.json');
+            const response = await fetch('summary.json?v=20261113');
             if (!response.ok) throw new Error(`HTTP ${response.status}`);
             this.publicSummary = await response.json();
         } catch (e) {
