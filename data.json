@@ -3109,9 +3109,9 @@
     {
       "address": "0x1413b83a0",
       "name": "Competition_Table_VirtualPick",
-      "confidence": "guess",
+      "confidence": "probable",
       "reviewed": "no",
-      "evidence": "virtual dispatch behind the final-table picks; not read (pes-porter 2026-11-08)",
+      "evidence": "calls the pick object's vtable +0x10, +0x18 (rows), +0x20, +0x28 (country fill) in turn; vtable 0x1428EF1F8 (read 2026-11-18; pes-porter 2026-11-08)",
       "source": "db/seeds/competition1.tsv"
     },
     {
@@ -3173,9 +3173,9 @@
     {
       "address": "0x1413571c0",
       "name": "Competition_NextList_Helper571C0",
-      "confidence": "guess",
+      "confidence": "probable",
       "reviewed": "no",
-      "evidence": "read (pes-porter 2026-11-08)",
+      "evidence": "European holders, end of list: qual type 0 (reg 3) adds the CL winner if absent, else the EL winner; qual type 1 (reg 2) adds the EL winner if not placed; holders from the reg 7 entry (read 2026-11-18; pes-porter 2026-11-08)",
       "source": "db/seeds/competition1.tsv"
     },
     {
@@ -4305,6 +4305,78 @@
       "reviewed": "no",
       "evidence": "state 3->4; Aoba CardEscalation unsupported",
       "source": "db/seeds/referee1.tsv"
+    },
+    {
+      "address": "0x1413b7b50",
+      "name": "Competition_SlotPick_PickRows",
+      "confidence": "probable",
+      "reviewed": "no",
+      "evidence": "vtable 0x1428EF1F8 +0x18: rows of the slot table for (country, qual type); a free club is added; a taken club: cup-winner row (FUN_1414CF180) takes position 1 (runner-up) if free, otherwise *count += 1; invalid club adds nothing",
+      "source": "db/seeds/slots1.tsv"
+    },
+    {
+      "address": "0x1413b80a0",
+      "name": "Competition_SlotPick_FillCountry",
+      "confidence": "probable",
+      "reviewed": "no",
+      "evidence": "vtable 0x1428EF1F8 +0x28: walks the country league standings (FUN_1413B7910) and appends clubs absent from the picked, placed and temp lists while count > 0 (disassembly 0x1413B80DF..0x1413B8208; Ghidra drops these blocks as unreachable)",
+      "source": "db/seeds/slots1.tsv"
+    },
+    {
+      "address": "0x1413b7910",
+      "name": "Competition_SlotPick_CountryLeagueStandings",
+      "confidence": "probable",
+      "reviewed": "no",
+      "evidence": "the last period 1/6/11 regulation of the country with +0x304 top bits 01; complete: final table (thunk 0x14158E080), else live standings",
+      "source": "db/seeds/slots1.tsv"
+    },
+    {
+      "address": "0x1413b7760",
+      "name": "Competition_SlotPick_RowsForCountry",
+      "confidence": "probable",
+      "reviewed": "no",
+      "evidence": "collects the 0x70 rows of table 0x1434F1FA0 (12 bytes: u16 reg, u32 pos at +4, u32 qual type at +8) whose qual type matches and whose reg's CountryIndex equals the country",
+      "source": "db/seeds/slots1.tsv"
+    },
+    {
+      "address": "0x1414cf180",
+      "name": "Competition_Regulation_IsCupPeriod",
+      "confidence": "probable",
+      "reviewed": "no",
+      "evidence": "regulation period (+0x308 >> 23 & 0x3F) is 2, 16 or 17",
+      "source": "db/seeds/slots1.tsv"
+    },
+    {
+      "address": "0x1414cfc60",
+      "name": "Competition_Regulation_PeriodIsGlobal979ED8",
+      "confidence": "guess",
+      "reviewed": "no",
+      "evidence": "regulation period equals the global DAT_142979ED8; skips rows when the pick flag is set",
+      "source": "db/seeds/slots1.tsv"
+    },
+    {
+      "address": "0x141351bc0",
+      "name": "Competition_NextList_PlacedTeams",
+      "confidence": "probable",
+      "reviewed": "no",
+      "evidence": "kind 3/4 or conference 1: entrants of regs 9 and 8; conference 0: regs 3, 2 and 5; conference 2: reg 15 (the already-placed list of the slot picks)",
+      "source": "db/seeds/slots1.tsv"
+    },
+    {
+      "address": "0x141863350",
+      "name": "ReturnFalse_141863350",
+      "confidence": "probable",
+      "reviewed": "no",
+      "evidence": "returns 0; vtable 0x1428EF1F8 +0x20 (no-op stage of the slot pick)",
+      "source": "db/seeds/slots1.tsv"
+    },
+    {
+      "address": "0x141353660",
+      "name": "Competition_NextList_IndexOfRegulation",
+      "confidence": "probable",
+      "reviewed": "no",
+      "evidence": "index of the 0x30-byte entry whose u16 equals the regulation id in the list at object +0x18 (0xFFFFFFFF if none)",
+      "source": "db/seeds/slots1.tsv"
     },
     {
       "address": "0x141268ae0",
@@ -6165,6 +6237,38 @@
       "source": "db/seeds/data/findings1.tsv"
     },
     {
+      "address": "0x1428ef1f8",
+      "field1": "table",
+      "field2": "Competition_SlotPick_Vtable",
+      "field3": "probable",
+      "evidence": "no",
+      "source": "db/seeds/data/findings1.tsv"
+    },
+    {
+      "address": "0x1434f1fa0",
+      "field1": "table",
+      "field2": "Competition_RegulationSlotTable_Copy",
+      "field3": "probable",
+      "evidence": "no",
+      "source": "db/seeds/data/findings1.tsv"
+    },
+    {
+      "address": "0x1413b80df",
+      "field1": "site",
+      "field2": "Competition_SlotPick_FillCountry@loop_start",
+      "field3": "probable",
+      "evidence": "no",
+      "source": "db/seeds/data/findings1.tsv"
+    },
+    {
+      "address": "0x1413b8208",
+      "field1": "site",
+      "field2": "Competition_SlotPick_FillCountry@loop_next",
+      "field3": "probable",
+      "evidence": "no",
+      "source": "db/seeds/data/findings1.tsv"
+    },
+    {
       "address": "0x1427fd430",
       "field1": "table",
       "field2": "PlayerSearch_Tries_L1",
@@ -7183,6 +7287,30 @@
       "source": "db/seeds/ports/competition.tsv"
     },
     {
+      "address": "0x1413b7b50",
+      "status": "reimplemented",
+      "fidelity": "behavioural",
+      "implementation": "src/game/ml/continental_next.cpp picks_for",
+      "evidence": "taken club: cup runner-up, else country count; probes 42 and 48 reg 5 40 of 40 and probe 47 reg 5 38 of 40 against the game (ml_consistency PES_BUILD; one miss is a table tie-break, one unexplained); the incomplete-league branch (Helper57470) is not ported",
+      "source": "db/seeds/ports/competition.tsv"
+    },
+    {
+      "address": "0x1413b80a0",
+      "status": "reimplemented",
+      "fidelity": "behavioural",
+      "implementation": "src/game/ml/continental_next.cpp picks_for (country fill)",
+      "evidence": "next free clubs of the area's league after the country's rows; league chosen as the lowest-id period 1/6(/11) league of the area, not the game's last flagged one",
+      "source": "db/seeds/ports/competition.tsv"
+    },
+    {
+      "address": "0x1413571c0",
+      "status": "reimplemented",
+      "fidelity": "behavioural",
+      "implementation": "src/game/ml/season_build.cpp lists_for (holders)",
+      "evidence": "CL winner else EL winner after reg 3's picks, EL winner after reg 2's if unplaced; equals the three references (probes 42, 47, 48) for reg 3",
+      "source": "db/seeds/ports/competition.tsv"
+    },
+    {
       "address": "0x1405b6800",
       "status": "reimplemented",
       "fidelity": "exact",
@@ -7632,6 +7760,11 @@
       "date": "2026-11-18",
       "title": "lineup slot map kept in step with the squad (Track B read, Track C fix)",
       "body": "Commits 5c86e28, 91ac471, 279e6f7, ff7a66b. New `src/game/ml/squad.h` (`roster_remove`, `roster_add`, `set_starters`), ctest `squad`. Full ctest 60 of 60. The audit invariant `club_starter_slot_invalid_or_duplicate` is 0 in every snapshot of a 5-season cpu run (it was 1 to 102 before). In the game's dumps it is 0 of 555 clubs in probes 38, 42 and 51, so the earlier counts were malformed model data, not a faulty check.\n\n- **Verified game algorithm (read and ported):** `Team_Squad_RemovePlayer` 0x1415720D0 calls `Team_Squad_RemoveRef` 0x141268AE0, which finds the squad index k, shifts every later ref (and the u16 list at +0x29A) down one and decrements the count. With flag 1 (the transfer path) it then sets the formation slot equal to k (+0x220, 40 bytes) to 0xFF and lowers every slot entry above k by one; the role bytes +0x248 to +0x251 are renumbered the same way.\n- **Matches observed behaviour:** probe 42 (38 daily pairs, July 2021): 456 of 459 clubs that only lost bench players, and 262 of 264 that lost one starter, have exactly the renumbered map with the bench closed up and one bench entry moved into the vacated slot. Probe 51 (January 2023) gives 129 of 302 and 52 of 102, with CPU matches and the 1 January switch between dumps. Every game slot map is a permutation of its roster (555 of 555 in two dumps).\n- **Read, not ported:** with more than 10 players left the removal calls `Team_AutoSelectLineup` in context mode 1 (`Lineup_Context_Init` 0x141504050, guess), which refills the empty starter slot; its scoring is not read (the filler is the first bench entry in only 49 of 314 cases). `Team_Squad_AddPlayer` 0x141571EC0 appends the ref and then rebuilds the lineup (mode 3 for transfers, guess; 0 of 860 add-only clubs kept their old map).\n- **Only ours:** the refill takes the first bench entry not in the XI; an added player takes the first free slot after the bench; `set_starters` keeps the bench order. The real source of the duplicates was the CPU-match write of the XI into slots 0 to 10 without fixing the bench.\n- **Effect on the audit:** deal counts stay in their band; February contract releases rise (22, 14, 17, 11 to 39, 34, 18, 19), probably because renewal reads the XI through the slots. Not checked.\n- **Open:** port the mode-3 rebuild on add (already ported for matches in `match_day.h`); the 1 January switch roster order (172 clubs in probe 51 dumps 1 to 2); `Team::squad` raw refs are not updated by the helpers."
+    },
+    {
+      "date": "2026-11-18",
+      "title": "continental slot picks, the taken-club rule read (Track B read, Track C port)",
+      "body": "The model left a CL or CL-qualifier slot row empty when its club was already placed and let pool key 69 fill the hole (the \"duplicate-place shortcut\", docs/todo.md item 2). The game's rule is now read and ported. Code: `src/game/ml/continental_next.cpp` `picks_for`, `src/game/ml/season_build.cpp` (holders). Seeds `db/seeds/slots1.tsv`, two data rows, three port rows.\n\n- **Verified game algorithm (read):** `Competition_NextList_SlotPicks` 0x1413561F0 walks the leagues of the confederation (period 1, 6 or 11, +0x304 top bits 01) and calls `Competition_NextList_FinalTablePicks` 0x141356BA0 per league country. That builds the placed list (`Competition_NextList_PlacedTeams` 0x141351BC0: the new reg 3, 2 and 5 lists for Europe; 9 and 8 for South America; 15 for Asia) and runs the pick object (vtable 0x1428EF1F8) through `Competition_Table_VirtualPick` 0x1413B83A0:\n  - `+0x18` 0x1413B7B50: the country's slot rows (table 0x1434F1FA0, a byte-identical copy of 0x1434EECC0) in table order. A free club is added. A taken club: a cup-winner row (period 2, 16 or 17, `FUN_1414CF180`) takes the cup's runner-up when free; otherwise the row adds 1 to the country's count. A row with no club (league too short) adds nothing.\n  - `+0x28` 0x1413B80A0 (disassembly 0x1413B80DF to 0x1413B8208; Ghidra drops these blocks as unreachable): walks the country's league standings (`FUN_1413B7910`) and appends the first clubs not yet picked or placed, one per count.\n  - `Competition_NextList_Helper571C0` 0x1413571C0, Europe only, at the end of a list: qual type 0 (reg 3) adds the CL winner when absent, else the EL winner when absent; qual type 1 (reg 2) adds the EL winner when no list holds it. The holder rows (reg 4 and 6, position 0) are never slot rows, since no league has their country.\n  - `Competition_NextList_BuildByKind` 0x141355C90 then fills from pool key 0x45 (69) and trims to 24 / 16 / 40 (qual types 0 / 1 / 2), which is the model's existing top-up. `Competition_QualType_ToRegulation` 0x1413535E0 maps 0, 1 and 2 to regs 3, 2 and 5.\n- **Matches observed behaviour (game references, ml_consistency with `PES_BUILD=1`):**\n  - Probes 42 and 48 (2021 switch): reg 5 had 3 wrong clubs; it now equals the game's list, 40 of 40 in order. Reg 2 and reg 3 unchanged (reg 2 equal as a set; the order is the draw's).\n  - Probe 47 (2022 switch, two pairs): reg 5 had 6 wrong clubs; now 2. The 8 cup runner-up picks (100, 366, 112, 234, 273, 1957, 1985, 2070) are all in the game's list. Misses: 5191 and 1195 change places between reg 2 and reg 5 (reg 115's places 2 and 3 in the model's table; also before this change, probable tie-break); and the model has 2067 (reg 141's place 3 in the model's table) where the game has 1208, which the old model held only through the pool. Cause of the second not established.\n- **Only ours or unverified:**\n  - The country fill uses the lowest-id period 1/6 league of the area (11 too at the July build); the game takes the last flagged league in its country list. They agree on every case seen.\n  - An unfinished cup's row is still served from the league's next free place (fitted 2026-11-08; the game's incomplete branch `Helper57470` is not read).\n  - The Libertadores and AFC lists use the same pick code and now follow the same rule; `ml_continental_next` (reg 9 28 of 28 in order, AFC 32 of 32) still passes.\n- **Metric change:** the audit's `slots_empty_t*` now counts only rows that stay empty (it also counted rows served later).\n- **Open:** reg 115's tie-break (and the known 120 and 162 swaps); whether 1208 is reg 141's place 3 in the game (the game's final table for 141 was not computed)."
     }
   ]
 }
