@@ -1,12 +1,12 @@
 {
-  "updated": "2026-11-12",
+  "updated": "2026-11-18",
   "headline": {
     "sim_percent": [
-      60,
-      65
+      70,
+      75
     ],
-    "mode_percent": 25,
-    "note": "Both figures are our own estimates, not measurements. The simulation is the rules engine behind Master League (matches, injuries, money, calendar). The whole mode also needs menus, transfer negotiation, news and saving, which are not started."
+    "mode_percent": 30,
+    "note": "Both figures are our own estimates, not measurements. The simulation is the rules engine behind Master League (matches, condition, money, calendar, contracts, transfers). It now runs 20 seasons on its own; what keeps it below 100 is the computer clubs' real transfer search, scouting, the user's transfer rules, a few international tournaments and some approximate parts. The whole mode also needs menus, transfer negotiation, news and saving, which are not started."
   },
   "areas": [
     {
@@ -22,7 +22,7 @@
     {
       "name": "Competition calendar",
       "status": "exact",
-      "text": "Leagues, domestic cups, promotion playoffs, Champions League, Europa League, Libertadores, AFC Champions League, Club World Cup and World Cup groups are built and scheduled as the game does. Draws for the next season's continental lists are exact."
+      "text": "Leagues, domestic cups, promotion playoffs (including Chile's), Champions League, Europa League, Libertadores, AFC Champions League, Club World Cup, the World Cup and its qualifiers are built and scheduled as the game does. Draws for the next season's continental lists are exact. The game's calendar has no 29 February, and neither does the model."
     },
     {
       "name": "Finances",
@@ -35,14 +35,14 @@
       "text": "The daily roll that decides which players get a special event is exact, provided the model is told the state the game tracks. Rebuilding that state from scratch is still being checked."
     },
     {
-      "name": "Contracts and the season switch",
+      "name": "Contracts, development and the season switch",
       "status": "mixed",
-      "text": "Retirements and loan returns match the game. Player development, contract renewals and youth intake are approximate."
+      "text": "Loan returns, contract renewals, youth intake, the season-switch development and the replacement of retired players by new young players follow the game. Players also develop a second time on 1 January; the model matches the game's observed results there. Which players choose to retire is our own approximation."
     },
     {
       "name": "Computer-club transfers",
       "status": "approximate",
-      "text": "A rough behaviour model reproduces the shape of what computer clubs do at the season switch. It is not the game's own search."
+      "text": "A behaviour model reproduces what computer clubs do in the summer and January windows: the numbers of transfers, loans and free signings and the squad shapes match the game's first two seasons. A moved player's new wage follows the game's rule. It is not the game's own search. The game's computer clubs pay no transfer fees and have no budgets, so by default the model has none either."
     }
   ],
   "checks": {
@@ -71,6 +71,22 @@
       {
         "value": "775 of 775",
         "label": "players retiring at the season switch identified correctly"
+      },
+      {
+        "value": "296 of 296",
+        "label": "World Cup qualifier matches built as the game builds them"
+      },
+      {
+        "value": "16,646 of 16,668",
+        "label": "players whose abilities after the 1 January development fit the game's rule"
+      },
+      {
+        "value": "473 of 487",
+        "label": "permanent transfers in the July 2021 window given the game's new wage"
+      },
+      {
+        "value": "4 x 20",
+        "label": "seasons simulated in four long runs without a crash (a run of the model alone, not a comparison)"
       }
     ]
   },
@@ -79,17 +95,18 @@
       "group": "Needs the Windows VM",
       "items": [
         "Verifying the Champions League and Europa League group-draw values.",
-        "Verifying how those competitions file their matches.",
-        "Scouting and the computer clubs' real transfer search.",
-        "Further runs to confirm the approximate season-switch parts."
+        "What the game does when the user never renews a contract.",
+        "A long run of the real game, to compare the ages of players many seasons ahead.",
+        "Scouting and the computer clubs' real transfer search."
       ]
     },
     {
       "group": "Offline work that remains",
       "items": [
-        "Tightening the approximate parts: development, renewals, youth intake, morale.",
-        "A few smaller competitions and the January list refills.",
-        "More consistency replays over several seasons."
+        "Keeping each club's starting line-up in step with squad changes.",
+        "Filling every continental competition place the way the game does.",
+        "The European Championship and the other international tournaments.",
+        "The game's own rule for which players retire, and morale."
       ]
     },
     {
@@ -148,23 +165,49 @@
       "date": "2026-11-12",
       "title": "World Cup draw and pending events",
       "text": "The World Cup draw is exact on two captures, and the list of pending player events is kept by the model."
+    },
+    {
+      "date": "2026-11-13",
+      "title": "Season-switch money, renewals and youth",
+      "text": "Finances at the season switch, computer contract renewals and the youth intake follow the game."
+    },
+    {
+      "date": "2026-11-15",
+      "title": "Player-event tracking",
+      "text": "The state behind the player-event roll is read from the game."
+    },
+    {
+      "date": "2026-11-16",
+      "title": "Accuracy plan and first audit",
+      "text": "Exact where the rules are read, faithful behaviour elsewhere, approximations labelled. A first audit of five free-running seasons lists what is missing."
+    },
+    {
+      "date": "2026-11-17",
+      "title": "Computer transfers and long runs",
+      "text": "Computer clubs now transfer, loan and sign free agents through both windows. Four 20-season runs found a leap-year bug, now fixed, and the World Cup qualifiers were added."
+    },
+    {
+      "date": "2026-11-18",
+      "title": "Player ratings and money",
+      "text": "The second yearly development step stops ratings drifting down. Computer clubs turn out to have no money in the game, so the model's fees are switched off by default."
     }
   ],
   "counts": {
-    "named_addresses": 652,
-    "tests": 45,
-    "port_rows_total": 76,
+    "named_addresses": 802,
+    "tests": 60,
+    "port_rows_total": 97,
     "port_rows_by_status": {
-      "reimplemented": 65,
+      "reimplemented": 86,
       "in host": 11,
       "verified": 0,
       "named": 0
     },
     "port_rows_by_fidelity": {
-      "exact": 57,
-      "behavioural": 19
+      "exact": 65,
+      "behavioural": 31,
+      "free": 1
     },
-    "findings_entries": 148
+    "findings_entries": 170
   },
   "match_metrics": {
     "unique_signatures": {
