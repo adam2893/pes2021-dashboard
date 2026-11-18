@@ -194,7 +194,7 @@
   ],
   "counts": {
     "named_addresses": 817,
-    "tests": 61,
+    "tests": 62,
     "port_rows_total": 100,
     "port_rows_by_status": {
       "reimplemented": 89,
