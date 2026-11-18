@@ -861,17 +861,17 @@
     {
       "address": "0x140f142b0",
       "name": "MLTransfer_Player_RemoveFromTeam",
-      "confidence": "guess",
+      "confidence": "probable",
       "reviewed": "no",
-      "evidence": "removes the player from the source squad via 0x1415720D0 and resets +0x160; probe 23 count decrements",
+      "evidence": "removes the player from the squad of his slot-0 team (Team_Squad_RemovePlayer 0x1415720D0, transfer flag 1), writes +0x160 = that team, clears +0x148 bits 17-18, sets team slot 0 (+0x12C) invalid via 0x1414C04D0 (read 2026-11-18); probe 23 count decrements",
       "source": "db/seeds/competition1.tsv"
     },
     {
       "address": "0x140f13e90",
       "name": "MLTransfer_Player_AddToTeam",
-      "confidence": "guess",
+      "confidence": "probable",
       "reviewed": "no",
-      "evidence": "adds the player to the target squad via 0x141571EC0 and sets +0x13C, +0x15C; probe 23 count increments",
+      "evidence": "no destination: +0x13C state 2 (free), +0x138 contract date, slot 0 invalid; else Team_Squad_AddPlayer 0x141571EC0, state 0, wage +0x15C and contract +0x138 from the deal, then team slot 0 (+0x12C) = destination via 0x1414C04D0 (read 2026-11-18); probe 23 count increments",
       "source": "db/seeds/competition1.tsv"
     },
     {
@@ -4379,6 +4379,14 @@
       "source": "db/seeds/slots1.tsv"
     },
     {
+      "address": "0x1414c04d0",
+      "name": "Player_SetTeamSlot",
+      "confidence": "probable",
+      "reviewed": "no",
+      "evidence": "writes the 14-bit team handle into PlayerRecord +0x12C + 4k for slot k < 3 (k 0 club, 1 national side per dumps); 25+ callers incl. MLTransfer_Player_AddToTeam / RemoveFromTeam (read 2026-11-18)",
+      "source": "db/seeds/slots1.tsv"
+    },
+    {
       "address": "0x141268ae0",
       "name": "Team_Squad_RemoveRef",
       "confidence": "probable",
@@ -7765,6 +7773,11 @@
       "date": "2026-11-18",
       "title": "continental slot picks, the taken-club rule read (Track B read, Track C port)",
       "body": "The model left a CL or CL-qualifier slot row empty when its club was already placed and let pool key 69 fill the hole (the \"duplicate-place shortcut\", docs/todo.md item 2). The game's rule is now read and ported. Code: `src/game/ml/continental_next.cpp` `picks_for`, `src/game/ml/season_build.cpp` (holders). Seeds `db/seeds/slots1.tsv`, two data rows, three port rows.\n\n- **Verified game algorithm (read):** `Competition_NextList_SlotPicks` 0x1413561F0 walks the leagues of the confederation (period 1, 6 or 11, +0x304 top bits 01) and calls `Competition_NextList_FinalTablePicks` 0x141356BA0 per league country. That builds the placed list (`Competition_NextList_PlacedTeams` 0x141351BC0: the new reg 3, 2 and 5 lists for Europe; 9 and 8 for South America; 15 for Asia) and runs the pick object (vtable 0x1428EF1F8) through `Competition_Table_VirtualPick` 0x1413B83A0:\n  - `+0x18` 0x1413B7B50: the country's slot rows (table 0x1434F1FA0, a byte-identical copy of 0x1434EECC0) in table order. A free club is added. A taken club: a cup-winner row (period 2, 16 or 17, `FUN_1414CF180`) takes the cup's runner-up when free; otherwise the row adds 1 to the country's count. A row with no club (league too short) adds nothing.\n  - `+0x28` 0x1413B80A0 (disassembly 0x1413B80DF to 0x1413B8208; Ghidra drops these blocks as unreachable): walks the country's league standings (`FUN_1413B7910`) and appends the first clubs not yet picked or placed, one per count.\n  - `Competition_NextList_Helper571C0` 0x1413571C0, Europe only, at the end of a list: qual type 0 (reg 3) adds the CL winner when absent, else the EL winner when absent; qual type 1 (reg 2) adds the EL winner when no list holds it. The holder rows (reg 4 and 6, position 0) are never slot rows, since no league has their country.\n  - `Competition_NextList_BuildByKind` 0x141355C90 then fills from pool key 0x45 (69) and trims to 24 / 16 / 40 (qual types 0 / 1 / 2), which is the model's existing top-up. `Competition_QualType_ToRegulation` 0x1413535E0 maps 0, 1 and 2 to regs 3, 2 and 5.\n- **Matches observed behaviour (game references, ml_consistency with `PES_BUILD=1`):**\n  - Probes 42 and 48 (2021 switch): reg 5 had 3 wrong clubs; it now equals the game's list, 40 of 40 in order. Reg 2 and reg 3 unchanged (reg 2 equal as a set; the order is the draw's).\n  - Probe 47 (2022 switch, two pairs): reg 5 had 6 wrong clubs; now 2. The 8 cup runner-up picks (100, 366, 112, 234, 273, 1957, 1985, 2070) are all in the game's list. Misses: 5191 and 1195 change places between reg 2 and reg 5 (reg 115's places 2 and 3 in the model's table; also before this change, probable tie-break); and the model has 2067 (reg 141's place 3 in the model's table) where the game has 1208, which the old model held only through the pool. Cause of the second not established.\n- **Only ours or unverified:**\n  - The country fill uses the lowest-id period 1/6 league of the area (11 too at the July build); the game takes the last flagged league in its country list. They agree on every case seen.\n  - An unfinished cup's row is still served from the league's next free place (fitted 2026-11-08; the game's incomplete branch `Helper57470` is not read).\n  - The Libertadores and AFC lists use the same pick code and now follow the same rule; `ml_continental_next` (reg 9 28 of 28 in order, AFC 32 of 32) still passes.\n- **Metric change:** the audit's `slots_empty_t*` now counts only rows that stay empty (it also counted rows served later).\n- **Unresolved (not reconstructed; the port is behavioural, not exact):**\n  - Probe 47 EL / CL-qualifier lists still differ from the game in 2 clubs: 5191 and 1195 swapped between reg 2 and reg 5 (probably reg 115's tie-break, unproven), and 2067 in place of 1208 (cause unknown; whether 1208 is reg 141's place 3 in the game was not checked).\n  - The game's incomplete-league branch (`Helper57470`) and the country-fill league choice (last flagged league) are not ported; the model's substitutes are fitted.\n  - The Libertadores and AFC lists were not re-checked against a game reference beyond the existing `ml_continental_next` assertions."
+    },
+    {
+      "date": "2026-11-18",
+      "title": "team membership fields of the player record (Track B read, dumps)",
+      "body": "Full analysis: `docs/state-duplication-findings-2026-11-18.md`. Seeds updated (`db/seeds/slots1.tsv`, `db/seeds/competition1.tsv`). No model change yet.\n\n- **Recovered algorithm (read):**\n  - `Player_SetTeamSlot` 0x1414C04D0 writes a team handle into PlayerRecord +0x12C + 4k, for slot k < 3.\n  - `MLTransfer_Player_RemoveFromTeam` 0x140F142B0 removes the player from the squad of the team in slot 0, writes +0x160 = that team, clears +0x148 bits 17-18 and sets slot 0 invalid.\n  - `MLTransfer_Player_AddToTeam` 0x140F13E90, with no destination: state 2 and slot 0 invalid. Otherwise: `Team_Squad_AddPlayer`, state 0, wage and contract from the deal, then slot 0 = the destination (for a loan, the holding club).\n- **Matches observed behaviour (six dumps, probes 42, 45, 47, 51):**\n  - +0x12C is the club whose squad holds the player for every rostered club player, including loanees (about 16,000 per dump), and invalid for every clubless record (states 1 to 4).\n  - +0x130 is the national side when the player is in a national squad.\n  - The squad ref's high dword is the record's +0x30 id (18,437 of 18,437 refs).\n  - A record reset at the season switch keeps its +0x30 id (758 of 758 in 2021, 816 of 816 in 2022).\n- **Model state (only ours):**\n  - `Player::team0` and `Team::squad` are written by the loader only. In the five-season run they differ from the roster for up to 6,647 players and 555 clubs.\n  - `Player::morale`'s packed copy is skipped by the CPU post-match morale pass (`ml_day.cpp:933`); nothing reads that copy."
     }
   ]
 }
