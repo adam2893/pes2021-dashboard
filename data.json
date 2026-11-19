@@ -7386,7 +7386,7 @@
       "address": "0x140fcf830",
       "status": "reimplemented",
       "fidelity": "behavioural",
-      "implementation": "src/game/ml/ml_day.cpp return_loans_with",
+      "implementation": "src/game/ml/player_moves.cpp return_loans_with",
       "evidence": "the loan-return rule: the player goes to the club in +0x160, loan end and flag cleared; summer (396 of 402 loans ending 2021-06-30 back on 1 July, probe 42) and 1 January (477 of 478 ending 2021-12-31, probe 45); the order of the returns is not the game's; ml_deals checks 564 of 564 due loans from the start dump",
       "source": "db/seeds/ports/transfer.tsv"
     }
