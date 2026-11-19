@@ -7106,7 +7106,7 @@
       "address": "0x141344920",
       "status": "reimplemented",
       "fidelity": "behavioural",
-      "implementation": "src/game/ml/ml_day.cpp run_day (CL/EL group stages)",
+      "implementation": "src/game/ml/day_competitions.cpp day_group_stages (CL/EL group stages)",
       "evidence": "entrant sets, 240 group records, dates and day-table filing equal probe 43 dump 26 (ml_continental); the group draw (draw_groups, exact on 2 captures) is not replayed here; the group fixture order is a fixed 4-club pattern from the dump; trigger not read",
       "source": "db/seeds/ports/competition.tsv"
     },
