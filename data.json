@@ -7098,7 +7098,7 @@
       "address": "0x141347160",
       "status": "reimplemented",
       "fidelity": "exact",
-      "implementation": "src/game/ml/ml_day.cpp run_day (promotion playoffs)",
+      "implementation": "src/game/ml/day_competitions.cpp day_playoffs (promotion playoffs)",
       "evidence": "regs 79 -> 83 and 80 -> 84 only; ml_day_replay: probe 40 day 161 creates records 10316-10326 equal to the next dump, day 168 fills both finals equal; the 12 filing draws replay",
       "source": "db/seeds/ports/competition.tsv"
     },
@@ -7138,7 +7138,7 @@
       "address": "0x141346880",
       "status": "reimplemented",
       "fidelity": "exact",
-      "implementation": "src/game/ml/ml_day.cpp run_day (European playoffs)",
+      "implementation": "src/game/ml/day_competitions.cpp day_playoffs (European playoffs)",
       "evidence": "probe 40 day 149: regs 151 and 159 (3 records, sides and dates) equal the next dump; trigger = the CL final day; second-phase tables carry the first-phase points (4 of 4 entrants; the standings code is not read)",
       "source": "db/seeds/ports/competition.tsv"
     },
