@@ -6754,7 +6754,7 @@
       "address": "0x14159b460",
       "status": "reimplemented",
       "fidelity": "exact",
-      "implementation": "src/game/competition/group_draw.cpp draw_groups, pot1_priority; src/game/ml/ml_day.cpp pot1_cup_champions",
+      "implementation": "src/game/competition/group_draw.cpp draw_groups, pot1_priority; src/game/ml/competition_rules.cpp pot1_cup_champions",
       "evidence": "setup (rank sort, priority front, pots, associations, size sort); replays probe 27 and 50 reg 3 and reg 5 exactly (tests/game/group_draw_test.cpp); pot 1 rule (holder, super cup champions, rank fallback) rebuilds all 16 slots of both fixtures from EditData lists and equals probe 43 as a set; the standings-table branch for countries without a usable super cup champion is not ported",
       "source": "db/seeds/ports/competition.tsv"
     },
@@ -7114,7 +7114,7 @@
       "address": "0x14155ce60",
       "status": "reimplemented",
       "fidelity": "exact",
-      "implementation": "src/game/ml/ml_day.cpp create_continental_knockout",
+      "implementation": "src/game/ml/competition_rules.cpp create_continental_knockout",
       "evidence": "CL/EL first knockout round from the group tables (head-to-head first; EL adds the 8 CL thirds in group order): pairing lists, 90 records, rounds, dates and tie flags equal season 1 (probe 38 dump with regs 4/6 blanked and rebuilt, ml_knockouts); the creation day is assumed",
       "source": "db/seeds/ports/competition.tsv"
     },
@@ -7146,7 +7146,7 @@
       "address": "0x141347590",
       "status": "reimplemented",
       "fidelity": "behavioural",
-      "implementation": "src/game/ml/ml_day.cpp italy_playoff_entrants",
+      "implementation": "src/game/ml/competition_rules.cpp italy_playoff_entrants",
       "evidence": "entrant rule read in full (points gaps 10 and 14, up to 6 clubs, bracket order by count); season 1 has no Italy playoff (3rd 70 pts, 4th 59), which the port reproduces; bracket and records not built",
       "source": "db/seeds/ports/competition.tsv"
     },
@@ -7170,7 +7170,7 @@
       "address": "0x14155d040",
       "status": "reimplemented",
       "fidelity": "exact",
-      "implementation": "src/game/ml/ml_day.cpp create_continental_knockout (reg 10)",
+      "implementation": "src/game/ml/competition_rules.cpp create_continental_knockout (reg 10)",
       "evidence": "qualifiers ordered by reg 9's whole table, then [W0,R7,W7,R0,W3,R4,W4,R3,W1,R6,W6,R1,W2,R5,W5,R2]; probe 39: entrants, 29 records, dates and rules equal (ml_libafc)",
       "source": "db/seeds/ports/competition.tsv"
     },
@@ -7178,7 +7178,7 @@
       "address": "0x14155c7f0",
       "status": "reimplemented",
       "fidelity": "exact",
-      "implementation": "src/game/ml/ml_day.cpp create_continental_knockout (reg 16)",
+      "implementation": "src/game/ml/competition_rules.cpp create_continental_knockout (reg 16)",
       "evidence": "probe 39: entrants, 30 records, dates and rules equal (ml_libafc)",
       "source": "db/seeds/ports/competition.tsv"
     },
