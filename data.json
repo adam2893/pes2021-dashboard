@@ -7186,7 +7186,7 @@
       "address": "0x140fd0f20",
       "status": "reimplemented",
       "fidelity": "exact",
-      "implementation": "src/game/ml/ml_day.cpp run_season_switch (retirements)",
+      "implementation": "src/game/ml/season_switch.cpp run_season_switch_post (retirements)",
       "evidence": "the players with +0x13C bit 26 set on 29 June retire and are replaced (775 of 775 on probe 42 6->8), plus the youth-pool rule (state 3, age 20+: 9 of 9); development, renewals and regen clubs stay behaviour models",
       "source": "db/seeds/ports/competition.tsv"
     },
