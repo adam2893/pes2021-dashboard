@@ -3869,9 +3869,9 @@
     {
       "address": "0x141566150",
       "name": "Finance_InitBudgets",
-      "confidence": "probable",
+      "confidence": "confirmed",
       "reviewed": "no",
-      "evidence": "zeroes the transfer (+0x16ECBF4) and wage (+0x16ECC08) budgets, then adds: transfer = team +0x644 if >= 1, else 2 x the mean of the 16 first entries of the sorted squad values (own squad not loaned out plus players loaned out by this club), times the level table 0x14298A270[edit +0x1789487], min 10000; wage = squad wage sum + (16 first sorted wages / 16) x the same factor x (1.5 - tier/10 when tier != 0); callers Finance_UserClubSetup and Finance_InitClub (read 2026-11-20)",
+      "evidence": "zeroes the transfer (+0x16ECBF4) and wage (+0x16ECC08) budgets, then adds: transfer = team +0x644 if >= 1, else 2 x (sum of the 16 largest squad values / 16, signed integer division), times the level table 0x14298A270[edit +0x1789487] in single precision, truncated, 10000 when <= 0, clamped to 99999999; wage = squad wage sum + (16 largest wages / 16.0) x factor x (1 - tier/10 + 0.5 when tier != 0), truncated, never below the wage sum; callers Finance_UserClubSetup and Finance_InitClub (read 2026-11-20; exact on the three probe 52 careers, both branches)",
       "source": "db/seeds/competition1.tsv"
     },
     {
@@ -6373,6 +6373,30 @@
       "source": "db/seeds/data/findings1.tsv"
     },
     {
+      "address": "0x14256ae1c",
+      "field1": "const",
+      "field2": "Float_One_14256AE1C",
+      "field3": "confirmed",
+      "evidence": "no",
+      "source": "db/seeds/data/findings1.tsv"
+    },
+    {
+      "address": "0x142588210",
+      "field1": "const",
+      "field2": "Float_Ten_142588210",
+      "field3": "confirmed",
+      "evidence": "no",
+      "source": "db/seeds/data/findings1.tsv"
+    },
+    {
+      "address": "0x142565600",
+      "field1": "const",
+      "field2": "Float_Half_142565600",
+      "field3": "confirmed",
+      "evidence": "no",
+      "source": "db/seeds/data/findings1.tsv"
+    },
+    {
       "address": "0x1427fd430",
       "field1": "table",
       "field2": "PlayerSearch_Tries_L1",
@@ -7415,6 +7439,14 @@
       "source": "db/seeds/ports/competition.tsv"
     },
     {
+      "address": "0x141566150",
+      "status": "reimplemented",
+      "fidelity": "exact",
+      "implementation": "src/game/ml/initial_budgets.cpp initial_budgets",
+      "evidence": "ported instruction by instruction (integer sums, signed /16, single-precision products, CVTTSS2SI truncation, clamps); reproduces the three probe 52 careers exactly (Arsenal preset branch twice, Vasco da Gama computed branch); takes the squad values and wages as inputs because Finance_Player_Value and the wage formula are not ported; a squad under 16 is not reproduced (the game reads past its arrays) (tests/game/initial_budgets_test.cpp, FINDINGS 2026-11-20)",
+      "source": "db/seeds/ports/competition.tsv"
+    },
+    {
       "address": "0x1405b6800",
       "status": "reimplemented",
       "fidelity": "exact",
@@ -7899,6 +7931,11 @@
       "date": "2026-11-20",
       "title": "fresh-career capture, probe 52 (Track B, Gate D part 2)",
       "body": "Three new Master League careers on the Windows VM, exe SHA-256 `58964c5a…45ad9`, Club Team Lineup, same difficulty and ML options (budget level byte `+0x1789487` = 2 in all three): Arsenal, Arsenal again, Vasco da Gama (Brazil, chosen because its team `+0x644` is 0, so the computed transfer budget path runs). Hardware breakpoints at `Competition_MLSetup_Run` (`0x141267040`), the instruction after the two sorts in `Finance_InitBudgets` (`0x14156686B`), `BuildSeason` (`0x1413156E0`) and the first `ML_DayDriver` (`0x141304810`); a non-invasive snapshot at the ML menu. Raw evidence: `private-reference/probe52/` (logs, EditData, `.rdata` and `.data` windows per run); scripts `tests/behaviour/cdb/mlswap/*52*`, `private-reference/gateD/probe52_compare.py`, `c644_list.py`.\n\n- **Starting budgets: the formula in the entry before this one holds on both branches.** Arsenal: `+0x644` = 1,118,233, so the transfer budget is 1,118,233; wage budget 822,634 + (top-16 wages / 16) × 1.0 × (1.5 − 0.2) = 876,989. Vasco: `+0x644` = 0, transfer budget 2 × (top-16 value sum / 16, integer) × 1.0 = 25,164; wage budget 116,169 + (top-16 wages / 16) × 1.0 × (1.5 − 0.8) = 120,664. All four equal the dumps exactly, and both Arsenal runs give the same figures. Both sorted arrays are largest first. **confirmed** for level 2 and tiers 2 and 8 (three careers); the other level factors are not exercised.\n- **Generator at creation start.** At `Competition_MLSetup_Run` entry the state at `*0x1437066A8` is one clock-derived word followed by Marsaglia's defaults (`159A55E5 1F123BB5 05491333`) in all three runs (first words `0005820F`, `004B4B19`, `00513879`). So nothing draws between boot and creation, and a career's draws are fixed by one 32-bit word. **confirmed** (three runs).\n- **Creation boundary.** Arsenal: `BuildSeason` and the first `ML_DayDriver` entry both run at 1 July 2020 (day 181), and the dump at that entry is the creation-finished state; the game then runs July by itself, and the ML menu is reached at 1 August (day 212) without user input. Vasco: `BuildSeason` runs at 1 January 2020 (day 0), `ML_DayDriver` is never entered before the menu, and the menu snapshot (day 0) is the boundary. **confirmed** (logs). The start date depends on the user club's league.\n- **Arsenal run 1 against run 2 at the boundary (same club, same settings):** players differ only in `+0x138` (contract end, 5,983 players), `+0x144` (3,747), `+0x104` (205), `+0x108` (76) and `+0xF8`/`+0xFC` (3); teams only in `+0x2EC`, `+0x314`, `+0x328`, `+0x33C` (at most 9 clubs). Elsewhere: scattered regulation records, two 32-byte-stride tables after `+0xD0BD04` (380 and 156 records), the match table (`+0xE9FF08`, 596-byte records), the growth array at `+0x1676324` (20-byte stride, 2,362 ranges), two blocks near `+0x16BF742` and `+0x16E8E51`, and 2 bytes of the season figure at `+0x16ECC20`. Everything else is identical, including wages, budgets and the date. **confirmed** (data); which draw writes each is unread.\n- **Vasco against Arsenal:** besides the date, most player ability words (`+0x0` to `+0x18`, about 13,000 players) and `+0xFC`/`+0x100`/`+0x168` differ, and 505 clubs differ in the lineup block `+0x14C` to `+0x2EC`. **confirmed** (data); the cause is unknown (guess: a January start uses other player data or applies half a season of growth).\n- **Exe tables in memory.** The `.rdata` window dumped (110 of the 152 table addresses in `exe_tables.cpp`) equals the file byte for byte in all five dumps. The `.data` window differs from the file in about 500 small ranges (5-byte pointer-like fields), none at a table address; the budget divisor `0x143509800` is 16.0 in memory in all three runs. The `.data` window holds 2 table addresses, both unchanged. 40 table addresses lie outside the dumped windows (34 in `.rdata`, 1 in `.data`, 5 in code) and are **not checked**; `.rdata` is read-only, so a change there is unlikely (guess)."
+    },
+    {
+      "date": "2026-11-20",
+      "title": "starting budgets ported, `ml::initial_budgets` (Track C, Gate D)",
+      "body": "`src/game/ml/initial_budgets.{h,cpp}` reimplements `Finance_InitBudgets` (`0x141566150`), ported from its disassembly rather than from the probe numbers:\n- the wage sum is a 32-bit wrap-around sum of all squad wages taken before sorting; both arrays are then sorted largest first;\n- transfer: the preset `+0x644` when at least 1, otherwise `2 × (sum of the 16 largest values / 16)` with signed integer division (`CDQ`, `AND 0xF`, `ADD`, `SAR 4`); then `CVTDQ2PS`, `MULSS` by the level factor, `CVTTSS2SI` truncation, 10,000 when the result is not positive, clamped to ±99,999,999;\n- wage: the sum of the 16 largest wages converted to float and divided by 16.0; tier 0 multiplies by the factor; any other tier multiplies by `((1.0 − tier / 10.0) + 0.5) × factor` in that operation order (constants `0x14256AE1C` = 1.0, `0x142588210` = 10.0, `0x142565600` = 0.5, all single precision); the wage sum, as float, is added; the result is truncated, raised to the wage sum when below it, and clamped.\n\nFused multiply-add is disabled in the file (`FP_CONTRACT OFF`) so each step rounds as the game's separate SSE instructions do; float-to-int conversion out of range gives INT_MIN as `CVTTSS2SI` does.\n\n**Exact (confirmed)**: `tests/game/initial_budgets_test.cpp` reproduces the three probe 52 careers from the logged squad arrays (Arsenal twice, 1,118,233 and 876,989, the preset branch; Vasco da Gama, 25,164 and 120,664, the computed branch), also when the input is not sorted. Branches no probe reached are tested against the code: the other level factors, the clamp, the 10,000 floor, the integer mean, tier 0 and tier 15.\n\nThe function draws nothing and holds no state. It is not called by the day simulation.\n\n**Not covered**:\n- The inputs: the squad values (`Finance_Player_Value` `0x141569090`) and wages are not ported, and the writer of `+0x644` is unread. So the function cannot yet give a budget for any club from the game files.\n- A squad of fewer than 16 players: the game reads past the end of its arrays, and the port counts the missing entries as 0 (never observed).\n\n**Open investigation (blocks calling the new-career constructor faithful across league calendars):** in the Vasco da Gama career (start 1 January 2020), about 13,000 players differ from the Arsenal career (start 1 July 2020) in the ability words `+0x0` to `+0x18`, and 505 clubs differ in the lineup block `+0x14C` to `+0x2EC`. Not investigated yet (docs/ml-new-career-2026-11-20.md, item J1)."
     }
   ]
 }
