@@ -194,7 +194,7 @@
   ],
   "counts": {
     "named_addresses": 840,
-    "tests": 64,
+    "tests": 65,
     "port_rows_total": 105,
     "port_rows_by_status": {
       "reimplemented": 94,
@@ -207,7 +207,7 @@
       "behavioural": 36,
       "free": 1
     },
-    "findings_entries": 183
+    "findings_entries": 184
   },
   "match_metrics": {
     "unique_signatures": {
