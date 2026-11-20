@@ -3987,6 +3987,54 @@
       "source": "db/seeds/competition1.tsv"
     },
     {
+      "address": "0x141263b40",
+      "name": "Competition_MLSetup_ClubSlot",
+      "confidence": "probable",
+      "reviewed": "no",
+      "evidence": "(ctx, &team handle) -> club slot byte stored at team +0x41C by Competition_MLSetup_MapTeam: collects every entry-table key (EditData +0xD0BD04, 0..0x7A) whose list holds the team id, remapped (16 -> 0x45 and 17 -> 0x49 unless EditData +0x1789466; 26/27/28/67/74 -> 0x49, 30 -> 0x46, 71 -> 0x45, 76..80 dropped), then the first league slot (0x14125FE50), else the first of 0x45/0x46/0x49, else the first; none -> 0x7B (read 2026-11-21; 659 of 659 teams on four dumps)",
+      "source": "db/seeds/competition1.tsv"
+    },
+    {
+      "address": "0x14125fe50",
+      "name": "Competition_ClubSlot_FindLeagueSlot",
+      "confidence": "probable",
+      "reviewed": "no",
+      "evidence": "find-if over slot values: the first slot whose regulation list (0x1414CE170) holds a regulation passing 0x1414CF750 (read 2026-11-21)",
+      "source": "db/seeds/competition1.tsv"
+    },
+    {
+      "address": "0x1414ce170",
+      "name": "Competition_Slot_ListRegulations",
+      "confidence": "probable",
+      "reviewed": "no",
+      "evidence": "(slot, vector<u16>&): appends the regulation id of every Competition_KickoffConfig_Table row (0x1414FDD60, 0x1414FE1E0 rows) whose +4 key equals the slot (read 2026-11-21)",
+      "source": "db/seeds/competition1.tsv"
+    },
+    {
+      "address": "0x1414cf750",
+      "name": "Competition_Regulation_IsLeagueType",
+      "confidence": "probable",
+      "reviewed": "no",
+      "evidence": "(regulation id): true when the id is in the live regulation table (EditData +0xC12E9C, stride 0x314, count +0xD0BCF4) and its +0x308 >> 23 & 0x3F type is below 16 with bit set in 0xF9C2 (types 1, 6-8, 11-15) (read 2026-11-21)",
+      "source": "db/seeds/competition1.tsv"
+    },
+    {
+      "address": "0x1414fdd60",
+      "name": "Competition_KickoffConfig_CopyRow",
+      "confidence": "probable",
+      "reviewed": "no",
+      "evidence": "(row index < 0xA5, out): copies one Competition_KickoffConfig_Table row (regulation id at +0, entry key at +4) and returns true (read 2026-11-21)",
+      "source": "db/seeds/competition1.tsv"
+    },
+    {
+      "address": "0x1414fe1e0",
+      "name": "Competition_KickoffConfig_RowCount",
+      "confidence": "confirmed",
+      "reviewed": "no",
+      "evidence": "returns 0xA5 (165 rows) (read 2026-11-21)",
+      "source": "db/seeds/competition1.tsv"
+    },
+    {
       "address": "0x1414bc860",
       "name": "Competition_RegulationTable_Find",
       "confidence": "probable",
@@ -7551,6 +7599,14 @@
       "source": "db/seeds/ports/competition.tsv"
     },
     {
+      "address": "0x141263b40",
+      "status": "reimplemented",
+      "fidelity": "exact",
+      "implementation": "src/game/ml/career_teams.cpp club_slot",
+      "evidence": "the slot rule with the league test as a key set (keys from files in src/platform/pc/career_files.cpp career_team_files); 659 of 659 team kinds on probe 52 runs 1 and 2, the run 3 menu dump and probe 38 (career_teams_test on run 1)",
+      "source": "db/seeds/ports/competition.tsv"
+    },
+    {
       "address": "0x1405b6800",
       "status": "reimplemented",
       "fidelity": "exact",
@@ -8065,6 +8121,11 @@
       "date": "2026-11-20",
       "title": "constructor stage K1, players from installed data (Track C, Gate D)",
       "body": "`platform::career_player_files` (`src/platform/pc/career_files.cpp`) reads the player records and `ml::build_players` (`src/game/ml/career_players.cpp`) builds the World's players and development records. Checked by `tests/game/career_players_test.cpp` against probe 52 Arsenal run 1 at the 1 July 2020 creation boundary, through `compare_worlds`.\n\n**New Player.bin mappings** (17,289 of 17,289 players each; **confirmed**, correlation):\n- field 0x28's companion (`Player::field28`) = bit 438, width 3;\n- the injury resistance (field 0x29) = bit 458, width 2;\n- field 0x2C = bit 454, width 2;\n- the 44 used skill flags (fields 0x40-0x6B) = single Player.bin bits, table `kSkillBits` in `pesdb.cpp`; flags 0x6C-0x7F are never set;\n- `f144` (the u16 at record `+0x144`) = the nationality, bit 233, width 9;\n- `field27` = Player_GetField 0x27;\n- all 41 getters 0x00-0x28 and the age equal the file's.\n\n`f148` is the dword at `+0x148`: days out, `f149`, `f14a` and an unknown fourth byte.\n\n**Player set** (**confirmed**, data):\n- Player.bin holds 18,452 records and the creation keeps 17,289.\n- 555 of the dropped ones are on PlayerDeleteList.bin. The other 608 are players without a club (299 only in national teams, 184 only in teams outside the ML, 125 in no team); 1,326 such players are kept.\n- Every player with a club is kept. No Player.bin bit separates kept from dropped clubless players; the rule is unknown.\n\n**Record order:** the first 17,104 records are the teams in record order, each roster in PlayerAssignment squad order (exact when the reference's membership and team order are used). The last 185 (players in no ML team) follow another order. **confirmed** (data).\n\n**Result:**\n- 17,897 players built; all 17,289 reference players are present, plus the 608 extra clubless players.\n- Exact on every deterministic field for every common player: age, condition, stamina, days out, field27, field28, injury resistance, gk, last played, `f149`, `f144`, present, and all development fields (getters, 0x29, 0x2C, 0x2D, 0x30, skills).\n- Exact on fame, wage and the state nibble except for 180 players, all of them clubless with reference state 2, 3 or 4. The constructor's placeholder is 1; their state source is unknown.\n- Provisional, by name: morale, contract year and month, growth and age adjustment, dev phase, bucket and progress (creation rules unknown or drawn, K7); `team0`, `f14a`, loan end and owner, `club164`, the post-match flag, `f148` and `dev.user_club` (squad and loan steps, K3; user club, K8).\n- The record order agrees at 15,963 of 17,289 positions."
+    },
+    {
+      "date": "2026-11-21",
+      "title": "constructor stage K2, team records from installed data; the club slot rule (Track B/C, Gate D)",
+      "body": "`platform::career_team_files` (`src/platform/pc/career_files.cpp`) reads the team inputs and `ml::build_teams` (`src/game/ml/career_teams.cpp`) builds the 659 team records, the club ranking table and the rank bytes. Checked by `tests/game/career_teams_test.cpp` against probe 52 Arsenal run 1 at the 1 July 2020 creation boundary, through `compare_worlds`.\n\n**Team record layout at creation** (**confirmed**, data; identical on probe 52 runs 1 and 2, the run 3 Vasco menu dump and probe 38):\n- records 0-554 are the 555 clubs in `ml_club_records` order;\n- records 555-656 are the 102 nations, grouped by their club slot (0 UEFA, 1 CAF, 2 CONCACAF, 3 CONMEBOL, 4 AFC and OFC) and ordered by English name in byte order within a group (Côte d'Ivoire after Cameroon);\n- records 657-658 are THE OLD BOYS (4971) and WORLD SELECTION (5129), slot 0x7B, in Team.bin order;\n- the order does not depend on the user's club (Arsenal and Vasco give the same 659 handles).\n\n**The club slot (team `+0x41C & 0x7F`, the World's `kind`).** `Competition_MLSetup_MapTeam` `0x141266490` stores the result of `Competition_MLSetup_ClubSlot` `0x141263B40` (**probable**, Ghidra decompile):\n1. Collect every key from 0 to 0x7A of the EditData entry table (`+0xD0BD04`) whose list holds the team id, in key order.\n2. Remap them: 16 becomes 0x45 and 17 becomes 0x49 unless EditData `+0x1789466` is set (it is 1 in every dump read); 26, 27, 28, 67 and 74 become 0x49; 30 becomes 0x46; 71 becomes 0x45; 76 to 80 are dropped; the others stay.\n3. `Competition_ClubSlot_FindLeagueSlot` `0x14125FE50` returns the first value that is a league slot. A slot is a league slot when one of its regulations passes `Competition_Regulation_IsLeagueType` `0x1414CF750`. The slot's regulations are the `Competition_KickoffConfig_Table` rows whose `+4` key equals the slot (`Competition_Slot_ListRegulations` `0x1414CE170`, through `Competition_KickoffConfig_CopyRow` `0x1414FDD60` and `Competition_KickoffConfig_RowCount` `0x1414FE1E0`, 165 rows). The test passes when the regulation is live and its type (`+0x308 >> 23 & 0x3F`) is below 16 with its bit set in 0xF9C2.\n4. Otherwise the first of 0x45, 0x46 and 0x49 (the European, Asian and Latin American pools); otherwise the first value; with no value, 0x7B.\n\nOn the dump's own entry table and regulation types the rule gives 659 of 659 slots. **confirmed** (data).\n\n**The rule's inputs from files** (**probable**: 659 of 659 slots on all four dumps):\n- Entry keys of a club: each kick-off table row gives its regulation a key (row `+4`). The regulation's competition (CompetitionRegulation.bin `+0x08`) lists its clubs in CompetitionEntry.bin.\n- Team.bin category 2, 6 and 7 add keys 69, 73 and 75. In the dump, keys 69, 73 and 75 are not CompetitionEntry lists.\n- A nation adds its confederation key from Country.bin. Country.bin has 214 records of 1,420 bytes; the country id is bits 10-18 and the confederation is byte 5. The key map is 2 to 0, 5 to 1, 6 to 2, 4 to 3, and both 3 and 7 to 4. **probable**, 102 of 102; only New Zealand has 7.\n- **League keys:** a key is a league key when one of its regulations has CompetitionRegulation.bin bits 143-144 non-zero.\n  - These bits are non-zero for exactly the 39 regulations whose in-memory type passes the league test, among the 199 live regulations. **probable** as a test; the field's own meaning is a guess.\n  - The 26 league keys are 7-18, 50-53, 88, 91, 94, 96, 99, 102, 105, 114, 119 and 122.\n\n**Other Team.bin mappings:**\n- Bit 671 is set on exactly the 102 nations, which are the teams with `+0x420` bits 26-28 = 1. **probable**: 659 of 659, but several other bits separate the same set, and this one sits among the team flags.\n- WORLD SELECTION holds class 2 (`0x8000000`) in memory. No Team.bin field gives it; the source is not known.\n- Stadium: the u16 at byte `0x3C` is copied for 656 teams. The 3 AFC clubs that hold 0 (71200, 71205, 71212) have 29 in memory. **guess** that an id outside the stadium table becomes 29.\n- Parent `+0x628`: invalid for all 659 teams at creation. **confirmed** (data).\n\n**Result** (`career_teams_test`):\n\n| Field | Equal | Of |\n|---|---|---|\n| order and handles | 659 | 659 |\n| kind | 659 | 659 |\n| national | 659 | 659 |\n| roll_skipped | 659 | 659 |\n| country | 659 | 659 |\n| tier | 659 | 659 |\n| stadium | 659 | 659 |\n| parent | 659 | 659 |\n| user | 659 | 659 |\n| non_club | 658 | 659 |\n| club ranking table | 1 | 1 |\n| rank bytes | 555 | 555 |\n\n- The one `non_club` difference is World Selection, and the test confines the difference to it.\n- Rosters, formation positions and slots are provisional (K3, K4).\n\n**Player record order** with the K2 team order (all 659 teams, each roster in PlayerAssignment squad order, then the rest in Player.bin order):\n- 16,081 of 17,289 positions agree. With the K1 clubs-only order it was 15,963.\n- With the reference's player membership, the team part (17,104 records) agrees exactly.\n- The remaining differences come from the clubless-player selection: the nations' rosters add 1,440 players who are in no club roster, from 98 nations, and the game keeps only some of them. The 185-record tail also differs.\n- The 1,934 clubless players are now listed in `BuiltPlayers::selection_unresolved`. No career operation may use them as confirmed members until the selection rule is read.\n\n**Code changes:**\n- `KickoffRow::key` (row `+4`) is read by the existing replayer.\n- `pesdb::Team` gains `national` and `stadium`; `CompetitionRegulation` gains `league_bits`; `pesdb::Country` and `parse_countries` are new.\n- `platform::is_ml_team` is added.\n- `CareerClub::rank` is added.\n- `career_player_files` takes the full team record order."
     }
   ]
 }
