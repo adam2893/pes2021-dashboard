@@ -1,5 +1,5 @@
 {
-  "updated": "2026-11-19",
+  "updated": "2026-11-20",
   "description": "Community research metadata, not game source or assets. Confidence labels are provisional.",
   "functions": [
     {
@@ -7082,7 +7082,7 @@
       "address": "0x141358bd0",
       "status": "reimplemented",
       "fidelity": "exact",
-      "implementation": "src/game/ml/ml_day.cpp run_day (event 0x32)",
+      "implementation": "src/game/ml/day_competitions.cpp day_icc_entrants (event 0x32)",
       "evidence": "probe 40 day 175: entrants and both groups equal as sets (tests/game/ml_day_replay_test.cpp); association key and the user league-champion branch are shortcuts",
       "source": "db/seeds/ports/competition.tsv"
     },
