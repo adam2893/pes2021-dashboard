@@ -7298,7 +7298,7 @@
       "address": "0x141366070",
       "status": "reimplemented",
       "fidelity": "behavioural",
-      "implementation": "src/game/ml/ml_day.cpp run_day (key 11 block)",
+      "implementation": "src/game/ml/day_competitions.cpp day_world_cup (key 11 block)",
       "evidence": "event key 11 only; keys 12 and 13 (regs 0x2c, 0x2e, 0x68, 0x29) not ported",
       "source": "db/seeds/ports/competition.tsv"
     },
