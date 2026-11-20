@@ -7519,6 +7519,14 @@
       "source": "db/seeds/ports/competition.tsv"
     },
     {
+      "address": "0x14150ec40",
+      "status": "reimplemented",
+      "fidelity": "exact",
+      "implementation": "src/game/ml/career_values.cpp creation_fame, fame_rank_term",
+      "evidence": "the fame formula and its k term; 17289 of 17289 creation players of probe 52 run 1 from game files (rating, class, PlayerAssignment club and the file-built club ranking), the state nibble from the dump (tests/game/career_values_test.cpp, FINDINGS 2026-11-20)",
+      "source": "db/seeds/ports/competition.tsv"
+    },
+    {
       "address": "0x1405b6800",
       "status": "reimplemented",
       "fidelity": "exact",

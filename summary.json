@@ -194,16 +194,16 @@
   ],
   "counts": {
     "named_addresses": 840,
-    "tests": 63,
-    "port_rows_total": 101,
+    "tests": 64,
+    "port_rows_total": 102,
     "port_rows_by_status": {
-      "reimplemented": 90,
+      "reimplemented": 91,
       "in host": 11,
       "verified": 0,
       "named": 0
     },
     "port_rows_by_fidelity": {
-      "exact": 66,
+      "exact": 67,
       "behavioural": 34,
       "free": 1
     },
