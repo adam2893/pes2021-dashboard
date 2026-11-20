@@ -3867,6 +3867,70 @@
       "source": "db/seeds/competition1.tsv"
     },
     {
+      "address": "0x141566150",
+      "name": "Finance_InitBudgets",
+      "confidence": "probable",
+      "reviewed": "no",
+      "evidence": "zeroes the transfer (+0x16ECBF4) and wage (+0x16ECC08) budgets, then adds: transfer = team +0x644 if >= 1, else 2 x the mean of the 16 first entries of the sorted squad values (own squad not loaned out plus players loaned out by this club), times the level table 0x14298A270[edit +0x1789487], min 10000; wage = squad wage sum + (16 first sorted wages / 16) x the same factor x (1.5 - tier/10 when tier != 0); callers Finance_UserClubSetup and Finance_InitClub (read 2026-11-20)",
+      "source": "db/seeds/competition1.tsv"
+    },
+    {
+      "address": "0x141569090",
+      "name": "Finance_Player_Value",
+      "confidence": "guess",
+      "reviewed": "no",
+      "evidence": "value of one player used by Finance_InitBudgets and scouting; calls Player_GetPositionRating, Player_GetField, 0x141566AD0, 0x141567300; not read past the call list (2026-11-20)",
+      "source": "db/seeds/competition1.tsv"
+    },
+    {
+      "address": "0x1415656b0",
+      "name": "Sort_IntRange_Recursive",
+      "confidence": "guess",
+      "reviewed": "no",
+      "evidence": "recursive sort of an int range (introsort shape) used by Finance_InitBudgets on the value and wage vectors; direction not read (2026-11-20)",
+      "source": "db/seeds/competition1.tsv"
+    },
+    {
+      "address": "0x14133df70",
+      "name": "Finance_ResetClubWithBudgets",
+      "confidence": "guess",
+      "reviewed": "no",
+      "evidence": "calls Finance_InitClub with the budget-reset flag set; only caller 0x1412F2FE0 (unread; reached from 0x1412F2EA0) (2026-11-20)",
+      "source": "db/seeds/competition1.tsv"
+    },
+    {
+      "address": "0x1415305f0",
+      "name": "MLUser_Player_InitTraining",
+      "confidence": "guess",
+      "reviewed": "no",
+      "evidence": "per user-squad player: fills the player's 0x170-byte entry under EditData +0x1676324 (+0x493EC area) with Random_Xorshift128_Below(10000) values per listed position and 10000/5000 marks from Player_GetField; called by Finance_UserClubSetup and the youth path (2026-11-20)",
+      "source": "db/seeds/competition1.tsv"
+    },
+    {
+      "address": "0x141589420",
+      "name": "MLUser_PlayerTable_Add",
+      "confidence": "guess",
+      "reviewed": "no",
+      "evidence": "adds a player to the 40-slot table at EditData +0x181C1B0 (0x18 each): player ref, +0x150 and +0x154 bytes of the player record, a date (today when the argument is the unset date) (2026-11-20)",
+      "source": "db/seeds/competition1.tsv"
+    },
+    {
+      "address": "0x141264880",
+      "name": "Competition_MLSetup_SelectRegulations",
+      "confidence": "guess",
+      "reviewed": "no",
+      "evidence": "first step of Competition_MLSetup_Run: walks the regulation table with Competition_ML_IsExcludedRegulationId, Competition_ML_SkipRegulation and Vector_Regulation_PushBack into the setup object (+0x1787A9C area); call list only (2026-11-20)",
+      "source": "db/seeds/competition1.tsv"
+    },
+    {
+      "address": "0x1412687a0",
+      "name": "Competition_MLSetup_BuildEntryTables",
+      "confidence": "guess",
+      "reviewed": "no",
+      "evidence": "second step of Competition_MLSetup_Run: calls EntryTable_Count and 0x141518610 on +0x1787B58; call list only (2026-11-20)",
+      "source": "db/seeds/competition1.tsv"
+    },
+    {
       "address": "0x1414bc860",
       "name": "Competition_RegulationTable_Find",
       "confidence": "probable",
@@ -6285,6 +6349,22 @@
       "source": "db/seeds/data/findings1.tsv"
     },
     {
+      "address": "0x14298a270",
+      "field1": "table",
+      "field2": "Finance_BudgetLevelFactor",
+      "field3": "probable",
+      "evidence": "no",
+      "source": "db/seeds/data/findings1.tsv"
+    },
+    {
+      "address": "0x143509800",
+      "field1": "global",
+      "field2": "Finance_BudgetTopCount",
+      "field3": "guess",
+      "evidence": "no",
+      "source": "db/seeds/data/findings1.tsv"
+    },
+    {
       "address": "0x1427fd430",
       "field1": "table",
       "field2": "PlayerSearch_Tries_L1",
@@ -7801,6 +7881,11 @@
       "date": "2026-11-20",
       "title": "exe tables read only from the pinned exe (Track C, Gate D part 1)",
       "body": "- Decision (owner, 2026-11-20): the Master League tables that are not in any data file stay read from the user's installed `PES2021.exe` as a file on the Mac (`src/platform/pc/exe_tables.cpp`). No VM and no running game are involved, and no values are copied into `src/`. A cache-file extraction step is deferred until another platform or build needs it (guide v4 section 18.2, Gate D).\n- `exe_is_pinned` accepts the file only when its size is 458,739,200 bytes and its 64-bit FNV-1a hash is `0x6b5bc306086d9c65` (the exe whose SHA-256 is in the first entry; FNV computed with a standalone C program over the same file). `read_ml_tables` returns empty tables (`complete()` false) for any other file. **confirmed** for the pinned exe: full suite 62 of 62 with no skips, so every exe-reading test got complete tables; `ml_deals_test` checks that a file other than the exe is refused. The hash costs about 0.6 s per call.\n- Five-season audit, metrics, state and log byte-identical to `audit5_c2`. Naming 722 of 722 cited, 0 gaps.\n- Not checked: that every table sits outside the protector-rewritten pages. The byte-identical audit and the earlier runtime replays make that **probable**.\n- Guide v4 adopted with edits: Gate A met; Gates B and C (referee hook and replay) now come before milestones 11 and 12, not before the UI; Gate D names the exe-table decision and the unread new-career setup; Gate E asks for the host's own versioned save format."
+    },
+    {
+      "date": "2026-11-20",
+      "title": "new-career start values, Mac-only pass (Track B, Gate D part 2)",
+      "body": "Static reads (Ghidra, `private-reference/gateD/dec/`) and offline checks of the three creation-time dumps `edit21/22/23.bin` (players and teams only, taken at the first `DrawPots` during creation) against the dt80 `Player.bin` and `Team.bin` (scripts in `private-reference/gateD/`). Plan and gap list: `docs/ml-new-career-2026-11-20.md`.\n\n- **Starting budgets.** `Finance_InitBudgets` (`0x141566150`, read) zeroes both budgets, then adds:\n  - transfer budget = team `+0x644` when it is at least 1, else twice the mean of the first 16 entries of the sorted squad values (`0x141569090` per player: the club's own players not loaned out, plus its players loaned out elsewhere), times `Finance_BudgetLevelFactor[edit +0x1789487]` (`0x14298A270` = {0.5, 0.7, 1.0, 5.0, 20.0}); 10,000 when not positive;\n  - wage budget = the squad's wage sum (+0x15C) plus (the first 16 sorted wages / 16) times the same factor, times 1.5 − tier/10 when the team's tier (`+0x63C` bits 5-8) is not 0; never below the wage sum.\n  **probable** (read; not compared with a fresh-career budget). The sort direction (`0x1415656B0`) is not read, so \"first 16\" is assumed to mean the 16 largest (guess). The divisor 16.0 sits in writable `.data` (`0x143509800`); only its file value is known.\n- It is reached from `Finance_UserClubSetup` (`0x140EF9580`, no static caller: virtual) and from `Finance_InitClub` (`0x1415698F0`) when its reset flag is set; the flag is set only by `0x14133DF70`, whose caller `0x1412F2FE0` is unread (guess: a change of club, not creation). `Finance_UserClubSetup` also sets the fans (`Club_FanCount`), the season value, clears the user-club tables, and for each user-squad player initialises a training entry with `Random_Xorshift128_Below(10000)` draws (`0x1415305F0`) and a 40-slot table at `+0x181C1B0` (`0x141589420`). **probable** (read).\n- **Team `+0x644`** (the preset transfer figure) is set for 392 of 659 clubs at creation, 360 distinct values, and is **not** a Team.bin field (no bit field matches 95 % of clubs). Its writer is unread.\n- **Team.bin mappings at creation (edit23, 659 teams, team id = handle >> 14):** tier `+0x63C` bits 5-8 = Team.bin bit 571, width 4, 659 of 659; stadium `+0x294` = Team.bin u16 at byte 0x3C, 656 of 659; country `+0x418` = bit 562, 659 of 659 (as before). **confirmed** (correlation over all clubs of one dump). Team kind `+0x41C` (36 values) and the formation index `+0x28C` (the record index) match no Team.bin field; the parent club `+0x628` is still unset at that point.\n- **Contracts at creation** (memory `+0x138` year, `+0x13A` month; Player.bin `+0x0C` YYYYMMDD): for 7,097 players whose file contract ends in 2021 or later, the value is the same in two runs and 6,401 of them follow end month ≤ 6 → 31 August of that year, else 31 January of the next year; 696 do not (unexplained). For the 10,068 players whose file contract has expired or is 0, 5,911 differ between the two runs: a random new length. 124 have no contract. **confirmed** for the data (edit21 against edit23); the rules are **probable**; the drawing code is unread.\n- **Wages** (`+0x15C`) are non-zero for every player and identical in edit21 and edit23, so they are computed from the player, not drawn; the formula is unread (`Finance_Player_WageValue` `0x1415681C0` is a candidate, not checked).\n- **Other player state at creation:** stamina 100, condition 2 and 0 days out for every player; morale (`+0x13C` bits 18-24) is 55, 60, 40 or 80. `+0x144` differs between runs for 3,730 players (meaning unknown). **confirmed** (data).\n- **Generator:** `Random_Xorshift128_Init` (`0x1415870F0`) seeds once per process from a clock (FINDINGS 2026-11-04), and the creation code draws from that same generator. So two careers never match, and an exact replay of a fresh career needs the generator state captured when creation starts. The host may seed its own. **probable**.\n- **Setup order** (`Competition_MLSetup_Run` `0x141267040`, read for its call list): regulation selection (`0x141264880`), entry tables (`0x1412687A0`), team handles and parents, `0x141269EF0`, `MLSetup_LoadLoans`, `0x141269400`, the Original Lineup / mode-10 branch with `Team_AutoSelectLineup`, `Competition_MLSetup_BuildRankings`, the transfer steps, `0x14126E970`, `0x14126FF30`, `Competition_MLSetup_BuildTeams`, `Competition_RegulationTable_RebuildFromList`. Where `Finance_UserClubSetup` and the first `BuildSeason` fall in this order is not known.\n- Not checked: whether the game changes any `MlTables` value at run time."
     }
   ]
 }
