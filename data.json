@@ -7527,6 +7527,30 @@
       "source": "db/seeds/ports/competition.tsv"
     },
     {
+      "address": "0x141569090",
+      "status": "reimplemented",
+      "fidelity": "behavioural",
+      "implementation": "src/game/ml/career_values.cpp finance_player_value",
+      "evidence": "stored branch exact while the exponent is 0 or the ratio 1 (always at creation; f, called through a run-time pointer, is std::pow otherwise: not identified); formula branch provisional, read from the disassembly; 61 of 61 probe 52 squad values from game files, 5 of them by the formula (tests/game/career_values_test.cpp, FINDINGS 2026-11-20)",
+      "source": "db/seeds/ports/competition.tsv"
+    },
+    {
+      "address": "0x141566ad0",
+      "status": "reimplemented",
+      "fidelity": "exact",
+      "implementation": "src/game/ml/career_values.cpp base_value",
+      "evidence": "read; 5 of 5 formula-branch values of probe 52",
+      "source": "db/seeds/ports/competition.tsv"
+    },
+    {
+      "address": "0x141567300",
+      "status": "reimplemented",
+      "fidelity": "behavioural",
+      "implementation": "src/game/ml/career_values.cpp value_factor",
+      "evidence": "read from the disassembly (sum order kept); star terms passed in (0 at creation); 5 of 5 formula-branch values of probe 52",
+      "source": "db/seeds/ports/competition.tsv"
+    },
+    {
       "address": "0x1405b6800",
       "status": "reimplemented",
       "fidelity": "exact",
