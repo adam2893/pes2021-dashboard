@@ -3877,9 +3877,9 @@
     {
       "address": "0x141569090",
       "name": "Finance_Player_Value",
-      "confidence": "guess",
+      "confidence": "probable",
       "reviewed": "no",
-      "evidence": "value of one player used by Finance_InitBudgets and scouting; calls Player_GetPositionRating, Player_GetField, 0x141566AD0, 0x141567300; not read past the call list (2026-11-20)",
+      "evidence": "value of one player (Finance_InitBudgets, scouting): when +0x174 > 0 and bytes +0x178 (age when stored) and +0x179 (rating when stored) are set, trunc(f(rating / +0x179) x +0x174) through an indirect runtime call (guess powf), falling through when <= 100; else trunc(Finance_Player_ValueFactor x (27 / age)^2 x Finance_Player_BaseValue), clamped to [1, 99999900]. Stored branch confirmed at creation (56 of 56 logged values), formula branch 5 of 5 (probe 52, 2026-11-20)",
       "source": "db/seeds/competition1.tsv"
     },
     {
@@ -3928,6 +3928,62 @@
       "confidence": "guess",
       "reviewed": "no",
       "evidence": "second step of Competition_MLSetup_Run: calls EntryTable_Count and 0x141518610 on +0x1787B58; call list only (2026-11-20)",
+      "source": "db/seeds/competition1.tsv"
+    },
+    {
+      "address": "0x141566ad0",
+      "name": "Finance_Player_BaseValue",
+      "confidence": "confirmed",
+      "reviewed": "no",
+      "evidence": "base of the player value by rating at the registered position: 50r below 66; 9675r - 625625 to 75; 26000r - 1850000 to 85; 81850r - 6597250 from 86 (read 2026-11-20; 5 of 5 formula-branch values of probe 52)",
+      "source": "db/seeds/competition1.tsv"
+    },
+    {
+      "address": "0x141567300",
+      "name": "Finance_Player_ValueFactor",
+      "confidence": "probable",
+      "reviewed": "no",
+      "evidence": "factor of the player value: Finance_PositionValueAdj[registered position] + 1 + (fame - 1000) / 10000 + (club rank byte - 5) / 20 + (5 - tier) / 20 when tier != 0 + (Player_ClassCapped - 3) / 15 + Finance_Player_StarTerms + +0x149 / 500, single precision in that order, clamped to [0.1, 100]; rank and tier only for a valid team (read 2026-11-20)",
+      "source": "db/seeds/competition1.tsv"
+    },
+    {
+      "address": "0x141517bc0",
+      "name": "Player_ClassCapped",
+      "confidence": "confirmed",
+      "reviewed": "no",
+      "evidence": "Player_GetField 0x30 (class) capped at 7; 0 for an invalid ref; used by Team_ComputeStrength, the wage and value factors and the fame formula (read 2026-11-20)",
+      "source": "db/seeds/competition1.tsv"
+    },
+    {
+      "address": "0x141568d00",
+      "name": "Finance_Player_StarTerms",
+      "confidence": "probable",
+      "reviewed": "no",
+      "evidence": "adds terms for class >= 5 players (state nibble not 1 or 3) found in six award lists at EditData +0x1824478 (0x5F6 dwords each); the lists hold no player at creation, so 0 there (read 2026-11-20, partly)",
+      "source": "db/seeds/competition1.tsv"
+    },
+    {
+      "address": "0x14150ec40",
+      "name": "Player_CreationFame",
+      "confidence": "confirmed",
+      "reviewed": "no",
+      "evidence": "fame (+0x13C bits 6-17) = max(0, 50 x (k + 2 x (Player_ClassCapped - 12)) + 20 x rating), k = club rank byte (capped 9) for state nibble 0 with a team, 5 for state 1, 2 for states 2 and 6, else 0; callers store it only when <= 3000 (read 2026-11-20; 17289 of 17289 players of probe 52 run 1)",
+      "source": "db/seeds/competition1.tsv"
+    },
+    {
+      "address": "0x1413209f0",
+      "name": "Competition_MLSetup_SetFame",
+      "confidence": "confirmed",
+      "reviewed": "no",
+      "evidence": "from Competition_MLSetup_BuildRankings: Player_CreationFame for every player record, stored into +0x13C bits 6-17 when <= 3000 (read 2026-11-20)",
+      "source": "db/seeds/competition1.tsv"
+    },
+    {
+      "address": "0x140af2da0",
+      "name": "Player_LoadDerivedFields",
+      "confidence": "probable",
+      "reviewed": "no",
+      "evidence": "player load step: sets field 0x30 (class) from rating buckets (65-69 1, 70-74 2, 75-79 3, 80-84 4, 85-89 5, 90-94 6, 95+ 7), +0x178 = age, +0x179 = rating, then fame by Player_CreationFame (read 2026-11-20, partly)",
       "source": "db/seeds/competition1.tsv"
     },
     {
@@ -6397,6 +6453,22 @@
       "source": "db/seeds/data/findings1.tsv"
     },
     {
+      "address": "0x14298a450",
+      "field1": "table",
+      "field2": "Finance_PositionValueAdj",
+      "field3": "confirmed",
+      "evidence": "no",
+      "source": "db/seeds/data/findings1.tsv"
+    },
+    {
+      "address": "0x1425c50fc",
+      "field1": "const",
+      "field2": "Float_27_1425C50FC",
+      "field3": "confirmed",
+      "evidence": "no",
+      "source": "db/seeds/data/findings1.tsv"
+    },
+    {
       "address": "0x1427fd430",
       "field1": "table",
       "field2": "PlayerSearch_Tries_L1",
@@ -7936,6 +8008,11 @@
       "date": "2026-11-20",
       "title": "starting budgets ported, `ml::initial_budgets` (Track C, Gate D)",
       "body": "`src/game/ml/initial_budgets.{h,cpp}` reimplements `Finance_InitBudgets` (`0x141566150`), ported from its disassembly rather than from the probe numbers:\n- the wage sum is a 32-bit wrap-around sum of all squad wages taken before sorting; both arrays are then sorted largest first;\n- transfer: the preset `+0x644` when at least 1, otherwise `2 × (sum of the 16 largest values / 16)` with signed integer division (`CDQ`, `AND 0xF`, `ADD`, `SAR 4`); then `CVTDQ2PS`, `MULSS` by the level factor, `CVTTSS2SI` truncation, 10,000 when the result is not positive, clamped to ±99,999,999;\n- wage: the sum of the 16 largest wages converted to float and divided by 16.0; tier 0 multiplies by the factor; any other tier multiplies by `((1.0 − tier / 10.0) + 0.5) × factor` in that operation order (constants `0x14256AE1C` = 1.0, `0x142588210` = 10.0, `0x142565600` = 0.5, all single precision); the wage sum, as float, is added; the result is truncated, raised to the wage sum when below it, and clamped.\n\nFused multiply-add is disabled in the file (`FP_CONTRACT OFF`) so each step rounds as the game's separate SSE instructions do; float-to-int conversion out of range gives INT_MIN as `CVTTSS2SI` does.\n\n**Exact (confirmed)**: `tests/game/initial_budgets_test.cpp` reproduces the three probe 52 careers from the logged squad arrays (Arsenal twice, 1,118,233 and 876,989, the preset branch; Vasco da Gama, 25,164 and 120,664, the computed branch), also when the input is not sorted. Branches no probe reached are tested against the code: the other level factors, the clamp, the 10,000 floor, the integer mean, tier 0 and tier 15.\n\nThe function draws nothing and holds no state. It is not called by the day simulation.\n\n**Not covered**:\n- The inputs: the squad values (`Finance_Player_Value` `0x141569090`) and wages are not ported, and the writer of `+0x644` is unread. So the function cannot yet give a budget for any club from the game files.\n- A squad of fewer than 16 players: the game reads past the end of its arrays, and the port counts the missing entries as 0 (never observed).\n\n**Open investigation (blocks calling the new-career constructor faithful across league calendars):** in the Vasco da Gama career (start 1 January 2020), about 13,000 players differ from the Arsenal career (start 1 July 2020) in the ability words `+0x0` to `+0x18`, and 505 clubs differ in the lineup block `+0x14C` to `+0x2EC`. Not investigated yet (docs/ml-new-career-2026-11-20.md, item J1)."
+    },
+    {
+      "date": "2026-11-20",
+      "title": "inputs of the starting budgets traced to installed data (Track B, Gate D)",
+      "body": "Static reads (Ghidra, `private-reference/gateD/dec`, `dec2`) and offline checks against the probe 52 creation dumps (run 1 at 1 July 2020 unless noted; scripts `private-reference/gateD/*_check.cpp`, `field_scan.py`, `disp_scan.py`).\n\n- **Team preset `+0x644` = Team.bin u32 at byte 0x34, low bits**: 659 of 659 clubs. Widths 22, 23 and 24 all fit (bits 22 and 23 are 0 in all 669 records); the top byte holds another field of unknown meaning, which is why earlier bit-field scans missed it. The preset branch of `Finance_InitBudgets` therefore runs exactly for clubs whose file field is non-zero. **confirmed** (data); the copying code is not read. The only code store to `+0x644` in the setup, in `0x141269EF0`, zeroes it on a newly initialised team record.\n- **Club ranking byte `+0xE`** (EditData `+0x16705A8`, 16-byte records) is a bucket of the rank: 1-10 → 9, 11-30 → 8, 31-60 → 7, 61-100 → 6, then one less per 60 ranks to 341-400 → 1, above 400 → 0. 555 of 555 clubs. **confirmed** (data); writer not read.\n- **Fame (`+0x13C` bits 6-17) at creation** is `Player_CreationFame` (`0x14150EC40`), stored for every player by `Competition_MLSetup_SetFame` (`0x1413209F0`, from `Competition_MLSetup_BuildRankings`) when at most 3000: `max(0, 50 × (k + 2 × (min(class, 7) − 12)) + 20 × rating)`, rating at the registered position, k = the club's rank byte capped at 9 when the state nibble (`+0x13C` bits 0-3) is 0 and the player has a team, 5 for state 1, 2 for states 2 and 6, else 0. 17,289 of 17,289 players; for 792 of them k is that of the `+0x160` club (the club before the setup's loan and transfer steps). **confirmed** (read and data).\n- **State nibble `+0x13C` bits 0-3**: non-zero only for players without a team (1: 1,146 players, 2: 92, 3: 32, 4: 56). Not a Player.bin field. Its source is unknown; it affects fame only for those 1,326 players. **confirmed** (data), meaning guess (1 = free agent).\n- **Player.bin mappings (all 17,289 players):** byte `+0x149` = Player.bin bit 184, width 8; the stored value `+0x174` = bits 160 to 183; the stored wage `+0x170` = bits 192 to 215 (29 non-zero). **confirmed** (data). At creation `+0x178` = age and `+0x179` = rating at the registered position for the 17,109 records that have them (`Player_LoadDerivedFields` `0x140AF2DA0`, read in part).\n- **Creation wages** are the existing wage rule (`Finance_Player_WageValue`, `finance.h player_value`) with these inputs: 17,289 of 17,289, the stored wage for the 29 `+0x170` records, the `+0x160` club for 779 players, no team terms for 44. **confirmed**.\n- **Player value** `Finance_Player_Value` (`0x141569090`), read from the disassembly:\n  - Stored branch: when `+0x174` > 0 and `+0x178`, `+0x179` are set, trunc(f(rating / `+0x179`) × `+0x174`) where f is reached through a run-time pointer (`0x1415A17CE`, guess `powf`); a result of 100 or less falls through. At creation the ratio is 1, so the value is `+0x174`.\n  - Formula branch: `Finance_Player_BaseValue` (`0x141566AD0`: 50r below 66; 9,675r − 625,625 to 75; 26,000r − 1,850,000 to 85; 81,850r − 6,597,250) × `Finance_Player_ValueFactor` (`0x141567300`) × (27 / age)² (`0x1425C50FC` = 27.0), truncated and clamped to [1, 99,999,900]. The factor is `Finance_PositionValueAdj[registered position]` (`0x14298A450`: GK −0.6, defenders 0, midfielders 0.1, wingers and forwards 0.15) + 1 + (fame − 1000)/10000 + (rank byte − 5)/20 + (5 − tier)/20 when the tier is not 0 + (min(class, 7) − 3)/15 + `Finance_Player_StarTerms` (`0x141568D00`, 0 at creation: its six award lists hold nobody) + `+0x149`/500, in single precision in that order, clamped to [0.1, 100].\n  - Probe 52: the 61 logged squad values (Arsenal 31, Vasco da Gama 30) equal this exactly; 56 come from the stored branch and 5 from the formula. **confirmed** for the stored branch at creation, **probable** for the formula branch (5 cases).\n- **Budget squad**: the club's roster members without `+0x14A` bit 0, then every record with that bit whose `+0x160` is the club (its players loaned out). Needed for Vasco's 30 of 30. **confirmed** (read and data)."
     }
   ]
 }
