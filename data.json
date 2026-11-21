@@ -4971,6 +4971,46 @@
       "source": "db/seeds/tooling1.tsv"
     },
     {
+      "address": "0x1403842a0",
+      "name": "Json_GetMember",
+      "confidence": "probable",
+      "reviewed": "no",
+      "evidence": "(json value, const char* key) -> member value; the match-constant readers call it 3,285 times; type byte at value +8 (disassembly 2026-11-21)",
+      "source": "db/seeds/tooling1.tsv"
+    },
+    {
+      "address": "0x1403841e0",
+      "name": "Json_GetIndex",
+      "confidence": "probable",
+      "reviewed": "no",
+      "evidence": "(json value, index in edx) -> element value; thunk to 0x1403841F0 (disassembly 2026-11-21)",
+      "source": "db/seeds/tooling1.tsv"
+    },
+    {
+      "address": "0x140384750",
+      "name": "Json_ToDouble",
+      "confidence": "probable",
+      "reviewed": "no",
+      "evidence": "json value -> double in xmm0 by its type byte; the readers store the result with cvtsd2ss as a 4-byte float (2026-11-21)",
+      "source": "db/seeds/tooling1.tsv"
+    },
+    {
+      "address": "0x140384810",
+      "name": "Json_ToInt",
+      "confidence": "guess",
+      "reviewed": "no",
+      "evidence": "json value -> integer; the readers store the result as a 4-byte integer (294 fields) (2026-11-21)",
+      "source": "db/seeds/tooling1.tsv"
+    },
+    {
+      "address": "0x1403846d0",
+      "name": "Json_ToBool",
+      "confidence": "guess",
+      "reviewed": "no",
+      "evidence": "json value -> bool through a jump table on the type byte; the readers store one byte (265 fields) (2026-11-21)",
+      "source": "db/seeds/tooling1.tsv"
+    },
+    {
       "address": "0x140fb1a30",
       "name": "PlayerSearch_Criteria_QuotaSimilarRating",
       "confidence": "probable",
@@ -8743,6 +8783,11 @@
       "date": "2026-11-21",
       "title": "K3 cleanup investigation: loan ends and the national squad pick (Track B, static plus captured dumps)",
       "body": "Bounded, read-only. No implementation change.\n\n**Loan end, where it is written:**\n- `Pesdb_LoadPlayerRecord` `0x1414F8420` (called by `0x1414F4500` in the pesdb load sequence) converts a Player.bin record into the in-memory player. File +0x0C becomes the contract end (+0x138), file +0x10 the loan end (+0x16C), file +4 the loan owner (+0x160). Dates are decimal YYYYMMDD turned into the date word (year | month << 16 | day << 24) with only the day clamped to the month length (28, 30 for April, June, September, November, else 31). **probable** (disassembly). No half-year snap at load.\n- `Player_LoadDerivedFields` and `MLSetup_LoadLoans` write only the sentinel `Competition_SeasonEvents_LastBumpDate` (`0x1437F47F8`, 0xFFFF in the dumps): the loader cancels loans that way and does not compute dates. `0x141263AC0` clears one player's loan (the ref at EditData `+0x1819540`) for `Competition_RegulationTable_RebuildFromList`.\n- `MLTransfer_LoanReturns_Run` returns loans whose end is before the ML date `+0x178946C`, which `Competition_MLSetup_BuildRankings` sets to 2020-08-01 in its August-start branch.\n\n**The snap, measured** (probe 54 at `Competition_MLSetup_Run` entry against probe 52 at creation, every loanee): every loan the game keeps ends at the close of its half-year in the same year (11-30, 12-10, 12-19 to 12-31; 05-31 to 06-30; 12-31 and 06-30 unchanged). The K3 shortcut describes this outcome; its writer is not found (the setup's transfer passes `0x140F0A230`, `0x140F1DEB0`, `0x140F31E50` run through indirect calls the static graph does not follow).\n\n**The two exceptions are not the snap:**\n- 117642 is the only kept loan whose year changes (2021-12-31 to 2020-12-31); two other 2021-12-31 loans keep theirs, and the owner is unchanged. It fits a loan re-made in the setup with the next window close as its end. **guess**\n- 61470 (end 2020-12-31, not before 2020-08-01) is returned, with the club he left as his loan owner: a recall-type move, not the date rule. **guess**\n- Both point at the setup's transfer passes. Closing them needs either a creation probe with write breakpoints on +0x16C / +0x160 of three players (an 11-30 loan, 117642, 61470), or the K6 transfer work.\n\n**National squads:**\n- `MLSetup_PickNationalSquads` `0x141318D20` calls `NationalSquad_Pick` `0x1413162E0` (3.7 KB, 27 callees, 91 reachable functions) once per team of class 0x4000000, then `0x1415234E0` on every player. The pick clears the roster with `Team_ClearRoster` `0x1412FD200`, appends with `Team_Squad_Append`, sets each player's slot and runs `Team_AutoSelectLineup`; it uses `Date_Today`, `Date_DaysBetween`, the game-mode manager and eight indirect calls. The K3 site `0x1412FD22E` is inside `Team_ClearRoster`: the same builder, not a later step.\n- `0x141318100` (seeded `NationalSquad_Build`) is a different routine: the user's national squad (EditData +0x1798AC8, 23 refs; players with state 4 replaced). The seed is corrected.\n- The probe 56 snapshot is probably enough for an oracle (the pick recomputes from player data and writes the rosters); the pick's first argument is an object made by `0x141318C30`, so its constructor has to run under emulation too. Not tried. Scope: a milestone of about the bench's size or larger."
+    },
+    {
+      "date": "2026-11-21",
+      "title": "match constant schemas, first pass (Track B, tooling; details in docs/gameplay-discovery-2026-11-21.md)",
+      "body": "- The match-constant readers (`0x141E50000`-`0x141EA0000`) parse each module's development JSON with `Json_GetMember` `0x1403842A0`, `Json_GetIndex` `0x1403841E0` and three conversions (`Json_ToDouble` `0x140384750` stored as a float, `Json_ToInt` `0x140384810`, `Json_ToBool` `0x1403846D0`). The catalogue (`src/tools/analysis/json_schema.py`) lists 1,927 field stores in 84 readers with path, type, width and offset. **confirmed** mechanics (disassembly).\n- A shipped `.o` section of `common/match/constant/*.bin` is the runtime struct minus its first 8 bytes, padded to 16: 515 of 515 typed fields of 18 name-assigned sections pass. **confirmed** for those 18.\n- 28 of 227 sections are assigned with independent evidence (size, types, names); the rest need array and sub-structure handling in the walker (deferred).\n- Correction to the discovery note of the same day: `ball.o` and the other sections said to be missing are shipped (an early parse clipped their names)."
     }
   ]
 }
