@@ -341,9 +341,9 @@
     {
       "address": "0x141266ab0",
       "name": "Competition_MLSetup_MapAllTeams",
-      "confidence": "probable",
+      "confidence": "confirmed",
       "reviewed": "no",
-      "evidence": "walks setup regulation list (setup+0x48, stride 0x314); kind 7 clears teams; else maps each valid team through MapTeam and writes it with SetTeamAt",
+      "evidence": "walks setup regulation list (setup+0x48, stride 0x314); kind 7 clears teams; else a record of type 1, 6 or 11 (0x1414CF7E0) maps each valid team through MapTeam and writes it with SetTeamAt, every other record gets count 0 and 48 invalid handles (read 2026-11-22; probe 57 199 of 199 lists)",
       "source": "db/seeds/competition1.tsv"
     },
     {
@@ -3925,9 +3925,9 @@
     {
       "address": "0x1412687a0",
       "name": "Competition_MLSetup_BuildEntryTables",
-      "confidence": "guess",
+      "confidence": "confirmed",
       "reviewed": "no",
-      "evidence": "second step of Competition_MLSetup_Run: calls EntryTable_Count and 0x141518610 on +0x1787B58; call list only (2026-11-20)",
+      "evidence": "second step of Competition_MLSetup_Run: a setup record of kind 1, 5 or 6 and league type whose entry key (0x1414CB2E0) is below 0x7B takes that key's list (0x141518610) and its count (read 2026-11-22; probe 57)",
       "source": "db/seeds/competition1.tsv"
     },
     {
@@ -4269,9 +4269,9 @@
     {
       "address": "0x14126f7e0",
       "name": "Competition_RegulationTable_RebuildFromList",
-      "confidence": "guess",
+      "confidence": "confirmed",
       "reviewed": "no",
-      "evidence": "copies each 0x314-byte record of the vector at obj+0x48..0x50 into slot i of edit+0xc12e9c (FUN_141261ca0), per-kind follow-ups, then recount; called on DAT_1436fed48 from 0x141267040 (FINDINGS 2026-11-03 199 vs 212)",
+      "evidence": "copies the setup records into the live table in order (0x141261CA0); lead records (kind 1 without parent, 5, 6) not of type 32 get w304 bit 8; types 7/9/16 and 8/10/17 append their linked type-6 regulation's teams (0x1414CA4C0) unless a no-link type; then player steps and the user division swap (read 2026-11-22; probe 57 199 of 199)",
       "source": "db/seeds/findings1.tsv"
     },
     {
@@ -4617,6 +4617,118 @@
       "reviewed": "no",
       "evidence": "Player.bin record -> in-memory player: file +0x0C -> contract end +0x138, +0x10 -> loan end +0x16C (YYYYMMDD to the date word, day clamped to the month), +4 -> loan owner +0x160, name strings, +0x144 nationality via a table lookup (disassembly 2026-11-21)",
       "source": "db/seeds/formation1.tsv"
+    },
+    {
+      "address": "0x1414cf7e0",
+      "name": "Competition_Regulation_KeepsSetupTeams",
+      "confidence": "confirmed",
+      "reviewed": "no",
+      "evidence": "(regulation id) live type (+0x308 >> 23 & 0x3F) below 12 with its bit set in 0x842 (types 1, 6, 11); MapAllTeams maps the lists of these and clears every other (read 2026-11-22; probe 57 BuildSeason entry 199 of 199 lists)",
+      "source": "db/seeds/k5b1.tsv"
+    },
+    {
+      "address": "0x1414cb2e0",
+      "name": "Competition_Regulation_EntryKey",
+      "confidence": "probable",
+      "reviewed": "no",
+      "evidence": "(regulation id) kick-off table row +4 key through Competition_KickoffConfig_Get, 0x7B when the regulation has no row (read 2026-11-22)",
+      "source": "db/seeds/k5b1.tsv"
+    },
+    {
+      "address": "0x1414cf0f0",
+      "name": "Competition_Regulation_IsType32",
+      "confidence": "probable",
+      "reviewed": "no",
+      "evidence": "(regulation id) live type == 32 (+0x308 & 0x1F800000 == 0x10000000); RebuildFromList leaves such lead records untouched (read 2026-11-22)",
+      "source": "db/seeds/k5b1.tsv"
+    },
+    {
+      "address": "0x1414cf460",
+      "name": "Competition_Regulation_IsLinkTypeA",
+      "confidence": "probable",
+      "reviewed": "no",
+      "evidence": "(regulation id) live type 7, 9 or 16 (mask 0x10280) (read 2026-11-22)",
+      "source": "db/seeds/k5b1.tsv"
+    },
+    {
+      "address": "0x1414cf6c0",
+      "name": "Competition_Regulation_IsLinkTypeB",
+      "confidence": "probable",
+      "reviewed": "no",
+      "evidence": "(regulation id) live type 8, 10 or 17 (mask 0x20500) (read 2026-11-22)",
+      "source": "db/seeds/k5b1.tsv"
+    },
+    {
+      "address": "0x1414ca4c0",
+      "name": "Competition_Regulation_FindLinkedType6",
+      "confidence": "probable",
+      "reviewed": "no",
+      "evidence": "(regulation id) itself when of live type 6, else the first id of its kick-off row's link list (+8 u16 pointer, +0x10 count) that is live with type 6; 0xFFFF none (read 2026-11-22)",
+      "source": "db/seeds/k5b1.tsv"
+    },
+    {
+      "address": "0x1414cfbc0",
+      "name": "Competition_Regulation_IsNoLinkType",
+      "confidence": "probable",
+      "reviewed": "no",
+      "evidence": "(regulation id) live type in the 8-entry table 0x142979EB8 (read 2026-11-22)",
+      "source": "db/seeds/k5b1.tsv"
+    },
+    {
+      "address": "0x141518610",
+      "name": "Competition_EntryList_ForKey",
+      "confidence": "probable",
+      "reviewed": "no",
+      "evidence": "(out vector, key) entry-table mode +0x183789C: 0 = the key's ids as id << 14 (-1 from 0x40000), key 0x1A adds keys 0xE 0xD 0x49 0x4A, 0x1F adds 7 and 0x32; 2 = by game mode from live lists; else handles through Competition_Entries_FindTeamByHandleId (read 2026-11-22)",
+      "source": "db/seeds/k5b1.tsv"
+    },
+    {
+      "address": "0x141261ca0",
+      "name": "Competition_Regulation_CopyRecord",
+      "confidence": "probable",
+      "reviewed": "no",
+      "evidence": "field-wise copy of a 0x314-byte regulation record, team handles masked per word (read 2026-11-22)",
+      "source": "db/seeds/k5b1.tsv"
+    },
+    {
+      "address": "0x141269090",
+      "name": "MLSetup_CopyRecordsToEditData",
+      "confidence": "probable",
+      "reviewed": "no",
+      "evidence": "RebuildFromList callee: copies the setup's player (0x17C), team (0x690) and 600-byte records into EditData; no regulation writes (read 2026-11-22)",
+      "source": "db/seeds/k5b1.tsv"
+    },
+    {
+      "address": "0x14126b340",
+      "name": "MLSetup_CapState3Players",
+      "confidence": "probable",
+      "reviewed": "no",
+      "evidence": "RebuildFromList callee: when more than 40 players have state nibble 3, sorts them by rating and frees all past the 40th (state 2, no team); no regulation writes (read 2026-11-22)",
+      "source": "db/seeds/k5b1.tsv"
+    },
+    {
+      "address": "0x141322aa0",
+      "name": "Competition_Ranking_AssignNationRanks",
+      "confidence": "confirmed",
+      "reviewed": "no",
+      "evidence": "sorts the national ranking entries (+0x167348C, count +0x1674D8C) with 0x140B103F0 and comparator 0x1413222E0, writes rank i + 1; ml::build_nation_ranking reproduces probe 57 from its stored strengths (read 2026-11-22)",
+      "source": "db/seeds/k5b1.tsv"
+    },
+    {
+      "address": "0x140b103f0",
+      "name": "Sort_RankingEntries",
+      "confidence": "probable",
+      "reviewed": "no",
+      "evidence": "std::sort of 16-byte ranking entries with a comparator (called by 0x141322AA0); same order as competition::rank_clubs on probe 57 (2026-11-22)",
+      "source": "db/seeds/k5b1.tsv"
+    },
+    {
+      "address": "0x1414ca080",
+      "name": "Competition_Regulation_SetTeamCount",
+      "confidence": "confirmed",
+      "reviewed": "no",
+      "evidence": "+0x308 bits 16-22 = count & 0x7F (decompile; emulation K5a)",
+      "source": "db/seeds/k5b1.tsv"
     },
     {
       "address": "0x140a48a10",
@@ -7549,6 +7661,14 @@
       "source": "db/seeds/data/formation1.tsv"
     },
     {
+      "address": "0x142979eb8",
+      "field1": "table",
+      "field2": "Competition_Regulation_NoLinkTypes",
+      "field3": "confirmed",
+      "evidence": "no",
+      "source": "db/seeds/data/k5b1.tsv"
+    },
+    {
       "address": "0x14297d290",
       "field1": "table",
       "field2": "Competition_Regulation_PotKeyTable",
@@ -8807,6 +8927,38 @@
       "source": "db/seeds/ports/loadtables1.tsv"
     },
     {
+      "address": "0x14126f7e0",
+      "status": "reimplemented",
+      "fidelity": "exact",
+      "implementation": "src/game/ml/regulation_setup.cpp build_creation_regulations",
+      "evidence": "probe 57 BuildSeason entry: 199 of 199 records, reg_words, team lists, counts and league keys equal (ctest construct_world); user division swap (K8) and player steps not in scope",
+      "source": "db/seeds/ports/loadtables1.tsv"
+    },
+    {
+      "address": "0x1412687a0",
+      "status": "reimplemented",
+      "fidelity": "exact",
+      "implementation": "src/game/ml/regulation_setup.cpp build_creation_regulations",
+      "evidence": "probe 57: every league list equal (entry-table mode 0 branch of 0x141518610 only)",
+      "source": "db/seeds/ports/loadtables1.tsv"
+    },
+    {
+      "address": "0x141266ab0",
+      "status": "reimplemented",
+      "fidelity": "exact",
+      "implementation": "src/game/ml/regulation_setup.cpp build_creation_regulations",
+      "evidence": "probe 57: lists kept for types 1, 6, 11 with career handles, cleared otherwise; the user-club special mapping is K8",
+      "source": "db/seeds/ports/loadtables1.tsv"
+    },
+    {
+      "address": "0x141322aa0",
+      "status": "reimplemented",
+      "fidelity": "exact",
+      "implementation": "src/game/ml/regulation_setup.cpp build_nation_ranking",
+      "evidence": "probe 57: 102 of 102 ranks from the dump's stored strengths; strengths need the national squads (K4), so the World's ranking stays dump-sourced",
+      "source": "db/seeds/ports/loadtables1.tsv"
+    },
+    {
       "address": "0x1405b6800",
       "status": "reimplemented",
       "fidelity": "exact",
@@ -9366,6 +9518,11 @@
       "date": "2026-11-21",
       "title": "K5w constructor integration: the hybrid World (Track C)",
       "body": "`platform::construct_world` assembles the World from K1–K5a and declares every other field group as dump-sourced, with the stage that replaces it. Plan section 17 has the field-by-field split.\n- On probe 52 (Arsenal run 1), 44 of 101 `compare_worlds` fields are reconstructed (43.6%) and 84 of 101 equal the reference (83.2%).\n- The 46 dump-sourced fields are copies. The 11 stand-ins are the stages' declared placeholders.\n- The only constructed differences are the documented K3/K4 ones.\n- The World validates: handles, roster and slot indices, match teams.\n- `pes_host --construct` prints the same report, marked as a hybrid World.\n- No new game addresses. **confirmed** as a reporting result. This is not a claim of a native constructor."
+    },
+    {
+      "date": "2026-11-22",
+      "title": "K5b, the setup's regulation table and the national ranking (Track C, runtime plus static)",
+      "body": "Probe 57 (Arsenal, Club Team Lineup, default settings) wrote one EditData dump each at `Competition_MLSetup_Run` entry, `Competition_RegulationTable_RebuildFromList` entry, `Competition_Season_BuildSeason` entry and the first `ML_DayDriver` entry. These dumps separate the setup (K5b) from the season build (K6) exactly.\n\n**Phase split (confirmed, probe 57):**\n- **Load table:** at Run entry it equals probe 54 byte for byte.\n- **Setup changes (Run → BuildSeason entry):** only team lists (93 records), the +0x308 count bits (76) and w304 bit 8 (39).\n- **Season build changes (BuildSeason → creation boundary):** all of w300 bits 19–24 (54 records), +0x2FC (76) and the +0x88 lists (54). It also fills 43 more lists and sets 43 more w304 bits. These belong to K6.\n- **RebuildFromList entry:** the live table is blank (ids −1, count 214). RebuildFromList fills it in order, so a linked lookup sees only records already copied.\n- **Run-to-run variance:** the creation boundaries of probe 57 and probe 52 run 1 differ in 26 regulation team lists. The setup states do not. Those 26 differences come from the season build's draws.\n\n**The setup rule (confirmed: read, and equal to probe 57 on 199 of 199 records):**\n1. Selection: `competition::ml_keeps_regulation` on the load table, by id and live type.\n2. `Competition_MLSetup_BuildEntryTables` `0x1412687A0` fills league records.\n   - It applies to records of kind 1, 5 or 6 with a league type and an entry key below 0x7B (`Competition_Regulation_EntryKey` `0x1414CB2E0`, the kick-off row +4).\n   - Each takes `Competition_EntryList_ForKey` `0x141518610`, mode 0: ids << 14. Key 0x1A adds keys 0xE, 0xD, 0x49 and 0x4A; key 0x1F adds keys 7 and 0x32.\n3. `Competition_MLSetup_MapAllTeams` `0x141266AB0` keeps and maps the lists of types 1, 6 and 11 (`0x1414CF7E0`, mask 0x842). It clears every other list.\n   - This is why later stages of a competition (types 7, 8, 12–14) end up empty, even though BuildEntryTables filled them.\n4. `RebuildFromList` sets w304 bit 8 on lead records (kind 1 without parent, kind 5 or 6) unless they are of type 32 (`0x1414CF0F0`).\n   - Records of types 7, 9 or 16 (`0x1414CF460`) and 8, 10 or 17 (`0x1414CF6C0`) append the teams of their linked type-6 regulation (`0x1414CA4C0`, the kick-off row's link list at +8/+0x10).\n   - Types in `Competition_Regulation_NoLinkTypes` `0x142979EB8` (5, 4, 9, 10, 18, 24, 42, 44; `0x1414CFBC0`) do not append.\n5. The count bits (`0x1414CA080`) equal the list size.\n\n`ml::build_creation_regulations` ports this. On probe 57's BuildSeason entry it matches regs, reg_words (199 of 199), reg_teams (30 of 30), reg2_teams and league_keys (39 of 39).\n\n**Read and ruled out:**\n- RebuildFromList's callees `0x141269090` (copies player, team and 600-byte records into EditData) and `0x14126B340` (caps state-3 players at 40) write no regulation field.\n- `Competition_MLSetup_CopyToLiveTable` and `Competition_Setup_BuildTeamsCompetition` belong to the kind-7 path, not the ML path.\n\n**National ranking:**\n- Writer: `Competition_Ranking_Build` `0x141324D00`, second loop, writing one entry per national team in record order (handle, strength).\n- Ranks: `Competition_Ranking_AssignNationRanks` `0x141322AA0` sorts with `0x140B103F0` and the club comparator `0x1413222E0`.\n- The table appears between the RebuildFromList entry and the BuildSeason entry (102 entries), and it is equal across runs.\n- `ml::build_nation_ranking` reproduces probe 57's 102 ranks from the dump's stored strengths. **confirmed**\n- The strengths need the national squads the setup picks: 0 of 102 constructed national rosters match, and file-roster strengths match for 33 of 102. The World's ranking therefore stays dump-sourced, pending the K4 national squad pick. **probable** (the pick's order relative to Ranking_Build is not read).\n\n**Host:** `construct_world` now takes the regulation fields from K5b: 49 of 101 fields are reconstructed (48.5%), and 79 of 101 equal probe 52 (78.2%).\n- The equal share fell because the regulation fields now hold the BuildSeason-entry state.\n- They differ from the creation boundary only by K6's changes. The test asserts exact equality with probe 57 instead."
     }
   ]
 }
