@@ -4843,6 +4843,54 @@
       "source": "db/seeds/squad1.tsv"
     },
     {
+      "address": "0x1403fb240",
+      "name": "Memory_Alloc",
+      "confidence": "probable",
+      "reviewed": "no",
+      "evidence": "(size, align): thread-safe one-time init of the global allocator (TLS epoch check), then Memory_AllocFrom(&9, size, align); reached through a thunk, no direct callers (disassembly 2026-11-21)",
+      "source": "db/seeds/tooling1.tsv"
+    },
+    {
+      "address": "0x1403fb410",
+      "name": "Memory_AllocFrom",
+      "confidence": "probable",
+      "reviewed": "no",
+      "evidence": "(&heap kind, size, align): heap object table [kind * 64] (kind 0 -> 1), alignment raised to a size-class minimum, calls the heap vtable +0x10; retries after 0x1403FB860 on failure (disassembly 2026-11-21)",
+      "source": "db/seeds/tooling1.tsv"
+    },
+    {
+      "address": "0x1403fb5b0",
+      "name": "Memory_FreeTo",
+      "confidence": "probable",
+      "reviewed": "no",
+      "evidence": "(&heap kind, ptr): kind 0 frees nothing found; else heap table [kind * 64] then 0x1403FB4F0 (disassembly 2026-11-21)",
+      "source": "db/seeds/tooling1.tsv"
+    },
+    {
+      "address": "0x1403fb2e0",
+      "name": "Memory_Free",
+      "confidence": "probable",
+      "reviewed": "no",
+      "evidence": "(ptr): Memory_FreeTo with kind 0 (disassembly 2026-11-21)",
+      "source": "db/seeds/tooling1.tsv"
+    },
+    {
+      "address": "0x14152f320",
+      "name": "Lineup_ScoreOwnerData",
+      "confidence": "guess",
+      "reviewed": "no",
+      "evidence": "called in Lineup_ScoreCandidates scoring; leads (through 0x1414BB2A0) to the EditData owner sub-objects +0x30, +0x50, +0x58 (emulation trace 2026-11-21); not read",
+      "source": "db/seeds/tooling1.tsv"
+    },
+    {
+      "address": "0x1414c1330",
+      "name": "MLData_EntryTest",
+      "confidence": "guess",
+      "reviewed": "no",
+      "evidence": "(object, &index): index >= 2 returns false, else reads the object; faults in the emulation on the EditData owner +0x50 object (2026-11-21); not read",
+      "source": "db/seeds/tooling1.tsv"
+    },
+    {
       "address": "0x140fb1a30",
       "name": "PlayerSearch_Criteria_QuotaSimilarRating",
       "confidence": "probable",
@@ -6885,6 +6933,14 @@
       "source": "db/seeds/data/formation1.tsv"
     },
     {
+      "address": "0x143704e38",
+      "field1": "global",
+      "field2": "GameMode_ManagerPtr",
+      "field3": "probable",
+      "evidence": "no",
+      "source": "db/seeds/data/formation1.tsv"
+    },
+    {
       "address": "0x1427fd430",
       "field1": "table",
       "field2": "PlayerSearch_Tries_L1",
@@ -8536,6 +8592,11 @@
       "date": "2026-11-21",
       "title": "constructor stage K4, formation positions and starting slots from installed data (Track B/C, Gate D)",
       "body": "Static reading (Ghidra), the probe 52 creation dump (Arsenal run 1) and one new probe (55). Moves the native career constructor one stage closer to running in the host. Nothing runs in the host yet.\n\n**Formation records** (**probable** layout, decompile of the team loader; field values **confirmed** against data):\n- The team loader is `Pesdb_LoadTeams` `0x1414F5120`. It builds the team records and one 600-byte formation record per team at EditData `+0xC4CA0C` (count `+0xD0BCF0`, 661 at creation; team `+0x28C` holds the index).\n  - Record header: `+0` the index, `+4` the coach id (0xFFFFFFF5 on the user club's new record), `+8` the coach name from Coach.bin.\n  - Three tactic blocks of 0xA0 bytes at `+0x40`, `+0xE0` and `+0x180`; block 2 is a copy of block 0. Then the slot map `+0x220` (40 bytes), the role slots `+0x248` (6 bytes, from PlayerAssignment role flags) and `+0x251`.\n- Each block holds three kinds (`+0x21 * kind`): 11 position codes, then 11 (x, y) byte pairs from `+0xB`. Five sliders sit at `+0x8C`. The writers are `TacticBlock_SetSlotPosition` `0x1414C6650`, `TacticBlock_SetSlotXY` `0x1414C65E0` and `TacticBlock_SetSlider` `0x1414C6690`.\n- Table indices come from the pesdb file name table `0x1434D66F0`: 3 Coach, 0x17 Tactics, 0x18 TacticsFormation, 0x19 Team. They are read through `Pesdb_GetTableData` `0x14125F290` and `Pesdb_GetTableCount` `0x14125F2C0`.\n- Tactics.bin has 12-byte rows (tactic id, team id, bits; bit 24 = block). TacticsFormation.bin has 12-byte rows (tactic id, position code, x, y, slot bits 16-19, kind bits 20-21).\n- **confirmed** (`private-reference/gateD/k4/formation_check.py`): for 659 of 659 teams, both blocks' position codes, (x, y) of all three kinds and sliders equal the dump, and block 2 equals block 0. The World's `team.pos` is kind 0 of block 0: 659 of 659 from the files alone. The earlier note that the dump's position codes \"do not appear as plain bytes\" stands: they are spread over 12-byte rows.\n\n**Slot maps** (**probable**, read plus probe 55 plus data):\n- At `Competition_MLSetup_Run` entry every team's starting slots are 0-10 in PlayerAssignment squad order (669 of 669, probe 54 dump).\n- **Probe 55** logged every `Team_AutoSelectLineup` call (stack, team, mode, slots before) from Run entry to the first `ML_DayDriver` entry: 2008 calls, in this order.\n  1. 102 calls, mode 3, through `NationalSquad_Build` `0x141318100` from `MLSetup_PickNationalSquads` `0x141318D20`, inside `Competition_MLSetup_BuildRankings`: the national squad pick (not read).\n  2. 154 calls, mode 3, from `MLSetup_RebuildLineupsByKind` `0x1413338C0` at the end of BuildRankings.\n  3. 876 pairs from the transfer steps' loan returns: `Team_Squad_RemovePlayer` then mode 1 at the loan club, `Team_Squad_AddPlayer` then mode 3 at the owner. K3 replays 875 returns; the extra one is player 61470, the known K3 residual.\n- `MLSetup_RebuildLineupsByKind` (read) runs only when EditData `+0x1795D25` is set. It rebuilds every team whose club slot k passes k - 13 <= 0x3C with bit k - 13 of the immediate 0x1200000000000037 (slots 13, 14, 15, 17, 18, 70, 73) and that has a regulation. Probe 55: all 154 teams of those slots.\n- The flag is written at `0x141269744` in BuildRankings' August-start branch. That branch also moves the season start to 2020-08-01 and is taken when `Calendar_IsAugustStart` `0x141577A60` accepts the user league's calendar type (`Regulation_GetCalendarType` `0x1415762A0`); neither function is read. The flag is 0 at Run entry and 1 at creation.\n\n**Port** (`src/game/ml/career_formations.{h,cpp}`, `tests/game/career_formations_test.cpp`, `tests/game/career_formations_unit_test.cpp`):\n- `formation_positions` gives positions 659 of 659. `build_creation_formations` replays load order, the slot-mask rebuild (mask read from the exe by `read_lineup_rebuild_kinds`) and the K3 returns in record order. The replayed rosters equal K3's for every club.\n- Club starting XIs: 548 of 555 (**probable** as a model; exact per step):\n  - last write the load: 98 of 99;\n  - the slot-mask rebuild: 117 of 117;\n  - a return rebuild: 201 of 202. The two misses hold the K3 residual players 61470 and 117642.\n  - a loss repair: 132 of 137. The repair is modelled as kept starters locked plus the mode 3 search for the open slots (`match::auto_lineup` with `keep`, new). Mode 1's own criteria are not read; the simpler first-bench-entry refill gave 43 of 137.\n- Full 40-slot maps: 181 of 555. After a rebuild the bench is the previous bench minus the new starters, which is not the game's order (0 of 319 rebuilt clubs). The game's benches come in blocks that follow the formation's slot positions; two quick fits (repeated searches over the remaining players, with and without a playable filter) did not reproduce them. The finaliser `Lineup_FinaliseA/B` is not read.\n- National and other non-club teams: rosters and slot maps stay empty (0 of 104). That is the K3 national-squad dependency, now located (`0x141318D20`), not resolved and not presented as the game's.\n- `sim_team` (ml_day.cpp) is now public for the rebuilds. `build_creation_squads` reports the ordered returns. The pesdb readers are `parse_tactics` and `parse_tactic_slots`; `platform::career_formation_positions` reads the tables.\n\n**Correction (address):** the Derby packing filed under `Pesdb_LoadTables` `0x1414F2460` (entry 2026-11-03 and its seeds) is in the next function, `Pesdb_LoadDerbies` `0x1414F2CE0`. `0x1414F2460` reads pesdb tables 3 (Coach.bin) and 4 (CoachDeleteList.bin) and appends coach formation records, as RE-INVENTORY line 60 says. `0x1414F2CE0` (disassembly) sets `edx` with `xor ebp, ebp` / `lea edx, [rbp+0xA]` (table 10, Derby.bin, in the file name table `0x1434D66F0`), sorts with `0x1414ED350`, caps the count at `+0x184BF44` at 300 and packs with `Derby_Pack` into `+0x184B5E4`; it is the only writer of that array (the three other references, `0x1414B8C26`, `0x1414BB165`, `0x1414BBCBC`, read it). **probable**. The behaviour described in 2026-11-03 and the Derby lookups (probe 17) are unchanged; only the address was wrong. The struct and skip rows now name `Pesdb_LoadDerbies`.\n\n**Unverified:** the mode 1 criteria, the bench finaliser, the national pick, the calendar-type functions, and the regulation test of the rebuild pass (true for all 154 vanilla teams). Shortcut rows for these are in the plan, section 12."
+    },
+    {
+      "date": "2026-11-21",
+      "title": "executable-wide call graph, function reports and an emulation oracle proof of concept (Track B, tooling)",
+      "body": "Read-only tooling on the pinned exe (`src/tools/analysis/README.md`, section \"Executable-wide tools\"). Nothing runs in the host; nothing derived from the exe is committed (outputs under `private-reference/`).\n\n**Call graph** (`callgraph.py`, 28 s): 158,648 .pdata rows (41,163 marked fragments: chained unwind or nested ranges), 727,188 direct call and tail-jump edges (260,580 into targets without a .pdata row, mostly leaf functions), 76,342 indirect call sites listed unresolved, 547 functions named from the seeds. Output `private-reference/callgraph/`; queries with `callgraph_query.py`. It covers the whole executable (gameplay, rendering, UI included), not only the Master League.\n\n**Function report** (`function_report.py`, about 1 s per function): bounds, seed row, port row, callers and callees with names, indirect calls, RIP-relative data and strings, displacements matched against `db/seeds/structs` (a match by offset is a candidate only: every struct with that field offset is listed), immediates, FINDINGS lines and saved decompiles. Checked on `Team_AutoSelectLineup`: 29 callers, 6 callees, the formation fields `+0x220`, `+0x248`, `+0x251`.\n\n**Database loaders** (`pesdb_loaders.py`): all 28 pesdb table indices resolved to their loaders by a constant walk over the 92 calls of `Pesdb_GetTableData` / `Pesdb_GetTableCount` (table in the K5 scope report; seeds follow).\n\n**Emulation oracle, proof of concept** (`src/tools/oracles/emu_autoselect.py`, Unicorn 2.1.4): the game's own `Team_AutoSelectLineup` `0x1414FF0E0` on the probe 52 creation state (EditData at its captured base `0x7FF4DABE0010`, the captured `.data` and `.rdata` images, exe sections from the file), team 2451 with its load-order slot map, called as `MLSetup_RebuildLineupsByKind` calls it (context from `Lineup_Context_Init`, mode 3, byte +8 = 7).\n- Modelled, each stated in the tool: the PE header page (CRT jump tables are RVAs); the C runtime imports whose behaviour the C standard fixes (`memset`, `memcpy`, `memmove`, `memcmp`; import slots named from the file's hint/name entries, every other import stops the run); a thread block for the stack probe (`__chkstk` reads `gs:[0x10]`); the game allocator `0x1403FB240` / `0x1403FB410` / `0x1403FB5B0` / `0x1403FB2E0` replaced by a bump allocator (addresses only); the EditData owner pointer `0x143705E10` (+0x48 only); the game-mode manager `0x143704E38` (+0xF0 = 0x13 only, the value probe 8 read at run time).\n- Deterministic: two runs from the same state give identical output (all logs byte-equal).\n- **Blocked** (not a disagreement): the candidate scoring (`Lineup_ScoreCandidates` `0x141503610` through `0x14152F320` and `0x1414BB2A0`) reads the EditData owner's sub-objects `+0x30`, `+0x50` and `+0x58` (Master League runtime data, not EditData), and faults in `0x1414C1330` on the `+0x50` object. These objects are in no dump. Under the oracle rules no value is invented, so the run stops there, after 97 allocations, 101 `memset` and 30 `memmove` calls and no EditData write outside the team and formation records. The `.bss` global `0x1437F47F8` (fields of the blank roster-slot records) is also not captured; the plan was to run with 0 and 0xFFFFFFFF and accept only an identical result.\n- **Smallest unblocking step:** a non-invasive snapshot at the ML menu (attach, `.writemem`, detach, as `snap41.txt`): the owner object, the objects at owner `+0x30`, `+0x50`, `+0x58`, the whole `.data`/`.bss` range and EditData, from one moment. The user only has to be at the ML menu. Alternative without the VM: a pure target such as `Lineup_CriterionValue` `0x141502EB0` or `Lineup_SlotPriority` `0x141503420`, which read player records and `.rdata` tables only."
     }
   ]
 }
