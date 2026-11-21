@@ -4755,6 +4755,446 @@
       "source": "db/seeds/referee1.tsv"
     },
     {
+      "address": "0x1414f6e20",
+      "name": "Pesdb_BuildEntryTable",
+      "confidence": "probable",
+      "reviewed": "no",
+      "evidence": "builds the 123 entry-key lists at EditData +0xD0BD04 (counts +0x5A168 + 2k) from Team.bin, Country.bin and CompetitionEntry.bin; ml::build_entry_table equals probe 54 on 123 of 123 lists in order (K5a 2026-11-21)",
+      "source": "db/seeds/regtable1.tsv"
+    },
+    {
+      "address": "0x1414efb90",
+      "name": "CompetitionKind_GetType",
+      "confidence": "probable",
+      "reviewed": "no",
+      "evidence": "CompetitionKind.bin (pesdb table 7, 0x58 rows) row of the given id: dword >> 11 & 7 (main) or >> 8 & 7 (child), mapped 1->2, 2->3, 3->1, 4..6 kept, else 0; regulation +0x84 (probe 54: 214 of 214)",
+      "source": "db/seeds/regtable1.tsv"
+    },
+    {
+      "address": "0x1414ef970",
+      "name": "Competition_Regulation_GetFileName",
+      "confidence": "probable",
+      "reviewed": "no",
+      "evidence": "pointer to the language slot of a CompetitionRegulation.bin row (+0x1E0 default, by language DAT_1434FCE64); the name ParseRecord copies to +2",
+      "source": "db/seeds/regtable1.tsv"
+    },
+    {
+      "address": "0x1414c98c0",
+      "name": "Competition_Regulation_ChildTypeRemap",
+      "confidence": "probable",
+      "reviewed": "no",
+      "evidence": "looks a type up in the 11 pairs at 0x142979AC0, returns the mapped type or 0; ParseRecord applies it to child rows (probe 54: 91 children change type)",
+      "source": "db/seeds/regtable1.tsv"
+    },
+    {
+      "address": "0x1414c9740",
+      "name": "Competition_Regulation_ClearTeams",
+      "confidence": "probable",
+      "reviewed": "no",
+      "evidence": "emulation: fills +0x170..+0x22F (48 handles) with 0xFF",
+      "source": "db/seeds/regtable1.tsv"
+    },
+    {
+      "address": "0x1414c9e90",
+      "name": "Competition_Regulation_SetId",
+      "confidence": "probable",
+      "reviewed": "no",
+      "evidence": "emulation: u16 +0",
+      "source": "db/seeds/regtable1.tsv"
+    },
+    {
+      "address": "0x1414c9ef0",
+      "name": "Competition_Regulation_SetName",
+      "confidence": "probable",
+      "reviewed": "no",
+      "evidence": "copies a name string (at most 0x73) to +2 when FUN_1414ABC50 of it is below 0x27",
+      "source": "db/seeds/regtable1.tsv"
+    },
+    {
+      "address": "0x1419221f0",
+      "name": "Competition_Regulation_SetComp",
+      "confidence": "probable",
+      "reviewed": "no",
+      "evidence": "emulation: u32 +0x80 (competition id)",
+      "source": "db/seeds/regtable1.tsv"
+    },
+    {
+      "address": "0x1414c9f70",
+      "name": "Competition_Regulation_SetParent",
+      "confidence": "probable",
+      "reviewed": "no",
+      "evidence": "emulation: u16 +0x76 (parent id, 0xFFFF on a main)",
+      "source": "db/seeds/regtable1.tsv"
+    },
+    {
+      "address": "0x1414c9f40",
+      "name": "Competition_Regulation_SetNext",
+      "confidence": "probable",
+      "reviewed": "no",
+      "evidence": "emulation: u16 +0x78 (next main in the stage chain)",
+      "source": "db/seeds/regtable1.tsv"
+    },
+    {
+      "address": "0x1414c9f80",
+      "name": "Competition_Regulation_SetPrev",
+      "confidence": "probable",
+      "reviewed": "no",
+      "evidence": "emulation: u16 +0x7A (previous main in the stage chain)",
+      "source": "db/seeds/regtable1.tsv"
+    },
+    {
+      "address": "0x1414ca0a0",
+      "name": "Competition_Regulation_SetLink",
+      "confidence": "probable",
+      "reviewed": "no",
+      "evidence": "emulation: u16 +0x7C (file u16 +4 when kind is 1)",
+      "source": "db/seeds/regtable1.tsv"
+    },
+    {
+      "address": "0x1414c9ea0",
+      "name": "Competition_Regulation_SetBelow",
+      "confidence": "probable",
+      "reviewed": "no",
+      "evidence": "emulation: u16 +0x7E (file u16 +0 when kind is 1; the division below)",
+      "source": "db/seeds/regtable1.tsv"
+    },
+    {
+      "address": "0x1414c9c70",
+      "name": "Competition_Regulation_SetKind",
+      "confidence": "probable",
+      "reviewed": "no",
+      "evidence": "emulation: u32 +0x84",
+      "source": "db/seeds/regtable1.tsv"
+    },
+    {
+      "address": "0x1414c9d90",
+      "name": "Competition_Regulation_SetType",
+      "confidence": "probable",
+      "reviewed": "no",
+      "evidence": "emulation: +0x308 bits 23-28 (the type Competition_Regulation_IsLeagueType tests)",
+      "source": "db/seeds/regtable1.tsv"
+    },
+    {
+      "address": "0x1414ca070",
+      "name": "Competition_Regulation_SetPotKey",
+      "confidence": "probable",
+      "reviewed": "no",
+      "evidence": "emulation: u32 +0x230",
+      "source": "db/seeds/regtable1.tsv"
+    },
+    {
+      "address": "0x1414c9fe0",
+      "name": "Competition_Regulation_SetLegs",
+      "confidence": "probable",
+      "reviewed": "no",
+      "evidence": "emulation: +0x308 bits 29-31 (legs, FINDINGS league fixtures)",
+      "source": "db/seeds/regtable1.tsv"
+    },
+    {
+      "address": "0x1414c9ed0",
+      "name": "Competition_Regulation_SetDateMode",
+      "confidence": "probable",
+      "reviewed": "no",
+      "evidence": "emulation: +0x300 bits 29-31",
+      "source": "db/seeds/regtable1.tsv"
+    },
+    {
+      "address": "0x1414c9c50",
+      "name": "Competition_Regulation_SetRegion",
+      "confidence": "probable",
+      "reviewed": "no",
+      "evidence": "emulation: +0x300 bits 25-28",
+      "source": "db/seeds/regtable1.tsv"
+    },
+    {
+      "address": "0x1414c9bb0",
+      "name": "Competition_Regulation_SetOwnerWord",
+      "confidence": "probable",
+      "reviewed": "no",
+      "evidence": "emulation: u16 +0x300 (0x16 on all 27 dumps)",
+      "source": "db/seeds/regtable1.tsv"
+    },
+    {
+      "address": "0x1414c9e30",
+      "name": "Competition_Regulation_Set300b16",
+      "confidence": "probable",
+      "reviewed": "no",
+      "evidence": "emulation: +0x300 bits 16-18",
+      "source": "db/seeds/regtable1.tsv"
+    },
+    {
+      "address": "0x1414c9e50",
+      "name": "Competition_Regulation_SetGroup",
+      "confidence": "probable",
+      "reviewed": "no",
+      "evidence": "emulation: +0x30C bits 13-16 (file byte +0xA, the group)",
+      "source": "db/seeds/regtable1.tsv"
+    },
+    {
+      "address": "0x1414c9ca0",
+      "name": "Competition_Regulation_SetFileTeamCount",
+      "confidence": "probable",
+      "reviewed": "no",
+      "evidence": "emulation: +0x30C bits 0-6 (file byte +0xB & 0x3F)",
+      "source": "db/seeds/regtable1.tsv"
+    },
+    {
+      "address": "0x1414c9c10",
+      "name": "Competition_Regulation_Set30Cb7",
+      "confidence": "probable",
+      "reviewed": "no",
+      "evidence": "emulation: +0x30C bits 7-12 (Competition.bin dword 0 >> 27)",
+      "source": "db/seeds/regtable1.tsv"
+    },
+    {
+      "address": "0x1414c9b70",
+      "name": "Competition_Regulation_Set30Cb17",
+      "confidence": "probable",
+      "reviewed": "no",
+      "evidence": "emulation: +0x30C bits 17-20",
+      "source": "db/seeds/regtable1.tsv"
+    },
+    {
+      "address": "0x1414c9d70",
+      "name": "Competition_Regulation_Set30Cb21",
+      "confidence": "probable",
+      "reviewed": "no",
+      "evidence": "emulation: +0x30C bit 21",
+      "source": "db/seeds/regtable1.tsv"
+    },
+    {
+      "address": "0x1414c9fc0",
+      "name": "Competition_Regulation_Set304b0",
+      "confidence": "probable",
+      "reviewed": "no",
+      "evidence": "emulation: +0x304 bit 0",
+      "source": "db/seeds/regtable1.tsv"
+    },
+    {
+      "address": "0x1414c9bf0",
+      "name": "Competition_Regulation_Set304b1",
+      "confidence": "probable",
+      "reviewed": "no",
+      "evidence": "emulation: +0x304 bit 1",
+      "source": "db/seeds/regtable1.tsv"
+    },
+    {
+      "address": "0x1414ca000",
+      "name": "Competition_Regulation_Set304b2",
+      "confidence": "probable",
+      "reviewed": "no",
+      "evidence": "emulation: +0x304 bit 2",
+      "source": "db/seeds/regtable1.tsv"
+    },
+    {
+      "address": "0x1414c9f50",
+      "name": "Competition_Regulation_Set304b3",
+      "confidence": "probable",
+      "reviewed": "no",
+      "evidence": "emulation: +0x304 bit 3",
+      "source": "db/seeds/regtable1.tsv"
+    },
+    {
+      "address": "0x1414c9cf0",
+      "name": "Competition_Regulation_Set304b4",
+      "confidence": "probable",
+      "reviewed": "no",
+      "evidence": "emulation: +0x304 bit 4",
+      "source": "db/seeds/regtable1.tsv"
+    },
+    {
+      "address": "0x1414c9b50",
+      "name": "Competition_Regulation_Set304b5",
+      "confidence": "probable",
+      "reviewed": "no",
+      "evidence": "emulation: +0x304 bit 5",
+      "source": "db/seeds/regtable1.tsv"
+    },
+    {
+      "address": "0x1414c9d10",
+      "name": "Competition_Regulation_Set304b6",
+      "confidence": "probable",
+      "reviewed": "no",
+      "evidence": "emulation: +0x304 bit 6",
+      "source": "db/seeds/regtable1.tsv"
+    },
+    {
+      "address": "0x1414c9d50",
+      "name": "Competition_Regulation_Set304b7",
+      "confidence": "probable",
+      "reviewed": "no",
+      "evidence": "decompile: +0x304 bit 7 from a byte pointer",
+      "source": "db/seeds/regtable1.tsv"
+    },
+    {
+      "address": "0x1414c9b30",
+      "name": "Competition_Regulation_Set304b9",
+      "confidence": "probable",
+      "reviewed": "no",
+      "evidence": "emulation: +0x304 bit 9",
+      "source": "db/seeds/regtable1.tsv"
+    },
+    {
+      "address": "0x1414c9bc0",
+      "name": "Competition_Regulation_Set304b10",
+      "confidence": "probable",
+      "reviewed": "no",
+      "evidence": "emulation: +0x304 bits 10-14",
+      "source": "db/seeds/regtable1.tsv"
+    },
+    {
+      "address": "0x1414c9c30",
+      "name": "Competition_Regulation_Set304b15",
+      "confidence": "probable",
+      "reviewed": "no",
+      "evidence": "emulation: +0x304 bits 15-19",
+      "source": "db/seeds/regtable1.tsv"
+    },
+    {
+      "address": "0x1414c9f90",
+      "name": "Competition_Regulation_Set304b20",
+      "confidence": "probable",
+      "reviewed": "no",
+      "evidence": "emulation: +0x304 bits 20-23",
+      "source": "db/seeds/regtable1.tsv"
+    },
+    {
+      "address": "0x1414c9e70",
+      "name": "Competition_Regulation_Set304b24",
+      "confidence": "probable",
+      "reviewed": "no",
+      "evidence": "emulation: +0x304 bits 24-29",
+      "source": "db/seeds/regtable1.tsv"
+    },
+    {
+      "address": "0x1414c9be0",
+      "name": "Competition_Regulation_Set2F4",
+      "confidence": "probable",
+      "reviewed": "no",
+      "evidence": "emulation: u32 +0x2F4",
+      "source": "db/seeds/regtable1.tsv"
+    },
+    {
+      "address": "0x1414c9fb0",
+      "name": "Competition_Regulation_Set2F8",
+      "confidence": "probable",
+      "reviewed": "no",
+      "evidence": "emulation: u32 +0x2F8",
+      "source": "db/seeds/regtable1.tsv"
+    },
+    {
+      "address": "0x1414c9f30",
+      "name": "Competition_Regulation_Set2FE",
+      "confidence": "probable",
+      "reviewed": "no",
+      "evidence": "emulation: u16 +0x2FE",
+      "source": "db/seeds/regtable1.tsv"
+    },
+    {
+      "address": "0x1414c9b90",
+      "name": "Competition_Regulation_Set310b0",
+      "confidence": "probable",
+      "reviewed": "no",
+      "evidence": "emulation: +0x310 bits 0-5",
+      "source": "db/seeds/regtable1.tsv"
+    },
+    {
+      "address": "0x1414c9d30",
+      "name": "Competition_Regulation_Set310b6",
+      "confidence": "probable",
+      "reviewed": "no",
+      "evidence": "emulation: +0x310 bit 6",
+      "source": "db/seeds/regtable1.tsv"
+    },
+    {
+      "address": "0x1414ca0b0",
+      "name": "Competition_Regulation_Set310b7",
+      "confidence": "probable",
+      "reviewed": "no",
+      "evidence": "emulation: +0x310 bit 7",
+      "source": "db/seeds/regtable1.tsv"
+    },
+    {
+      "address": "0x1414c9eb0",
+      "name": "Competition_Regulation_Set311",
+      "confidence": "probable",
+      "reviewed": "no",
+      "evidence": "emulation: +0x311 bits 0-8",
+      "source": "db/seeds/regtable1.tsv"
+    },
+    {
+      "address": "0x1414c9c80",
+      "name": "Competition_Regulation_Set312b1",
+      "confidence": "probable",
+      "reviewed": "no",
+      "evidence": "emulation: +0x312 bits 1-9",
+      "source": "db/seeds/regtable1.tsv"
+    },
+    {
+      "address": "0x1414f4a80",
+      "name": "Pesdb_LoadStadiums",
+      "confidence": "probable",
+      "reviewed": "no",
+      "evidence": "writes the stadium records (EditData +0x18378A0, 200 bytes) and count +0x183AB68 from Pesdb_CollectStadiums, then the order table +0x183ABF4 from StadiumOrder.bin and StadiumOrderInConfederation.bin; stadium ids equal probe 54 52 of 52",
+      "source": "db/seeds/regtable1.tsv"
+    },
+    {
+      "address": "0x1414f0200",
+      "name": "Pesdb_CollectStadiums",
+      "confidence": "probable",
+      "reviewed": "no",
+      "evidence": "Stadium.bin (table 0x13, 0x188 rows) rows whose id (u16 +4) is in the available set, sorted by id",
+      "source": "db/seeds/regtable1.tsv"
+    },
+    {
+      "address": "0x1414fe9a0",
+      "name": "Stadium_IsAvailable",
+      "confidence": "probable",
+      "reviewed": "no",
+      "evidence": "membership test on the id set at loader +0x28 (built lazily by 0x1414FEB50)",
+      "source": "db/seeds/regtable1.tsv"
+    },
+    {
+      "address": "0x1414feb50",
+      "name": "Stadium_BuildAvailableSet",
+      "confidence": "probable",
+      "reviewed": "no",
+      "evidence": "builds the id set from a list resource of u32 entries (id low 16 bits, four flag nibbles); source not read",
+      "source": "db/seeds/regtable1.tsv"
+    },
+    {
+      "address": "0x1414eda10",
+      "name": "Stadium_SortRowsById",
+      "confidence": "probable",
+      "reviewed": "no",
+      "evidence": "introsort of stadium row pointers; insertion stage 0x1414E6E50 compares u16 +4",
+      "source": "db/seeds/regtable1.tsv"
+    },
+    {
+      "address": "0x1414e6e50",
+      "name": "Stadium_InsertionSortById",
+      "confidence": "probable",
+      "reviewed": "no",
+      "evidence": "insertion sort of row pointers by u16 +4 ascending",
+      "source": "db/seeds/regtable1.tsv"
+    },
+    {
+      "address": "0x1414f5080",
+      "name": "Pesdb_LoadStadiumWeights",
+      "confidence": "probable",
+      "reviewed": "no",
+      "evidence": "StadiumWeight.bin (table 0x16) rows, at most 500, copied to EditData +0x183B0F8, count +0x183C098; probe 54 470 of 470",
+      "source": "db/seeds/regtable1.tsv"
+    },
+    {
+      "address": "0x1414fd9c0",
+      "name": "StadiumWeight_CopyRow",
+      "confidence": "probable",
+      "reviewed": "no",
+      "evidence": "mode 0: u16 stadium, bits 16-25 = row u16 +2 & 0x3FF, byte +4 kind, bits 8-14 of +4 weight; modes 1, 2 write blanks",
+      "source": "db/seeds/regtable1.tsv"
+    },
+    {
       "address": "0x1413b7b50",
       "name": "Competition_SlotPick_PickRows",
       "confidence": "probable",
@@ -6991,7 +7431,7 @@
     {
       "address": "0x1434d66f0",
       "field1": "table",
-      "field2": "Pesdb_FileNameTable",
+      "field2": "Pesdb_FileNameTable_Entry18",
       "field3": "probable",
       "evidence": "no",
       "source": "db/seeds/data/formation1.tsv"
@@ -7107,6 +7547,94 @@
       "field3": "probable",
       "evidence": "no",
       "source": "db/seeds/data/formation1.tsv"
+    },
+    {
+      "address": "0x14297d290",
+      "field1": "table",
+      "field2": "Competition_Regulation_PotKeyTable",
+      "field3": "probable",
+      "evidence": "no",
+      "source": "db/seeds/data/regtable1.tsv"
+    },
+    {
+      "address": "0x14297d270",
+      "field1": "table",
+      "field2": "Competition_Regulation_RegionTable",
+      "field3": "probable",
+      "evidence": "no",
+      "source": "db/seeds/data/regtable1.tsv"
+    },
+    {
+      "address": "0x14297d268",
+      "field1": "table",
+      "field2": "Competition_Regulation_W300MidTable",
+      "field3": "probable",
+      "evidence": "no",
+      "source": "db/seeds/data/regtable1.tsv"
+    },
+    {
+      "address": "0x142979ac0",
+      "field1": "table",
+      "field2": "Competition_Regulation_ChildTypeTable",
+      "field3": "probable",
+      "evidence": "no",
+      "source": "db/seeds/data/regtable1.tsv"
+    },
+    {
+      "address": "0x14297d090",
+      "field1": "table",
+      "field2": "Pesdb_EntryCategoryKeyTable",
+      "field3": "probable",
+      "evidence": "no",
+      "source": "db/seeds/data/regtable1.tsv"
+    },
+    {
+      "address": "0x14297d0b8",
+      "field1": "table",
+      "field2": "Pesdb_EntryAggregate76",
+      "field3": "probable",
+      "evidence": "no",
+      "source": "db/seeds/data/regtable1.tsv"
+    },
+    {
+      "address": "0x14297d0c0",
+      "field1": "table",
+      "field2": "Pesdb_EntryAggregate77",
+      "field3": "probable",
+      "evidence": "no",
+      "source": "db/seeds/data/regtable1.tsv"
+    },
+    {
+      "address": "0x14297d0c8",
+      "field1": "table",
+      "field2": "Pesdb_EntryAggregate78",
+      "field3": "probable",
+      "evidence": "no",
+      "source": "db/seeds/data/regtable1.tsv"
+    },
+    {
+      "address": "0x14297d0e0",
+      "field1": "table",
+      "field2": "Pesdb_EntryAggregate79",
+      "field3": "probable",
+      "evidence": "no",
+      "source": "db/seeds/data/regtable1.tsv"
+    },
+    {
+      "address": "0x14297d240",
+      "field1": "table",
+      "field2": "Pesdb_EntryAggregate80",
+      "field3": "probable",
+      "evidence": "no",
+      "source": "db/seeds/data/regtable1.tsv"
+    },
+    {
+      "address": "0x1434d6630",
+      "field1": "table",
+      "field2": "Pesdb_FileNameTable",
+      "field3": "probable",
+      "evidence": "no",
+      "source": "db/seeds/data/regtable1.tsv"
     },
     {
       "address": "0x1427fd430",
@@ -8239,6 +8767,46 @@
       "source": "db/seeds/ports/competition.tsv"
     },
     {
+      "address": "0x1414f6e20",
+      "status": "reimplemented",
+      "fidelity": "exact",
+      "implementation": "src/game/ml/entry_table.cpp build_entry_table",
+      "evidence": "probe 54: 123 of 123 key lists equal in order (ctest entry_table); competition-to-key mapping 0x1414CB030 not read (kick-off table stands in, shortcut)",
+      "source": "db/seeds/ports/loadtables1.tsv"
+    },
+    {
+      "address": "0x1414f1480",
+      "status": "reimplemented",
+      "fidelity": "exact",
+      "implementation": "src/game/ml/regulation_table.cpp build_regulation_table",
+      "evidence": "probe 54: 214 of 214 records, ids in order, every built field equal (ctest regulation_table); name, +0x2FE and +0x310..+0x313 not built",
+      "source": "db/seeds/ports/loadtables1.tsv"
+    },
+    {
+      "address": "0x1414f7e80",
+      "status": "reimplemented",
+      "fidelity": "exact",
+      "implementation": "src/game/ml/regulation_table.cpp build_regulation_table (parse)",
+      "evidence": "same test; four mutations each caught",
+      "source": "db/seeds/ports/loadtables1.tsv"
+    },
+    {
+      "address": "0x1414f0200",
+      "status": "reimplemented",
+      "fidelity": "behavioural",
+      "implementation": "src/game/ml/venue_table.cpp build_venue_table",
+      "evidence": "probe 54: 52 of 52 stadium ids in order (ctest venue_table); the available-stadium set (0x1414FEB50) is not read, every row passes (shortcut)",
+      "source": "db/seeds/ports/loadtables1.tsv"
+    },
+    {
+      "address": "0x1414f5080",
+      "status": "reimplemented",
+      "fidelity": "exact",
+      "implementation": "src/game/ml/venue_table.cpp build_venue_table",
+      "evidence": "probe 54: 470 of 470 pairs equal (stadium, kind, weight, 10-bit field)",
+      "source": "db/seeds/ports/loadtables1.tsv"
+    },
+    {
       "address": "0x1405b6800",
       "status": "reimplemented",
       "fidelity": "exact",
@@ -8788,6 +9356,11 @@
       "date": "2026-11-21",
       "title": "match constant schemas, first pass (Track B, tooling; details in docs/gameplay-discovery-2026-11-21.md)",
       "body": "- The match-constant readers (`0x141E50000`-`0x141EA0000`) parse each module's development JSON with `Json_GetMember` `0x1403842A0`, `Json_GetIndex` `0x1403841E0` and three conversions (`Json_ToDouble` `0x140384750` stored as a float, `Json_ToInt` `0x140384810`, `Json_ToBool` `0x1403846D0`). The catalogue (`src/tools/analysis/json_schema.py`) lists 1,927 field stores in 84 readers with path, type, width and offset. **confirmed** mechanics (disassembly).\n- A shipped `.o` section of `common/match/constant/*.bin` is the runtime struct minus its first 8 bytes, padded to 16: 515 of 515 typed fields of 18 name-assigned sections pass. **confirmed** for those 18.\n- 28 of 227 sections are assigned with independent evidence (size, types, names); the rest need array and sub-structure handling in the walker (deferred).\n- Correction to the discovery note of the same day: `ball.o` and the other sections said to be missing are shipped (an early parse clipped their names)."
+    },
+    {
+      "date": "2026-11-21",
+      "title": "K5a load-time tables: entry keys, regulation table, venue tables (Track C, with Track B reads)",
+      "body": "Static reads (Ghidra), setter mapping by emulation (`src/tools/oracles/tab_setters.py`, leaf functions only), and checks against probe 54 (`Competition_MLSetup_Run` entry, the load state). Plan section 16.\n\n**Entry table** (`Pesdb_BuildEntryTable` `0x1414F6E20`):\n- Teams are taken in name order, and each gets a category key through `Pesdb_EntryCategoryKeyTable` `0x14297D090`. A national team without a category key falls back to its confederation key, and a non-national club of a confederation-5 country gets key 75.\n- CompetitionEntry rows are sorted by (slot − 1) | comp << 8, and the first competition to claim an empty key wins.\n- The aggregate keys 76 to 80 come from `0x14297D0B8`, `0x14297D0C0`, `0x14297D0C8`, `0x14297D0E0` and `0x14297D240` (sorted unions).\n- Result: `ml::build_entry_table` equals probe 54 on 123 of 123 lists, in order. **confirmed** on vanilla.\n- The competition-to-key mapping (`0x1414CB030`) is not read. The kick-off table stands in for it and gives the same 123 lists (shortcut).\n\n**Regulation table** (`Competition_RegulationLoader_BuildTable` `0x1414F1480`, `Competition_RegulationLoader_ParseRecord` `0x1414F7E80`):\n- Inputs are pesdb tables 5 Competition, 6 CompetitionEntry, 7 CompetitionKind and 8 CompetitionRegulation. The file-name table base is `0x1434D6630`; the earlier `0x1434D66F0` is its entry 0x18 (seed corrected).\n- Every file row becomes a record: 214 on vanilla.\n- Main rows are sorted by stage << 16 | comp << 20 | id and chained to their sorted neighbours with non-zero stage bits (+0x78 next, +0x7A prev).\n- A main's teams are the previous main's list when it belongs to the same competition. Otherwise they are the competition's entries as handles id << 14, at most 48.\n- Child rows take parent, chain and +0x230 from their main. Their type is remapped through `Competition_Regulation_ChildTypeTable` `0x142979AC0`.\n- +0x84 comes from `CompetitionKind_GetType` `0x1414EFB90`. +0x7C and +0x7E are set only when it is 1.\n- The table is then sorted by id.\n- The 45 setters were mapped by emulating each one (offset, mask, plain bitfield or not). Seeds are in `db/seeds/regtable1.tsv`.\n- Result: `ml::build_regulation_table` equals probe 54 on 214 of 214 records. The check covers the ids in order, the competition, the parent/next/prev/link/below links, kind, +0x230, +0x2F4, +0x2F8, the four packed words (bit by bit) and the team list. **confirmed** on vanilla. Four mutations (child remap, kind map, w30C mode, prev chain) each fail on 10 to 205 records.\n- Not built: the name (+2, language dependent), +0x2FE and +0x310 to +0x313.\n- This explains the earlier partial match of the `+0x308` type and the `+0x7C` link with file fields (116 and 111 of 199): children remap their type, and `+0x7C` exists only for kind 1.\n- +0x300 bits 0–15 copy the owner `+0x50` object's u16 at `+0x3FCCE`. That value is 0x16 in all 27 dumps (probes 38, 40, 52, 54, 56). It is constant in practice; **probable**, because the writer is not read (shortcut).\n- Every post-setup dump holds 199 records. The setup removes 15 records; that is the K5b dependency.\n\n**Venue tables:**\n- Stadiums: `Pesdb_LoadStadiums` `0x1414F4A80` takes its list from `Pesdb_CollectStadiums` `0x1414F0200`.\n  - That list is the Stadium.bin rows (0x188 bytes, id at +4) that pass `Stadium_IsAvailable` `0x1414FE9A0`, sorted by id (`Stadium_InsertionSortById` `0x1414E6E50` compares u16 +4).\n  - The available set comes from `Stadium_BuildAvailableSet` `0x1414FEB50`, whose list resource is not read. Every row passes in the port (shortcut).\n  - The function then writes count +0x183AB68 and the order table +0x183ABF4 (StadiumOrder.bin, StadiumOrderInConfederation.bin; not built, because the filing code does not read it).\n- Pairs: `Pesdb_LoadStadiumWeights` `0x1414F5080` copies the first 500 StadiumWeight.bin rows through `StadiumWeight_CopyRow` `0x1414FD9C0`.\n- Result: `ml::build_venue_table` equals probe 54 on 52 of 52 stadium ids and 470 of 470 pairs, in order (stadium, kind, weight and the 10-bit field). **confirmed** on vanilla. Three mutations are caught.\n\n**Host:** `career_team_files` now takes its league keys from the built regulation table, replacing the bits 143–144 shortcut. The three tables are not yet loaded into the host World."
     }
   ]
 }
