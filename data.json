@@ -4567,15 +4567,15 @@
       "name": "MLSetup_PickNationalSquads",
       "confidence": "probable",
       "reviewed": "no",
-      "evidence": "called by Competition_MLSetup_BuildRankings (setup kinds 9, 10); probe 55: the first 102 Team_AutoSelectLineup calls of the creation, one per nation, through 0x141318100; the national squad pick K3 left open (not read)",
+      "evidence": "for every team of class 0x4000000 calls NationalSquad_Pick 0x1413162E0 (ctx, handle, &0, &1), then 0x1415234E0 on every player record (decompile read 2026-11-21; probe 55: the first 102 Team_AutoSelectLineup calls of the creation)",
       "source": "db/seeds/formation1.tsv"
     },
     {
       "address": "0x141318100",
-      "name": "NationalSquad_Build",
+      "name": "UserNationalSquad_Update",
       "confidence": "guess",
       "reviewed": "no",
-      "evidence": "builds one national squad (Team_Squad_AddPlayer / RemovePlayer, Player_SetTeamSlot, then Team_AutoSelectLineup mode 3); probe 55 call chain from MLSetup_PickNationalSquads (decompile not read)",
+      "evidence": "the user's national squad (EditData +0x1798AC8, 23 refs): players with state 4 are removed and replaced through 0x141317150, Team_Squad_AddPlayer, then Team_AutoSelectLineup (decompile read 2026-11-21); not the per-nation pick (that is 0x1413162E0)",
       "source": "db/seeds/formation1.tsv"
     },
     {
@@ -4600,6 +4600,22 @@
       "confidence": "probable",
       "reviewed": "no",
       "evidence": "Derby.bin loader (the behaviour once filed under Pesdb_LoadTables): xor ebp,ebp then lea edx,[rbp+0xA] = pesdb table 10 (Derby.bin) through Pesdb_GetTableData/Count, sorts the records (0x1414ED350), sets the count at edit+0x184BF44 capped at 300 (0x12C) and packs each with Derby_Pack 0x1414FD750 into edit+0x184B5E4 (the only writer of that array in the exe); called by the pesdb load sequence after Pesdb_LoadSpecialLists (disassembly 2026-11-21)",
+      "source": "db/seeds/formation1.tsv"
+    },
+    {
+      "address": "0x1413162e0",
+      "name": "NationalSquad_Pick",
+      "confidence": "probable",
+      "reviewed": "no",
+      "evidence": "one nation's squad: Team_ClearRoster, picks appended with Team_Squad_Append, Player_SetTeamSlot, Team_AutoSelectLineup; uses Date_Today, Date_DaysBetween, the game-mode manager and eight indirect calls (function report 2026-11-21; not read)",
+      "source": "db/seeds/formation1.tsv"
+    },
+    {
+      "address": "0x1414f8420",
+      "name": "Pesdb_LoadPlayerRecord",
+      "confidence": "probable",
+      "reviewed": "no",
+      "evidence": "Player.bin record -> in-memory player: file +0x0C -> contract end +0x138, +0x10 -> loan end +0x16C (YYYYMMDD to the date word, day clamped to the month), +4 -> loan owner +0x160, name strings, +0x144 nationality via a table lookup (disassembly 2026-11-21)",
       "source": "db/seeds/formation1.tsv"
     },
     {
@@ -4920,6 +4936,38 @@
       "confidence": "probable",
       "reviewed": "no",
       "evidence": "(candidate lists, position code) -> the position's candidate vector (0x18-byte vector of 0x60-byte entries) (decompile 2026-11-21)",
+      "source": "db/seeds/tooling1.tsv"
+    },
+    {
+      "address": "0x141263ac0",
+      "name": "Player_ClearLoanOfSetupPlayer",
+      "confidence": "guess",
+      "reviewed": "no",
+      "evidence": "clears the loan of the player whose ref is at EditData +0x1819540 (loan owner invalid, loan end = the sentinel 0x1437F47F8, +0x148 bit 16 cleared); called by Competition_RegulationTable_RebuildFromList (disassembly 2026-11-21)",
+      "source": "db/seeds/tooling1.tsv"
+    },
+    {
+      "address": "0x141318c30",
+      "name": "NationalSquadPicker_Create",
+      "confidence": "guess",
+      "reviewed": "no",
+      "evidence": "makes the object Competition_MLSetup_BuildRankings passes to MLSetup_PickNationalSquads (2026-11-21); not read",
+      "source": "db/seeds/tooling1.tsv"
+    },
+    {
+      "address": "0x1414f4500",
+      "name": "Pesdb_LoadPlayers",
+      "confidence": "guess",
+      "reviewed": "no",
+      "evidence": "step of the pesdb load sequence that calls Pesdb_LoadPlayerRecord per Player.bin record (2026-11-21); not read",
+      "source": "db/seeds/tooling1.tsv"
+    },
+    {
+      "address": "0x1415234e0",
+      "name": "Player_UpdateDerivedState",
+      "confidence": "guess",
+      "reviewed": "no",
+      "evidence": "run on every player by MLSetup_PickNationalSquads and also from Player_LoadDerivedFields and Competition_Season_BuildSeason (2026-11-21); not read",
       "source": "db/seeds/tooling1.tsv"
     },
     {
@@ -8690,6 +8738,11 @@
       "date": "2026-11-21",
       "title": "Lineup_AssignB ported, the K4 bench reconstructed (Track B/C, Gate D)",
       "body": "`Lineup_AssignB` `0x141500EF0` and its helpers were read (Ghidra decompile, disassembly, and the two jump-table leaves tabulated by running them under Unicorn for every input) and ported as `match::auto_lineup_slots` (`src/game/match/match_day.cpp`), used by the K4 creation replay (`ml::build_creation_formations`) for every mode 3 rebuild. The in-season path (`set_starters` after CPU matches) is unchanged, so the C2 audit is not affected.\n\n**The rule** (**confirmed** by the oracle, below):\n- The Core calls `Lineup_AssignB` with both flag arguments clear on these paths (oracle: `param_6 = param_7 = 0`). The quota adjustment, the re-scoring and the position-group split behind those flags are skipped. The context byte +8 (the \"cap\") is 7 in `MLSetup_RebuildLineupsByKind` and 0x17 from `Lineup_Context_Init` (`Team_Squad_AddPlayer`).\n- `Lineup_RetagCandidates` `0x1415051C0` (renamed from the guess `Lineup_ResortCandidates`) only sets each entry's category byte; it does not reorder. `Lineup_SetEntryCriteria` `0x141505410` replaces every entry's criteria list: in mode 3 with 7, 6, 5, 1 (table `0x14297E470`), then 0 and 4. `Lineup_CandidateLess` compares by that list, so comparisons made after it (the swap test) use the bench order, not the XI search's 1, 7, 5, 0, 6, 4. This was the one rule the first port missed; a pick trace in the oracle found it.\n- Rounds over formation slots 0 to 10: each slot takes the first unused entry of its position list (`Lineup_PickNthCandidate` with skip 0; 0xFF when none), at most once per position per round, until as many slots are filled as the roster holds.\n- While fewer than `cap` slots are filled:\n  - only one bench goalkeeper;\n  - defender, midfielder and forward picks stop at quotas from the formation's group counts: `(cap - 12) * count / 10`, rounded half away from zero, with forwards taking the rest;\n  - positions 2/3, 6/7 and 9/10 take the alternative position's first unused candidate instead when `Lineup_CandidateLess` prefers it and the alternative has not been picked more. `Lineup_HasAltPosition` `0x141504150` and `Lineup_AltPosition` `0x141502DF0` were tabulated by emulation; `Position_GroupIndex` matches the port's `group()`.\n- With 11 < cap, entries 11 to cap-1 and cap to 39 are each sorted (qsort with `0x141505C30`: player 0xFF last, then registered position ascending, then player ascending; a total order).\n- Last, the unavailable players not placed, in roster order.\n\n**Checks:**\n- **Port against the game on identical state** (`private-reference/gateD/k4/port_vs_oracle.py`): the oracle runs the game's own `Team_AutoSelectLineup` on every club of the probe 56 snapshot. All 40 slots are equal for **555 of 555 clubs with cap 0x17** and **555 of 555 with cap 7**. The oracle now carries out the qsort call when its comparator is `0x141505C30`; any other comparator stops the run.\n  - Correction to the addendum above: an earlier single 0x17 run of team 2546 that \"matched\" had stopped at the qsort import before writing anything, so it showed the dump's own slots. The pick trace taken from it was valid (the picks come before the sort).\n- **Creation replay against probe 52** (`career_formations_test`, all 555 clubs):\n  - starting XI 548 of 555 (unchanged);\n  - all 40 slots **521 of 555** (was 181): slot-mask rebuild 117 of 117, return rebuild 200 of 202, load order 98 of 99, loss repair 106 of 137.\n  - The 34 that differ: 31 loss repairs (mode 1, not read); the clubs of the two K3 residual players, 2285 and 5046, whose rosters differ; and the user club 101, which `Team_Squad_AddPlayer` rebuilds in mode 1.\n- **Unit test** (`career_formations_unit_test`): a synthetic squad of twin specialists checks the round structure for both caps.\n\n**Still open:** the mode 1 repair (the `param_4 + 4 == 1` path of `Lineup_AssignB` and mode 1's criteria). It needs the club's map before the removal, which no capture holds. The shortcut row stays open."
+    },
+    {
+      "date": "2026-11-21",
+      "title": "K3 cleanup investigation: loan ends and the national squad pick (Track B, static plus captured dumps)",
+      "body": "Bounded, read-only. No implementation change.\n\n**Loan end, where it is written:**\n- `Pesdb_LoadPlayerRecord` `0x1414F8420` (called by `0x1414F4500` in the pesdb load sequence) converts a Player.bin record into the in-memory player. File +0x0C becomes the contract end (+0x138), file +0x10 the loan end (+0x16C), file +4 the loan owner (+0x160). Dates are decimal YYYYMMDD turned into the date word (year | month << 16 | day << 24) with only the day clamped to the month length (28, 30 for April, June, September, November, else 31). **probable** (disassembly). No half-year snap at load.\n- `Player_LoadDerivedFields` and `MLSetup_LoadLoans` write only the sentinel `Competition_SeasonEvents_LastBumpDate` (`0x1437F47F8`, 0xFFFF in the dumps): the loader cancels loans that way and does not compute dates. `0x141263AC0` clears one player's loan (the ref at EditData `+0x1819540`) for `Competition_RegulationTable_RebuildFromList`.\n- `MLTransfer_LoanReturns_Run` returns loans whose end is before the ML date `+0x178946C`, which `Competition_MLSetup_BuildRankings` sets to 2020-08-01 in its August-start branch.\n\n**The snap, measured** (probe 54 at `Competition_MLSetup_Run` entry against probe 52 at creation, every loanee): every loan the game keeps ends at the close of its half-year in the same year (11-30, 12-10, 12-19 to 12-31; 05-31 to 06-30; 12-31 and 06-30 unchanged). The K3 shortcut describes this outcome; its writer is not found (the setup's transfer passes `0x140F0A230`, `0x140F1DEB0`, `0x140F31E50` run through indirect calls the static graph does not follow).\n\n**The two exceptions are not the snap:**\n- 117642 is the only kept loan whose year changes (2021-12-31 to 2020-12-31); two other 2021-12-31 loans keep theirs, and the owner is unchanged. It fits a loan re-made in the setup with the next window close as its end. **guess**\n- 61470 (end 2020-12-31, not before 2020-08-01) is returned, with the club he left as his loan owner: a recall-type move, not the date rule. **guess**\n- Both point at the setup's transfer passes. Closing them needs either a creation probe with write breakpoints on +0x16C / +0x160 of three players (an 11-30 loan, 117642, 61470), or the K6 transfer work.\n\n**National squads:**\n- `MLSetup_PickNationalSquads` `0x141318D20` calls `NationalSquad_Pick` `0x1413162E0` (3.7 KB, 27 callees, 91 reachable functions) once per team of class 0x4000000, then `0x1415234E0` on every player. The pick clears the roster with `Team_ClearRoster` `0x1412FD200`, appends with `Team_Squad_Append`, sets each player's slot and runs `Team_AutoSelectLineup`; it uses `Date_Today`, `Date_DaysBetween`, the game-mode manager and eight indirect calls. The K3 site `0x1412FD22E` is inside `Team_ClearRoster`: the same builder, not a later step.\n- `0x141318100` (seeded `NationalSquad_Build`) is a different routine: the user's national squad (EditData +0x1798AC8, 23 refs; players with state 4 replaced). The seed is corrected.\n- The probe 56 snapshot is probably enough for an oracle (the pick recomputes from player data and writes the rosters); the pick's first argument is an object made by `0x141318C30`, so its constructor has to run under emulation too. Not tried. Scope: a milestone of about the bench's size or larger."
     }
   ]
 }
