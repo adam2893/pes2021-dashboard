@@ -615,7 +615,7 @@
       "name": "Pesdb_LoadTables",
       "confidence": "guess",
       "reviewed": "no",
-      "evidence": "pesdb load step; collects Derby.bin records, sorts them (0x1414ED350), caps at 300 (0x12C) and packs them into edit+0x184B5E4",
+      "evidence": "pesdb load step. Correction 2026-11-21 (Ghidra decompile): the body reads pesdb table 3 (Coach.bin, 100-byte rows, sorted by key) and table 4 (CoachDeleteList.bin), registers each table-4 id at edit+0x186B030 (0x1414FE240) and appends a 600-byte formation record per matched coach (name at +8, count edit+0xD0BCF0), as RE-INVENTORY says; no Derby.bin read in it: the Derby packing into edit+0x184B5E4 described earlier is the next function, Pesdb_LoadDerbies 0x1414F2CE0",
       "source": "db/seeds/competition1.tsv"
     },
     {
@@ -4451,6 +4451,158 @@
       "source": "db/seeds/findings1.tsv"
     },
     {
+      "address": "0x1414f5120",
+      "name": "Pesdb_LoadTeams",
+      "confidence": "probable",
+      "reviewed": "no",
+      "evidence": "team loader: builds the team records (EditData +0xADF4BC, 0x690 each, count +0xD0BCEC) and one 600-byte formation record per team (+0xC4CA0C, count +0xD0BCF0) from Team.bin, Coach.bin (table 3, coach name into +8), PlayerAssignment (squad via 0x141317E50), Tactics.bin (table 0x17) and TacticsFormation.bin (table 0x18): each tactic row fills tactic block bits>>24&1, its slot rows the position code and (x, y) per kind and slot; block 2 copies block 0 (decompile read 2026-11-21; probe 52: positions, (x, y) and sliders of both blocks 659 of 659 teams)",
+      "source": "db/seeds/formation1.tsv"
+    },
+    {
+      "address": "0x14125f290",
+      "name": "Pesdb_GetTableData",
+      "confidence": "probable",
+      "reviewed": "no",
+      "evidence": "(pesdb object, table index) -> the loaded table's records; index = position in the file name table 0x1434D66F0 (3 Coach, 0x17 Tactics, 0x18 TacticsFormation, 0x19 Team) (2026-11-21)",
+      "source": "db/seeds/formation1.tsv"
+    },
+    {
+      "address": "0x14125f2c0",
+      "name": "Pesdb_GetTableCount",
+      "confidence": "probable",
+      "reviewed": "no",
+      "evidence": "(pesdb object, table index) -> record count of the loaded table (2026-11-21)",
+      "source": "db/seeds/formation1.tsv"
+    },
+    {
+      "address": "0x140f1c720",
+      "name": "Formation_GetTacticBlock",
+      "confidence": "probable",
+      "reviewed": "no",
+      "evidence": "(formation record, i) -> record + 0x40 + 0xA0 * i for i < 3, else block 0 (read 2026-11-21)",
+      "source": "db/seeds/formation1.tsv"
+    },
+    {
+      "address": "0x1414efce0",
+      "name": "Team_GetTacticBlock",
+      "confidence": "probable",
+      "reviewed": "no",
+      "evidence": "(team record, i) -> team + 0x460 + 0xA0 * i for i < 2, else block 0 (read 2026-11-21)",
+      "source": "db/seeds/formation1.tsv"
+    },
+    {
+      "address": "0x1414c6650",
+      "name": "TacticBlock_SetSlotPosition",
+      "confidence": "probable",
+      "reviewed": "no",
+      "evidence": "(block, slot, code, kind): byte block + 0x21 * kind + slot for slot < 11, kind < 3 (read 2026-11-21)",
+      "source": "db/seeds/formation1.tsv"
+    },
+    {
+      "address": "0x1414c65e0",
+      "name": "TacticBlock_SetSlotXY",
+      "confidence": "probable",
+      "reviewed": "no",
+      "evidence": "(block, slot, &xy, kind): two bytes at block + 0x21 * kind + 0xB + 2 * slot (read 2026-11-21)",
+      "source": "db/seeds/formation1.tsv"
+    },
+    {
+      "address": "0x1414c61d0",
+      "name": "TacticBlock_GetSlotPosition",
+      "confidence": "guess",
+      "reviewed": "no",
+      "evidence": "(block, slot, kind) -> position code; the reader the formation fix-up and the club plan use (not read)",
+      "source": "db/seeds/formation1.tsv"
+    },
+    {
+      "address": "0x1414c6690",
+      "name": "TacticBlock_SetSlider",
+      "confidence": "probable",
+      "reviewed": "no",
+      "evidence": "(block, i, value): byte block + 0x8C + i for i < 5 when value < 11 (4 for sliders 1 and 4) (read 2026-11-21)",
+      "source": "db/seeds/formation1.tsv"
+    },
+    {
+      "address": "0x1408e0db0",
+      "name": "TacticBlock_Copy",
+      "confidence": "probable",
+      "reviewed": "no",
+      "evidence": "copies one 0xA0 tactic block (positions, (x, y), flags +0x63..+0x69, +0x6C..+0x8B, sliders, +0x91..+0x9C) (read 2026-11-21)",
+      "source": "db/seeds/formation1.tsv"
+    },
+    {
+      "address": "0x1414ef510",
+      "name": "Team_FormationGroupFixup",
+      "confidence": "guess",
+      "reviewed": "no",
+      "evidence": "on the team's block 0 copy: counts position groups (1-3, 4-8, 9-12, other) and moves slot codes until one goalkeeper, two or more defenders and at least one midfielder and forward remain; then copies the codes to block 1; skipped for team kind byte 8 (read 2026-11-21, effect on the formation record not seen)",
+      "source": "db/seeds/formation1.tsv"
+    },
+    {
+      "address": "0x1414f06a0",
+      "name": "PlayerAssignment_GetRoleFlag",
+      "confidence": "probable",
+      "reviewed": "no",
+      "evidence": "(_, assignment row, i) -> role flag i (0 bit 19, 1 and 2 bit 17, 3 bit 18, 4 byte +0xE bit 0, 5 bit 20 of dword +0xC); the loader stores the squad index in team +0x5C8 + i and formation +0x248 + i (read 2026-11-21)",
+      "source": "db/seeds/formation1.tsv"
+    },
+    {
+      "address": "0x141317e50",
+      "name": "Team_Squad_Append",
+      "confidence": "probable",
+      "reviewed": "no",
+      "evidence": "(team, ref, shirt): while the count (+0x424 bits 16-22) is under 40 stores the ref at +0x14C[count] and the shirt at +0x29A, count + 1; no lineup call (read 2026-11-21)",
+      "source": "db/seeds/formation1.tsv"
+    },
+    {
+      "address": "0x1413338c0",
+      "name": "MLSetup_RebuildLineupsByKind",
+      "confidence": "probable",
+      "reviewed": "no",
+      "evidence": "end of Competition_MLSetup_BuildRankings: when EditData +0x1795D25 is set, Team_AutoSelectLineup mode 3 (context byte +8 = 7) for every team whose club slot k has k - 13 <= 0x3C and bit k - 13 of 0x1200000000000037 (13, 14, 15, 17, 18, 70, 73) and a regulation (read 2026-11-21; probe 55: 154 calls, the 154 teams of those slots)",
+      "source": "db/seeds/formation1.tsv"
+    },
+    {
+      "address": "0x141318d20",
+      "name": "MLSetup_PickNationalSquads",
+      "confidence": "probable",
+      "reviewed": "no",
+      "evidence": "called by Competition_MLSetup_BuildRankings (setup kinds 9, 10); probe 55: the first 102 Team_AutoSelectLineup calls of the creation, one per nation, through 0x141318100; the national squad pick K3 left open (not read)",
+      "source": "db/seeds/formation1.tsv"
+    },
+    {
+      "address": "0x141318100",
+      "name": "NationalSquad_Build",
+      "confidence": "guess",
+      "reviewed": "no",
+      "evidence": "builds one national squad (Team_Squad_AddPlayer / RemovePlayer, Player_SetTeamSlot, then Team_AutoSelectLineup mode 3); probe 55 call chain from MLSetup_PickNationalSquads (decompile not read)",
+      "source": "db/seeds/formation1.tsv"
+    },
+    {
+      "address": "0x141577a60",
+      "name": "Calendar_IsAugustStart",
+      "confidence": "guess",
+      "reviewed": "no",
+      "evidence": "(calendar type) -> true when the user's league season starts in August: Competition_MLSetup_BuildRankings then sets the start 2020-08-01, the day index of 1 July and EditData +0x1795D25 (else start 2020-01-01); not read",
+      "source": "db/seeds/formation1.tsv"
+    },
+    {
+      "address": "0x1415762a0",
+      "name": "Regulation_GetCalendarType",
+      "confidence": "guess",
+      "reviewed": "no",
+      "evidence": "(league regulation) -> calendar type; 5 maps to 1 (call in Competition_MLSetup_BuildRankings; not read)",
+      "source": "db/seeds/formation1.tsv"
+    },
+    {
+      "address": "0x1414f2ce0",
+      "name": "Pesdb_LoadDerbies",
+      "confidence": "probable",
+      "reviewed": "no",
+      "evidence": "Derby.bin loader (the behaviour once filed under Pesdb_LoadTables): xor ebp,ebp then lea edx,[rbp+0xA] = pesdb table 10 (Derby.bin) through Pesdb_GetTableData/Count, sorts the records (0x1414ED350), sets the count at edit+0x184BF44 capped at 300 (0x12C) and packs each with Derby_Pack 0x1414FD750 into edit+0x184B5E4 (the only writer of that array in the exe); called by the pesdb load sequence after Pesdb_LoadSpecialLists (disassembly 2026-11-21)",
+      "source": "db/seeds/formation1.tsv"
+    },
+    {
       "address": "0x140a48a10",
       "name": "Match_World_GetPlayerData",
       "confidence": "probable",
@@ -6669,6 +6821,70 @@
       "source": "db/seeds/data/findings1.tsv"
     },
     {
+      "address": "0x1434d66f0",
+      "field1": "table",
+      "field2": "Pesdb_FileNameTable",
+      "field3": "probable",
+      "evidence": "no",
+      "source": "db/seeds/data/formation1.tsv"
+    },
+    {
+      "address": "0x14133392c",
+      "field1": "site",
+      "field2": "MLSetup_RebuildLineupsByKind@KindMask",
+      "field3": "probable",
+      "evidence": "no",
+      "source": "db/seeds/data/formation1.tsv"
+    },
+    {
+      "address": "0x14133396e",
+      "field1": "site",
+      "field2": "MLSetup_RebuildLineupsByKind@KindBase",
+      "field3": "probable",
+      "evidence": "no",
+      "source": "db/seeds/data/formation1.tsv"
+    },
+    {
+      "address": "0x141333971",
+      "field1": "site",
+      "field2": "MLSetup_RebuildLineupsByKind@KindLimit",
+      "field3": "probable",
+      "evidence": "no",
+      "source": "db/seeds/data/formation1.tsv"
+    },
+    {
+      "address": "0x141269744",
+      "field1": "site",
+      "field2": "Competition_MLSetup_BuildRankings@SetLineupFlag",
+      "field3": "probable",
+      "evidence": "no",
+      "source": "db/seeds/data/formation1.tsv"
+    },
+    {
+      "address": "0x1414b8c26",
+      "field1": "site",
+      "field2": "Derby_Array@ReadA",
+      "field3": "probable",
+      "evidence": "no",
+      "source": "db/seeds/data/formation1.tsv"
+    },
+    {
+      "address": "0x1414bb165",
+      "field1": "site",
+      "field2": "Derby_Array@ReadB",
+      "field3": "probable",
+      "evidence": "no",
+      "source": "db/seeds/data/formation1.tsv"
+    },
+    {
+      "address": "0x1414bbcbc",
+      "field1": "site",
+      "field2": "Derby_Array@ReadC",
+      "field3": "probable",
+      "evidence": "no",
+      "source": "db/seeds/data/formation1.tsv"
+    },
+    {
       "address": "0x1427fd430",
       "field1": "table",
       "field2": "PlayerSearch_Tries_L1",
@@ -7775,6 +7991,22 @@
       "source": "db/seeds/ports/competition.tsv"
     },
     {
+      "address": "0x1414f5120",
+      "status": "reimplemented",
+      "fidelity": "exact",
+      "implementation": "src/game/ml/career_formations.cpp formation_positions",
+      "evidence": "the formation positions (kind 0 of the block-0 tactic) from Tactics.bin and TacticsFormation.bin (src/platform/pc/career_files.cpp career_formation_positions); 659 of 659 teams on probe 52 run 1 (career_formations_test). The other tactic fields (x, y, kinds 1-2, block 1, sliders, coach) match 659 of 659 in private-reference/gateD/k4/formation_check.py but the World does not hold them",
+      "source": "db/seeds/ports/competition.tsv"
+    },
+    {
+      "address": "0x1413338c0",
+      "status": "reimplemented",
+      "fidelity": "behavioural",
+      "implementation": "src/game/ml/career_formations.cpp build_creation_formations",
+      "evidence": "the slot-mask rebuild (mask read from the exe) with match::auto_lineup and the setup order of probe 55 (load order, this pass, the loan returns as repair and rebuild); club starting XIs 548 of 555 on probe 52 run 1 (117 of 117 for clubs this pass wrote last); bench order not the game's (the unread lineup finaliser), the August-start flag a fixed input",
+      "source": "db/seeds/ports/competition.tsv"
+    },
+    {
       "address": "0x1405b6800",
       "status": "reimplemented",
       "fidelity": "exact",
@@ -8299,6 +8531,11 @@
       "date": "2026-11-21",
       "title": "constructor stage K3, the player population, club squads and loans from installed data (Track B/C, Gate D)",
       "body": "`ml::creation_population` (`src/game/ml/career_population.cpp`) gives the career's player records, their order and their state nibble. `ml::build_creation_squads` (`src/game/ml/career_squads.cpp`) gives the club squads and the loan fields. `platform::career_player_files` reads the inputs. Checked against probe 52 Arsenal run 1 at the 1 July 2020 boundary by `career_players_test` and the new `career_squads_test`. The rule is read from the exe; no list derived from a reference dump is used.\n\n**Probes 53 and 54** (Arsenal, Club Team Lineup, created by the user on the VM).\n- Probe 53's day-181 dump equals probe 52 run 1: the same 17,289 players in the same order, the same 659 handles, all 659 rosters equal. So the creation is deterministic for membership, order and squads.\n- Probe 54 dumped EditData at `Competition_MLSetup_Run` `0x141267040` entry (`private-reference/probe54/edit54_run.bin`). There, EditData equals the files exactly (**confirmed**, data): 18,452 players in Player.bin order, and all 555 club and 102 national rosters equal PlayerAssignment.bin. Everything below happens inside the setup.\n- Its second breakpoint, at `0x14126E970`, never fired. That function is the player collection of setup mode kind 8 only: `Competition_MLSetup_Run` calls it at `0x1412671A5` when setup `+0x78` is 8 (**probable**, decompile). The Master League path (kinds 9 and 10) calls `Competition_MLSetup_BuildTeams` `0x14126C640`, then `Competition_MLSetup_RefreshTable`, then `Competition_RegulationTable_RebuildFromList`.\n\n**The collection** (`Competition_MLSetup_BuildTeams`, **probable** as a reading; the model built from it gives 17,289 of 17,289 players in record order from the files alone, **confirmed** as data on probes 52, 53 and 54). The setup appends player records to its vector (setup `+0x30`) in this order:\n1. Every roster player of each club-class team (`+0x420` bits 26-28 = 0), in setup team order, with no duplicate test. State nibble (`+0x13C` bits 0-3) 0. 15,963 players.\n2. Each nation's roster (class 1), skipping a player already held, with state 1. The national rosters are then emptied (`Team_Squad_RemoveRef`). 1,141 players.\n3. The rosters of the extra-team list (setup `+0x80`, `Competition_MLSetup_BuildExtraTeamList` `0x1412659C0`), skipping held players, with state 1. The list holds the teams of the entry keys at `MLSetup_ExtraTeamKeys` `0x1428BFAB0` (69, 71, 27, 67, 26, 28, 73, 74, 30, 70, 75). 5 players, from AFC clubs 65831, 65846 and 69630.\n4. `Competition_MLSetup_AddSpecialClubPlayers` `0x141267790`: every player of the setup lists `+0xC8`, `+0xE0` and `+0xF8`. These are clubs 140, 2469 and 2696, filed by `Competition_MLSetup_CollectSpecialClubs` `0x141264F70`. Their state is 4 or 10, chosen by the user league regulation's `+0x300` bits 25-28 (disassembly read). For Arsenal (region 1) club 140 gets 10, and the 1 July record holds 2: a later step clears bit 3 (**probable**, 28 of 28). 84 players.\n5. `Competition_MLSetup_AddNewfacePlayers` `0x141265080`: the four lists of `MLSetup_NewfaceLists` `0x1428BFB20` (0, 1, 2, 3, the ML_NEWFACE kinds), each player found in EditData. State 3 for the list of the user's region, else 2. 96 players: Europe has state 3 for Arsenal.\n6. Free agents. Every player is a candidate when he is on no team roster. He is skipped when:\n   - he is on the special lists 4, 5, 7 or 8 (`SpecialPlayerList_Contains` `0x1414D68C0`);\n   - he is in the set of `Competition_MLSetup_BuildDeletedSet` `0x1414D9A60`;\n   - his id is in 0x80000000..0x800000BA, or has bits 0x0FF00000 set;\n   - he is already held.\n\n   State 2. None is left in vanilla: the 776 candidates are the 96 newfaces (already held) plus 680 excluded ones.\n\n\"Held\" is `Competition_MLSetup_IsPlayerHeld` `0x1412646D0`: a record in the vector with the same `id & 0x8FFFFFFF` (`Player_IdBaseMask` `0x1414BDAC0`) with bit 18 cleared (`Player_IdClearBit18` `0x141E53280`), and the same `+0x144` nationality (**probable**, decompile). So the 0x4xxxx/0x5xxxx national variants of club players are dropped: 1,205 of the national roster entries.\n\n**The special-player lists** at EditData `+0x184DB1C`: 30,000 u32 ids, list k starts at `+0x1D4C0 + 4k` and its count is at `+0x1D4E8 + 4k`. They are SpecialPlayerAssignment.bin (**confirmed**, data: the nine file kinds equal lists 0-8 in probe 54).\n- The file has 16-byte rows {player id, field, order, kind}. SpecialPlayerAssignmentKind.bin names the kinds:\n  - 1 ML_NEWFACE_EURO, 2 ML_NEWFACE_SAMERICA, 3 ML_NEWFACE_ASIA, 4 ML_NEWFACE_J_LEAGUE;\n  - 5 EXTRA, 6 MONTAGE_PRESET, 7 JAPAN_RESERVE, 8 ML_COACH, 9 ML_COACH_LEGEND.\n- List 9 is PlayerDeleteList.bin (555 ids).\n- The 680 dropped free agents are exactly the 86 EXTRA, 18 MONTAGE_PRESET, 10 ML_COACH, 11 ML_COACH_LEGEND and 555 deleted players (**confirmed**, data).\n- `Competition_MLSetup_BuildDeletedSet` also adds a list held in the EditData owner's `+0x50` object. It is not read, and it has no effect in vanilla.\n- The 1,163 players the creation drops (18,452 at the Run entry, 17,289 kept) are exactly these 680 plus 483 duplicate variants. This replaces K1's \"1,934 clubless players kept by an unknown rule\": `BuiltPlayers::selection_unresolved` and `state_unknown` are removed.\n\n**Team class from Team.bin** (**probable**, three dumps, 669 of 669 teams):\n- class 1 when bit 671 is set;\n- class 2 when bit 669 is set (only WORLD SELECTION, a single example);\n- class 0 otherwise.\n\nSo K2's one `non_club` difference is gone, and `career_teams_test` now checks it exactly.\n\n**Squads and loans** (`build_creation_squads`, `team::build_ml_squads` run in the creation record order):\n\n| Field | Equal | Of |\n|---|---|---|\n| population and record order | 17,289 | 17,289 |\n| state nibble, fame, wage (K1 fields) | 17,289 | 17,289 |\n| club rosters, in order | 554 | 556 |\n| team0 | 17,288 | 17,289 |\n| loan_owner | 17,288 | 17,289 |\n| club164 | 17,289 | 17,289 |\n| loan_end | 17,287 | 17,289 |\n| post_draw (loan flag) | 17,288 | 17,289 |\n| national and special rosters | 1 | 103 |\n\nThe loader keeps 1,021 loans and returns 875; the reference holds 145 on loan and 876 returned.\n\nPer player at 1 July (**confirmed** as data on probe 52; the rule is a fit of the dump):\n- On loan: team0 is the club holding him, club164 = team0, loan_owner is the owner, and the loan flag is set.\n- Returned: team0 is the owner, and loan_owner = club164 = the club he came back from.\n- Other club players: club164 = team0, and loan_owner is invalid.\n\nThe loan end is moved to the close of its half-year (July to December becomes 31 December, January to June becomes 30 June). The Run-entry record still holds the file date, so a later setup step does this; the step is not read. This is a fit of 144 of 145 loans (**probable**), tagged `shortcut:`.\n\nNot explained:\n- Player 61470: his loan ends 2020-12-31 in the file, but the game has already returned him to 2285 by 1 July. This causes the two club-roster differences.\n- Player 117642: the end 2021-12-31 is held as 2020-12-31.\n\n**Still provisional:**\n- National squads: the setup empties them, and a later step (the season-build chain toward `0x1412FD22E`) picks them again. That step is not read, and only 1 of 103 non-club rosters matches. This is the K3 blocker.\n- The transfer and loan list flags (`f14a`, and `f148`'s third byte).\n- `dev.user_club` (K8).\n- Morale, contracts, growth and the dev phase (K7).\n\n**Skeptic results on K2 claims** (pes-skeptic, 2026-11-21):\n- The club-slot rule holds under ablation: every part is needed. Its `+0x1789466 == 0` branch is not exercised by any dump.\n- Country.bin's id and confederation fields are promoted to **confirmed**.\n- Team.bin bit 671 stays **probable**: bit 17 separates the same 102 nations.\n\n**Code changes:**\n- `pesdb::SpecialPlayerAssignment` and `parse_special_assignments` are new, and `pesdb::Team::selection` is bit 669.\n- `TeamFile::cls` is added.\n- `platform::read_creation_tables` reads `0x1428BFAB0` and `0x1428BFB20`.\n- `CareerTeamFiles` gains `key_teams` and `team_class`.\n- `career_player_files` takes the `CareerTeamFiles` and a `CareerUser`. The user-region defaults are the Arsenal values, tagged `shortcut:`.\n- `PlayerFile` gains `state`, `loan_owner` and `loan_end`.\n- New tests: `career_population_test` (unit) and `career_squads_test` (data)."
+    },
+    {
+      "date": "2026-11-21",
+      "title": "constructor stage K4, formation positions and starting slots from installed data (Track B/C, Gate D)",
+      "body": "Static reading (Ghidra), the probe 52 creation dump (Arsenal run 1) and one new probe (55). Moves the native career constructor one stage closer to running in the host. Nothing runs in the host yet.\n\n**Formation records** (**probable** layout, decompile of the team loader; field values **confirmed** against data):\n- The team loader is `Pesdb_LoadTeams` `0x1414F5120`. It builds the team records and one 600-byte formation record per team at EditData `+0xC4CA0C` (count `+0xD0BCF0`, 661 at creation; team `+0x28C` holds the index).\n  - Record header: `+0` the index, `+4` the coach id (0xFFFFFFF5 on the user club's new record), `+8` the coach name from Coach.bin.\n  - Three tactic blocks of 0xA0 bytes at `+0x40`, `+0xE0` and `+0x180`; block 2 is a copy of block 0. Then the slot map `+0x220` (40 bytes), the role slots `+0x248` (6 bytes, from PlayerAssignment role flags) and `+0x251`.\n- Each block holds three kinds (`+0x21 * kind`): 11 position codes, then 11 (x, y) byte pairs from `+0xB`. Five sliders sit at `+0x8C`. The writers are `TacticBlock_SetSlotPosition` `0x1414C6650`, `TacticBlock_SetSlotXY` `0x1414C65E0` and `TacticBlock_SetSlider` `0x1414C6690`.\n- Table indices come from the pesdb file name table `0x1434D66F0`: 3 Coach, 0x17 Tactics, 0x18 TacticsFormation, 0x19 Team. They are read through `Pesdb_GetTableData` `0x14125F290` and `Pesdb_GetTableCount` `0x14125F2C0`.\n- Tactics.bin has 12-byte rows (tactic id, team id, bits; bit 24 = block). TacticsFormation.bin has 12-byte rows (tactic id, position code, x, y, slot bits 16-19, kind bits 20-21).\n- **confirmed** (`private-reference/gateD/k4/formation_check.py`): for 659 of 659 teams, both blocks' position codes, (x, y) of all three kinds and sliders equal the dump, and block 2 equals block 0. The World's `team.pos` is kind 0 of block 0: 659 of 659 from the files alone. The earlier note that the dump's position codes \"do not appear as plain bytes\" stands: they are spread over 12-byte rows.\n\n**Slot maps** (**probable**, read plus probe 55 plus data):\n- At `Competition_MLSetup_Run` entry every team's starting slots are 0-10 in PlayerAssignment squad order (669 of 669, probe 54 dump).\n- **Probe 55** logged every `Team_AutoSelectLineup` call (stack, team, mode, slots before) from Run entry to the first `ML_DayDriver` entry: 2008 calls, in this order.\n  1. 102 calls, mode 3, through `NationalSquad_Build` `0x141318100` from `MLSetup_PickNationalSquads` `0x141318D20`, inside `Competition_MLSetup_BuildRankings`: the national squad pick (not read).\n  2. 154 calls, mode 3, from `MLSetup_RebuildLineupsByKind` `0x1413338C0` at the end of BuildRankings.\n  3. 876 pairs from the transfer steps' loan returns: `Team_Squad_RemovePlayer` then mode 1 at the loan club, `Team_Squad_AddPlayer` then mode 3 at the owner. K3 replays 875 returns; the extra one is player 61470, the known K3 residual.\n- `MLSetup_RebuildLineupsByKind` (read) runs only when EditData `+0x1795D25` is set. It rebuilds every team whose club slot k passes k - 13 <= 0x3C with bit k - 13 of the immediate 0x1200000000000037 (slots 13, 14, 15, 17, 18, 70, 73) and that has a regulation. Probe 55: all 154 teams of those slots.\n- The flag is written at `0x141269744` in BuildRankings' August-start branch. That branch also moves the season start to 2020-08-01 and is taken when `Calendar_IsAugustStart` `0x141577A60` accepts the user league's calendar type (`Regulation_GetCalendarType` `0x1415762A0`); neither function is read. The flag is 0 at Run entry and 1 at creation.\n\n**Port** (`src/game/ml/career_formations.{h,cpp}`, `tests/game/career_formations_test.cpp`, `tests/game/career_formations_unit_test.cpp`):\n- `formation_positions` gives positions 659 of 659. `build_creation_formations` replays load order, the slot-mask rebuild (mask read from the exe by `read_lineup_rebuild_kinds`) and the K3 returns in record order. The replayed rosters equal K3's for every club.\n- Club starting XIs: 548 of 555 (**probable** as a model; exact per step):\n  - last write the load: 98 of 99;\n  - the slot-mask rebuild: 117 of 117;\n  - a return rebuild: 201 of 202. The two misses hold the K3 residual players 61470 and 117642.\n  - a loss repair: 132 of 137. The repair is modelled as kept starters locked plus the mode 3 search for the open slots (`match::auto_lineup` with `keep`, new). Mode 1's own criteria are not read; the simpler first-bench-entry refill gave 43 of 137.\n- Full 40-slot maps: 181 of 555. After a rebuild the bench is the previous bench minus the new starters, which is not the game's order (0 of 319 rebuilt clubs). The game's benches come in blocks that follow the formation's slot positions; two quick fits (repeated searches over the remaining players, with and without a playable filter) did not reproduce them. The finaliser `Lineup_FinaliseA/B` is not read.\n- National and other non-club teams: rosters and slot maps stay empty (0 of 104). That is the K3 national-squad dependency, now located (`0x141318D20`), not resolved and not presented as the game's.\n- `sim_team` (ml_day.cpp) is now public for the rebuilds. `build_creation_squads` reports the ordered returns. The pesdb readers are `parse_tactics` and `parse_tactic_slots`; `platform::career_formation_positions` reads the tables.\n\n**Correction (address):** the Derby packing filed under `Pesdb_LoadTables` `0x1414F2460` (entry 2026-11-03 and its seeds) is in the next function, `Pesdb_LoadDerbies` `0x1414F2CE0`. `0x1414F2460` reads pesdb tables 3 (Coach.bin) and 4 (CoachDeleteList.bin) and appends coach formation records, as RE-INVENTORY line 60 says. `0x1414F2CE0` (disassembly) sets `edx` with `xor ebp, ebp` / `lea edx, [rbp+0xA]` (table 10, Derby.bin, in the file name table `0x1434D66F0`), sorts with `0x1414ED350`, caps the count at `+0x184BF44` at 300 and packs with `Derby_Pack` into `+0x184B5E4`; it is the only writer of that array (the three other references, `0x1414B8C26`, `0x1414BB165`, `0x1414BBCBC`, read it). **probable**. The behaviour described in 2026-11-03 and the Derby lookups (probe 17) are unchanged; only the address was wrong. The struct and skip rows now name `Pesdb_LoadDerbies`.\n\n**Unverified:** the mode 1 criteria, the bench finaliser, the national pick, the calendar-type functions, and the regulation test of the rebuild pass (true for all 154 vanilla teams). Shortcut rows for these are in the plan, section 12."
     }
   ]
 }
