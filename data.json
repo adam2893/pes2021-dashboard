@@ -1439,7 +1439,7 @@
       "name": "Lineup_AssignB",
       "confidence": "probable",
       "reviewed": "no",
-      "evidence": "the bench builder of Team_AutoSelectLineup_Core (probe 56 oracle: writes the 29 bench slots of the result array; the XI comes from Lineup_SearchVariants): rounds over the 11 formation slots picking the Nth candidate of each slot position with per-position and per-group quotas and an alternative-position swap test (0x141502DF0, Lineup_CandidateLess), list re-sort at the bench count (0x1415051C0 mode 2), qsort of the bench entries with comparator 0x141505C30, then the unused players in roster order (decompile read 2026-11-21, not ported)",
+      "evidence": "the bench builder of Team_AutoSelectLineup_Core (probe 56 oracle: writes the 29 bench slots of the result array; the XI comes from Lineup_SearchVariants): rounds over the 11 formation slots picking the Nth candidate of each slot position with per-position and per-group quotas and an alternative-position swap test (0x141502DF0, Lineup_CandidateLess), list re-sort at the bench count (0x1415051C0 mode 2), qsort of the bench entries with comparator 0x141505C30, then the unused players in roster order (decompile read 2026-11-21; ported as match::auto_lineup_slots, checked against the emulation oracle)",
       "source": "db/seeds/competition1.tsv"
     },
     {
@@ -4900,10 +4900,26 @@
     },
     {
       "address": "0x1415051c0",
-      "name": "Lineup_ResortCandidates",
-      "confidence": "guess",
+      "name": "Lineup_RetagCandidates",
+      "confidence": "probable",
       "reviewed": "no",
-      "evidence": "re-sorts one position candidate list (mode argument 2 when the bench count is reached in Lineup_AssignB) (2026-11-21); not read",
+      "evidence": "(list, mode, position, roster, context): does not reorder; sets each entry's category byte +0xD: mode 1 -> 1 (4 for a goalkeeper in the goalkeeper list, 3 or 0 from the context +0x38/+0x60 player flags), mode 2 -> 1 (0 when context +0x60 is set), mode 0 -> 2/1/0 (decompile read 2026-11-21; called by Lineup_AssignB)",
+      "source": "db/seeds/tooling1.tsv"
+    },
+    {
+      "address": "0x141505410",
+      "name": "Lineup_SetEntryCriteria",
+      "confidence": "probable",
+      "reviewed": "no",
+      "evidence": "writes each candidate entry's criteria list (+0x14, up to 12 ints, ends at 0xB) for the context mode: mode 3 (default branch) 7, 6, 5, 1 (table 0x14297E470), then 0, 4; modes 2, 4, 5, 6 use 0x1425C5640, 0x14297E4D0, 0x14297E4E0, 0x14297E4A0. Lineup_CandidateLess compares by this list, so the bench swap test uses it (decompile read 2026-11-21; port: kBenchCrits in match_day.cpp)",
+      "source": "db/seeds/tooling1.tsv"
+    },
+    {
+      "address": "0x141505be0",
+      "name": "Lineup_GetPositionList",
+      "confidence": "probable",
+      "reviewed": "no",
+      "evidence": "(candidate lists, position code) -> the position's candidate vector (0x18-byte vector of 0x60-byte entries) (decompile 2026-11-21)",
       "source": "db/seeds/tooling1.tsv"
     },
     {
@@ -6984,7 +7000,23 @@
       "address": "0x141502df0",
       "field1": "site",
       "field2": "Lineup_AltPosition",
-      "field3": "guess",
+      "field3": "probable",
+      "evidence": "no",
+      "source": "db/seeds/data/formation1.tsv"
+    },
+    {
+      "address": "0x14297e470",
+      "field1": "table",
+      "field2": "Lineup_BenchCriteriaMode3",
+      "field3": "probable",
+      "evidence": "no",
+      "source": "db/seeds/data/formation1.tsv"
+    },
+    {
+      "address": "0x141504150",
+      "field1": "site",
+      "field2": "Lineup_HasAltPosition",
+      "field3": "probable",
       "evidence": "no",
       "source": "db/seeds/data/formation1.tsv"
     },
@@ -8111,6 +8143,14 @@
       "source": "db/seeds/ports/competition.tsv"
     },
     {
+      "address": "0x141500ef0",
+      "status": "reimplemented",
+      "fidelity": "exact",
+      "implementation": "src/game/match/match_day.cpp auto_lineup_slots",
+      "evidence": "the bench on the flag-clear path, for caps 7 and 0x17 (Lineup_RetagCandidates, Lineup_SetEntryCriteria, Lineup_PickNthCandidate, the alternative-position tables, the qsort order); all 40 slots equal the game (emulation oracle on the probe 56 snapshot) for 555 of 555 clubs with each cap; the mode 1 path (param_4 + 4 == 1) and the flag-set branches are not ported",
+      "source": "db/seeds/ports/competition.tsv"
+    },
+    {
       "address": "0x1405b6800",
       "status": "reimplemented",
       "fidelity": "exact",
@@ -8645,6 +8685,11 @@
       "date": "2026-11-21",
       "title": "executable-wide call graph, function reports and an emulation oracle proof of concept (Track B, tooling)",
       "body": "Read-only tooling on the pinned exe (`src/tools/analysis/README.md`, section \"Executable-wide tools\"). Nothing runs in the host; nothing derived from the exe is committed (outputs under `private-reference/`).\n\n**Call graph** (`callgraph.py`, 28 s): 158,648 .pdata rows (41,163 marked fragments: chained unwind or nested ranges), 727,188 direct call and tail-jump edges (260,580 into targets without a .pdata row, mostly leaf functions), 76,342 indirect call sites listed unresolved, 547 functions named from the seeds. Output `private-reference/callgraph/`; queries with `callgraph_query.py`. It covers the whole executable (gameplay, rendering, UI included), not only the Master League.\n\n**Function report** (`function_report.py`, about 1 s per function): bounds, seed row, port row, callers and callees with names, indirect calls, RIP-relative data and strings, displacements matched against `db/seeds/structs` (a match by offset is a candidate only: every struct with that field offset is listed), immediates, FINDINGS lines and saved decompiles. Checked on `Team_AutoSelectLineup`: 29 callers, 6 callees, the formation fields `+0x220`, `+0x248`, `+0x251`.\n\n**Database loaders** (`pesdb_loaders.py`): all 28 pesdb table indices resolved to their loaders by a constant walk over the 92 calls of `Pesdb_GetTableData` / `Pesdb_GetTableCount` (table in the K5 scope report; seeds follow).\n\n**Emulation oracle, proof of concept** (`src/tools/oracles/emu_autoselect.py`, Unicorn 2.1.4): the game's own `Team_AutoSelectLineup` `0x1414FF0E0` on the probe 52 creation state (EditData at its captured base `0x7FF4DABE0010`, the captured `.data` and `.rdata` images, exe sections from the file), team 2451 with its load-order slot map, called as `MLSetup_RebuildLineupsByKind` calls it (context from `Lineup_Context_Init`, mode 3, byte +8 = 7).\n- Modelled, each stated in the tool: the PE header page (CRT jump tables are RVAs); the C runtime imports whose behaviour the C standard fixes (`memset`, `memcpy`, `memmove`, `memcmp`; import slots named from the file's hint/name entries, every other import stops the run); a thread block for the stack probe (`__chkstk` reads `gs:[0x10]`); the game allocator `0x1403FB240` / `0x1403FB410` / `0x1403FB5B0` / `0x1403FB2E0` replaced by a bump allocator (addresses only); the EditData owner pointer `0x143705E10` (+0x48 only); the game-mode manager `0x143704E38` (+0xF0 = 0x13 only, the value probe 8 read at run time).\n- Deterministic: two runs from the same state give identical output (all logs byte-equal).\n- **Blocked** (not a disagreement): the candidate scoring (`Lineup_ScoreCandidates` `0x141503610` through `0x14152F320` and `0x1414BB2A0`) reads the EditData owner's sub-objects `+0x30`, `+0x50` and `+0x58` (Master League runtime data, not EditData), and faults in `0x1414C1330` on the `+0x50` object. These objects are in no dump. Under the oracle rules no value is invented, so the run stops there, after 97 allocations, 101 `memset` and 30 `memmove` calls and no EditData write outside the team and formation records. The `.bss` global `0x1437F47F8` (fields of the blank roster-slot records) is also not captured; the plan was to run with 0 and 0xFFFFFFFF and accept only an identical result.\n- **Smallest unblocking step:** a non-invasive snapshot at the ML menu (attach, `.writemem`, detach, as `snap41.txt`): the owner object, the objects at owner `+0x30`, `+0x50`, `+0x58`, the whole `.data`/`.bss` range and EditData, from one moment. The user only has to be at the ML menu. Alternative without the VM: a pure target such as `Lineup_CriterionValue` `0x141502EB0` or `Lineup_SlotPriority` `0x141503420`, which read player records and `.rdata` tables only.\n\n**Addendum, same day: the oracle works on a captured snapshot (probe 56).**\n- **Probe 56** (`tests/behaviour/cdb/mlswap/snap56.ps1`, run on the VM at the ML menu of the probe 55 career): every thread of PES2021.exe suspended with NtSuspendProcess, memory read with ReadProcessMemory, resumed in a `finally` block. Captured: the exe sections at run time; the EditData owner (0xE0 bytes, size from `Memory_AllocFrom` at `0x1414B60B8`); its objects of exact size (+0x48 EditData 0x1877068, +0x50 0x40258, +0x60 0x260554, +0x68 0x40, +0xD8 0x130, sizes from the owner initialiser `0x1414B6F50`); the other owner pointers and the mode manager by memory region with caps; one level of pointers out of +0x50, +0x58 and +0x60, by region (cap 1 MiB each, 256 MiB in total: reached). Owner +0x30 is a dword (4) and +0x58 is null at the menu.\n  - Consistency: a second pass 5 s later found EditData, the owner and its +0x50, +0x60 and +0x78 objects byte-identical; only the scratch objects at owner +0x00 to +0x28 changed.\n  - Cost: the first pass kept the game suspended for 274 s (the level-2 cap). The next run should lower the cap. A first, unintended run of the script (meant as a dry run with the game closed) suspended the game for several minutes before it was stopped and resumed; its partial output (`snap56_dry`) is not used.\n- **Oracle result** (`emu_autoselect.py --snapshot`): every captured range mapped at its own address, no synthetic owner or manager. For the 154 clubs of the slot-mask kinds, run from the load-order slot map: all 40 slots equal the snapshot for **114 of 114** clubs whose roster is still the file roster, i.e. whose last lineup write was `MLSetup_RebuildLineupsByKind`. **confirmed** (the game's own code on captured state; deterministic; no unmapped access, no unmodelled import, no EditData write outside the team and formation records). The other 40 were rewritten later by the loan returns (XI equal for 34 even so); the load-order start does not apply to them.\n- **The bench rule, located:** a write trace shows the 40 slots are copied in `Team_AutoSelectLineup` (`0x1414FF263`) from a result array that `Lineup_SearchVariants` fills for the XI (11 writes) and `Lineup_AssignB` `0x141500EF0` for the bench (29 writes). `Lineup_AssignB` (decompile read, not ported): rounds over the 11 formation slots, each taking the next candidate of the slot's position list with per-position and per-group quotas and an alternative-position swap test (`0x141502DF0`, `Lineup_CandidateLess`), a list re-sort at the bench count (`0x1415051C0`), a qsort of the bench entries (comparator `0x141505C30`), then the unused players in roster order. Porting it is a separate step (about 6 KB of code and five helpers); the K4 bench shortcut stays open, now with its source located and an oracle to test a port against.\n- **Loanee repair (mode 1):** not run yet. Its starting state (the club's map just before the removal) is not in the snapshot, which is taken after all the setup steps; it needs the removal replayed under emulation from an earlier state, or a pre-return capture."
+    },
+    {
+      "date": "2026-11-21",
+      "title": "Lineup_AssignB ported, the K4 bench reconstructed (Track B/C, Gate D)",
+      "body": "`Lineup_AssignB` `0x141500EF0` and its helpers were read (Ghidra decompile, disassembly, and the two jump-table leaves tabulated by running them under Unicorn for every input) and ported as `match::auto_lineup_slots` (`src/game/match/match_day.cpp`), used by the K4 creation replay (`ml::build_creation_formations`) for every mode 3 rebuild. The in-season path (`set_starters` after CPU matches) is unchanged, so the C2 audit is not affected.\n\n**The rule** (**confirmed** by the oracle, below):\n- The Core calls `Lineup_AssignB` with both flag arguments clear on these paths (oracle: `param_6 = param_7 = 0`). The quota adjustment, the re-scoring and the position-group split behind those flags are skipped. The context byte +8 (the \"cap\") is 7 in `MLSetup_RebuildLineupsByKind` and 0x17 from `Lineup_Context_Init` (`Team_Squad_AddPlayer`).\n- `Lineup_RetagCandidates` `0x1415051C0` (renamed from the guess `Lineup_ResortCandidates`) only sets each entry's category byte; it does not reorder. `Lineup_SetEntryCriteria` `0x141505410` replaces every entry's criteria list: in mode 3 with 7, 6, 5, 1 (table `0x14297E470`), then 0 and 4. `Lineup_CandidateLess` compares by that list, so comparisons made after it (the swap test) use the bench order, not the XI search's 1, 7, 5, 0, 6, 4. This was the one rule the first port missed; a pick trace in the oracle found it.\n- Rounds over formation slots 0 to 10: each slot takes the first unused entry of its position list (`Lineup_PickNthCandidate` with skip 0; 0xFF when none), at most once per position per round, until as many slots are filled as the roster holds.\n- While fewer than `cap` slots are filled:\n  - only one bench goalkeeper;\n  - defender, midfielder and forward picks stop at quotas from the formation's group counts: `(cap - 12) * count / 10`, rounded half away from zero, with forwards taking the rest;\n  - positions 2/3, 6/7 and 9/10 take the alternative position's first unused candidate instead when `Lineup_CandidateLess` prefers it and the alternative has not been picked more. `Lineup_HasAltPosition` `0x141504150` and `Lineup_AltPosition` `0x141502DF0` were tabulated by emulation; `Position_GroupIndex` matches the port's `group()`.\n- With 11 < cap, entries 11 to cap-1 and cap to 39 are each sorted (qsort with `0x141505C30`: player 0xFF last, then registered position ascending, then player ascending; a total order).\n- Last, the unavailable players not placed, in roster order.\n\n**Checks:**\n- **Port against the game on identical state** (`private-reference/gateD/k4/port_vs_oracle.py`): the oracle runs the game's own `Team_AutoSelectLineup` on every club of the probe 56 snapshot. All 40 slots are equal for **555 of 555 clubs with cap 0x17** and **555 of 555 with cap 7**. The oracle now carries out the qsort call when its comparator is `0x141505C30`; any other comparator stops the run.\n  - Correction to the addendum above: an earlier single 0x17 run of team 2546 that \"matched\" had stopped at the qsort import before writing anything, so it showed the dump's own slots. The pick trace taken from it was valid (the picks come before the sort).\n- **Creation replay against probe 52** (`career_formations_test`, all 555 clubs):\n  - starting XI 548 of 555 (unchanged);\n  - all 40 slots **521 of 555** (was 181): slot-mask rebuild 117 of 117, return rebuild 200 of 202, load order 98 of 99, loss repair 106 of 137.\n  - The 34 that differ: 31 loss repairs (mode 1, not read); the clubs of the two K3 residual players, 2285 and 5046, whose rosters differ; and the user club 101, which `Team_Squad_AddPlayer` rebuilds in mode 1.\n- **Unit test** (`career_formations_unit_test`): a synthetic squad of twin specialists checks the round structure for both caps.\n\n**Still open:** the mode 1 repair (the `param_4 + 4 == 1` path of `Lineup_AssignB` and mode 1's criteria). It needs the club's map before the removal, which no capture holds. The shortcut row stays open."
     }
   ]
 }
