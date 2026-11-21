@@ -1,5 +1,5 @@
 {
-  "updated": "2026-11-20",
+  "updated": "2026-11-21",
   "description": "Community research metadata, not game source or assets. Confidence labels are provisional.",
   "functions": [
     {
@@ -333,9 +333,9 @@
     {
       "address": "0x14126c640",
       "name": "Competition_MLSetup_BuildTeams",
-      "confidence": "guess",
+      "confidence": "probable",
       "reviewed": "no",
-      "evidence": "9 KB ML step: maps the user's club early via 0x141266490 (low bits still follow file order: probe 17), then calls 0x141264F70, 0x144758530, MapAllTeams, 0x141265080; reorder (draw) location inside it not found",
+      "evidence": "collects the career's player records into the setup vector: club rosters (class 0), nations deduplicated by Competition_MLSetup_IsPlayerHeld then emptied, the extra-team list, 0x141267790, 0x141265080, then free agents on no roster outside the SpecialPlayerAssignment kinds 5/6/8/9 and the deleted set (17,289 of 17,289 players in order from the files, probe 53/54, FINDINGS 2026-11-21 K3). Earlier note: 9 KB ML step: maps the user's club early via 0x141266490 (low bits still follow file order: probe 17), then calls 0x141264F70, 0x144758530, MapAllTeams, 0x141265080; reorder (draw) location inside it not found",
       "source": "db/seeds/competition1.tsv"
     },
     {
@@ -4035,6 +4035,110 @@
       "source": "db/seeds/competition1.tsv"
     },
     {
+      "address": "0x1412646d0",
+      "name": "Competition_MLSetup_IsPlayerHeld",
+      "confidence": "probable",
+      "reviewed": "no",
+      "evidence": "walks the setup player vector (+0x30..+0x38) and returns 1 when a record has the same id & 0x8FFFFFFF (bit 18 also cleared unless *param_3) and the same +0x144 nationality; the duplicate test of the creation collection (decompile read; with it the K3 model gives 17,289 of 17,289 players in order, probe 53/54, FINDINGS 2026-11-21 K3)",
+      "source": "db/seeds/competition1.tsv"
+    },
+    {
+      "address": "0x1414bdac0",
+      "name": "Player_IdBaseMask",
+      "confidence": "confirmed",
+      "reviewed": "no",
+      "evidence": "returns id & 0x8FFFFFFF (9-byte body, decompile read 2026-11-21)",
+      "source": "db/seeds/competition1.tsv"
+    },
+    {
+      "address": "0x141e532b0",
+      "name": "Player_IdHasBit18",
+      "confidence": "confirmed",
+      "reviewed": "no",
+      "evidence": "returns id >> 18 & 1 (decompile read 2026-11-21)",
+      "source": "db/seeds/competition1.tsv"
+    },
+    {
+      "address": "0x141e53280",
+      "name": "Player_IdClearBit18",
+      "confidence": "confirmed",
+      "reviewed": "no",
+      "evidence": "returns id & 0xFFFBFFFF (decompile read 2026-11-21)",
+      "source": "db/seeds/competition1.tsv"
+    },
+    {
+      "address": "0x141267790",
+      "name": "Competition_MLSetup_AddSpecialClubPlayers",
+      "confidence": "probable",
+      "reviewed": "no",
+      "evidence": "appends the players of the setup lists +0xC8, +0xE0, +0xF8 (clubs 140, 2469, 2696 in vanilla) to the setup player vector with no team, state nibble 4 or 10 chosen by the user league regulation's +0x300 bits 25-28 (decompile and disassembly read 2026-11-21; 84 of 84 players in order, probe 53)",
+      "source": "db/seeds/competition1.tsv"
+    },
+    {
+      "address": "0x1412659c0",
+      "name": "Competition_MLSetup_BuildExtraTeamList",
+      "confidence": "probable",
+      "reviewed": "no",
+      "evidence": "fills setup +0x80 with the teams of the entry-table keys at 0x1428BFAB0 (setup +0x7C == 0x12) or 0x1428BFAE0 (+0x7C 0x13/0x14, user team skipped), plus keys 0x10/0x11 when EditData +0x1789466 is 0; duplicate team ids resolved through 0x1414BDA30 and the pair table 0x1428BFB30 (decompile read 2026-11-21)",
+      "source": "db/seeds/competition1.tsv"
+    },
+    {
+      "address": "0x1414d68c0",
+      "name": "SpecialPlayerList_Contains",
+      "confidence": "probable",
+      "reviewed": "no",
+      "evidence": "binary search of player id in list k of the EditData +0x184DB1C table (count +0x1D4E8+4k, start +0x1D4C0+4k) (decompile read 2026-11-21)",
+      "source": "db/seeds/competition1.tsv"
+    },
+    {
+      "address": "0x1414d68a0",
+      "name": "SpecialPlayerList_Count",
+      "confidence": "probable",
+      "reviewed": "no",
+      "evidence": "count of list k of the +0x184DB1C table; callers walk lists with it and 0x1414D6870 (2026-11-21)",
+      "source": "db/seeds/competition1.tsv"
+    },
+    {
+      "address": "0x1414d6870",
+      "name": "SpecialPlayerList_Get",
+      "confidence": "probable",
+      "reviewed": "no",
+      "evidence": "entry i of list k of the +0x184DB1C table (2026-11-21)",
+      "source": "db/seeds/competition1.tsv"
+    },
+    {
+      "address": "0x1414d95f0",
+      "name": "SortedIds_Contains",
+      "confidence": "probable",
+      "reviewed": "no",
+      "evidence": "lower_bound over a sorted u32 vector, returns 1 when the id is present (decompile read 2026-11-21)",
+      "source": "db/seeds/competition1.tsv"
+    },
+    {
+      "address": "0x1414d9a60",
+      "name": "Competition_MLSetup_BuildDeletedSet",
+      "confidence": "probable",
+      "reviewed": "no",
+      "evidence": "builds the sorted id set the free-agent filter tests: list 9 of +0x184DB1C (PlayerDeleteList.bin, 555 ids in vanilla) and a list in the EditData owner +0x50 object (+0x153E4, count +0x33CF4; not read further) (2026-11-21)",
+      "source": "db/seeds/competition1.tsv"
+    },
+    {
+      "address": "0x14126e970",
+      "name": "Competition_MLSetup_CollectPlayersKind8",
+      "confidence": "probable",
+      "reviewed": "no",
+      "evidence": "the player collection of setup mode kind 8 only (Competition_MLSetup_Run calls it at 0x1412671A5 when setup +0x78 == 8): MapAllTeams, the extra-team list, then every mapped team roster into the setup vector; not on the Master League path (probe 54 breakpoint never hit, 2026-11-21)",
+      "source": "db/seeds/competition1.tsv"
+    },
+    {
+      "address": "0x141265080",
+      "name": "Competition_MLSetup_AddNewfacePlayers",
+      "confidence": "probable",
+      "reviewed": "no",
+      "evidence": "for the four lists of 0x1428BFB20 (ML_NEWFACE kinds) appends each listed player found in EditData to the setup vector with no team, state 3 for the list matching the user region (0x141511070 of EditData +0x1789400) and 2 otherwise; skipped in setup mode 10 (decompile read 2026-11-21; 96 of 96 in order, probe 53)",
+      "source": "db/seeds/competition1.tsv"
+    },
+    {
       "address": "0x1414bc860",
       "name": "Competition_RegulationTable_Find",
       "confidence": "probable",
@@ -4945,6 +5049,54 @@
       "field1": "site",
       "field2": "Random_Percent99@BelowReturn",
       "field3": "confirmed",
+      "evidence": "no",
+      "source": "db/seeds/data/competition1.tsv"
+    },
+    {
+      "address": "0x1428bfab0",
+      "field1": "table",
+      "field2": "MLSetup_ExtraTeamKeys",
+      "field3": "confirmed",
+      "evidence": "no",
+      "source": "db/seeds/data/competition1.tsv"
+    },
+    {
+      "address": "0x1428bfae0",
+      "field1": "table",
+      "field2": "MLSetup_ExtraTeamKeysWithNations",
+      "field3": "confirmed",
+      "evidence": "no",
+      "source": "db/seeds/data/competition1.tsv"
+    },
+    {
+      "address": "0x1428bfb20",
+      "field1": "table",
+      "field2": "MLSetup_NewfaceLists",
+      "field3": "confirmed",
+      "evidence": "no",
+      "source": "db/seeds/data/competition1.tsv"
+    },
+    {
+      "address": "0x1428bfb30",
+      "field1": "table",
+      "field2": "MLSetup_TeamVariantRank",
+      "field3": "probable",
+      "evidence": "no",
+      "source": "db/seeds/data/competition1.tsv"
+    },
+    {
+      "address": "0x1412671a5",
+      "field1": "site",
+      "field2": "Competition_MLSetup_Run@CallCollectKind8",
+      "field3": "probable",
+      "evidence": "no",
+      "source": "db/seeds/data/competition1.tsv"
+    },
+    {
+      "address": "0x1412fd22e",
+      "field1": "site",
+      "field2": "SeasonBuild@NationalRosterWrite",
+      "field3": "guess",
       "evidence": "no",
       "source": "db/seeds/data/competition1.tsv"
     },
@@ -7607,6 +7759,22 @@
       "source": "db/seeds/ports/competition.tsv"
     },
     {
+      "address": "0x14126c640",
+      "status": "reimplemented",
+      "fidelity": "exact",
+      "implementation": "src/game/ml/career_population.cpp creation_population",
+      "evidence": "the player collection with 0x1412646D0, 0x141267790, 0x141265080 and the free-agent filter; 17,289 of 17,289 players in record order and state nibble on probe 52 run 1 from the files (career_players_test, career_squads_test); the user-region inputs are given by the caller",
+      "source": "db/seeds/ports/competition.tsv"
+    },
+    {
+      "address": "0x14126a8f0",
+      "status": "reimplemented",
+      "fidelity": "behavioural",
+      "implementation": "src/game/ml/career_squads.cpp build_creation_squads",
+      "evidence": "the loan loader and returns (team::build_ml_squads) in creation record order with the loan fields; 17,288 of 17,289 team0 and loan_owner, 554 of 556 club rosters (probe 52 run 1); one early return and one end date not explained, the end date moved by a fit",
+      "source": "db/seeds/ports/competition.tsv"
+    },
+    {
       "address": "0x1405b6800",
       "status": "reimplemented",
       "fidelity": "exact",
@@ -8126,6 +8294,11 @@
       "date": "2026-11-21",
       "title": "constructor stage K2, team records from installed data; the club slot rule (Track B/C, Gate D)",
       "body": "`platform::career_team_files` (`src/platform/pc/career_files.cpp`) reads the team inputs and `ml::build_teams` (`src/game/ml/career_teams.cpp`) builds the 659 team records, the club ranking table and the rank bytes. Checked by `tests/game/career_teams_test.cpp` against probe 52 Arsenal run 1 at the 1 July 2020 creation boundary, through `compare_worlds`.\n\n**Team record layout at creation** (**confirmed**, data; identical on probe 52 runs 1 and 2, the run 3 Vasco menu dump and probe 38):\n- records 0-554 are the 555 clubs in `ml_club_records` order;\n- records 555-656 are the 102 nations, grouped by their club slot (0 UEFA, 1 CAF, 2 CONCACAF, 3 CONMEBOL, 4 AFC and OFC) and ordered by English name in byte order within a group (Côte d'Ivoire after Cameroon);\n- records 657-658 are THE OLD BOYS (4971) and WORLD SELECTION (5129), slot 0x7B, in Team.bin order;\n- the order does not depend on the user's club (Arsenal and Vasco give the same 659 handles).\n\n**The club slot (team `+0x41C & 0x7F`, the World's `kind`).** `Competition_MLSetup_MapTeam` `0x141266490` stores the result of `Competition_MLSetup_ClubSlot` `0x141263B40` (**probable**, Ghidra decompile):\n1. Collect every key from 0 to 0x7A of the EditData entry table (`+0xD0BD04`) whose list holds the team id, in key order.\n2. Remap them: 16 becomes 0x45 and 17 becomes 0x49 unless EditData `+0x1789466` is set (it is 1 in every dump read); 26, 27, 28, 67 and 74 become 0x49; 30 becomes 0x46; 71 becomes 0x45; 76 to 80 are dropped; the others stay.\n3. `Competition_ClubSlot_FindLeagueSlot` `0x14125FE50` returns the first value that is a league slot. A slot is a league slot when one of its regulations passes `Competition_Regulation_IsLeagueType` `0x1414CF750`. The slot's regulations are the `Competition_KickoffConfig_Table` rows whose `+4` key equals the slot (`Competition_Slot_ListRegulations` `0x1414CE170`, through `Competition_KickoffConfig_CopyRow` `0x1414FDD60` and `Competition_KickoffConfig_RowCount` `0x1414FE1E0`, 165 rows). The test passes when the regulation is live and its type (`+0x308 >> 23 & 0x3F`) is below 16 with its bit set in 0xF9C2.\n4. Otherwise the first of 0x45, 0x46 and 0x49 (the European, Asian and Latin American pools); otherwise the first value; with no value, 0x7B.\n\nOn the dump's own entry table and regulation types the rule gives 659 of 659 slots. **confirmed** (data).\n\n**The rule's inputs from files** (**probable**: 659 of 659 slots on all four dumps):\n- Entry keys of a club: each kick-off table row gives its regulation a key (row `+4`). The regulation's competition (CompetitionRegulation.bin `+0x08`) lists its clubs in CompetitionEntry.bin.\n- Team.bin category 2, 6 and 7 add keys 69, 73 and 75. In the dump, keys 69, 73 and 75 are not CompetitionEntry lists.\n- A nation adds its confederation key from Country.bin. Country.bin has 214 records of 1,420 bytes; the country id is bits 10-18 and the confederation is byte 5. The key map is 2 to 0, 5 to 1, 6 to 2, 4 to 3, and both 3 and 7 to 4. **probable**, 102 of 102; only New Zealand has 7.\n- **League keys:** a key is a league key when one of its regulations has CompetitionRegulation.bin bits 143-144 non-zero.\n  - These bits are non-zero for exactly the 39 regulations whose in-memory type passes the league test, among the 199 live regulations. **probable** as a test; the field's own meaning is a guess.\n  - The 26 league keys are 7-18, 50-53, 88, 91, 94, 96, 99, 102, 105, 114, 119 and 122.\n\n**Other Team.bin mappings:**\n- Bit 671 is set on exactly the 102 nations, which are the teams with `+0x420` bits 26-28 = 1. **probable**: 659 of 659, but several other bits separate the same set, and this one sits among the team flags.\n- WORLD SELECTION holds class 2 (`0x8000000`) in memory. No Team.bin field gives it; the source is not known.\n- Stadium: the u16 at byte `0x3C` is copied for 656 teams. The 3 AFC clubs that hold 0 (71200, 71205, 71212) have 29 in memory. **guess** that an id outside the stadium table becomes 29.\n- Parent `+0x628`: invalid for all 659 teams at creation. **confirmed** (data).\n\n**Result** (`career_teams_test`):\n\n| Field | Equal | Of |\n|---|---|---|\n| order and handles | 659 | 659 |\n| kind | 659 | 659 |\n| national | 659 | 659 |\n| roll_skipped | 659 | 659 |\n| country | 659 | 659 |\n| tier | 659 | 659 |\n| stadium | 659 | 659 |\n| parent | 659 | 659 |\n| user | 659 | 659 |\n| non_club | 658 | 659 |\n| club ranking table | 1 | 1 |\n| rank bytes | 555 | 555 |\n\n- The one `non_club` difference is World Selection, and the test confines the difference to it.\n- Rosters, formation positions and slots are provisional (K3, K4).\n\n**Player record order** with the K2 team order (all 659 teams, each roster in PlayerAssignment squad order, then the rest in Player.bin order):\n- 16,081 of 17,289 positions agree. With the K1 clubs-only order it was 15,963.\n- With the reference's player membership, the team part (17,104 records) agrees exactly.\n- The remaining differences come from the clubless-player selection: the nations' rosters add 1,440 players who are in no club roster, from 98 nations, and the game keeps only some of them. The 185-record tail also differs.\n- The 1,934 clubless players are now listed in `BuiltPlayers::selection_unresolved`. No career operation may use them as confirmed members until the selection rule is read.\n\n**Code changes:**\n- `KickoffRow::key` (row `+4`) is read by the existing replayer.\n- `pesdb::Team` gains `national` and `stadium`; `CompetitionRegulation` gains `league_bits`; `pesdb::Country` and `parse_countries` are new.\n- `platform::is_ml_team` is added.\n- `CareerClub::rank` is added.\n- `career_player_files` takes the full team record order."
+    },
+    {
+      "date": "2026-11-21",
+      "title": "constructor stage K3, the player population, club squads and loans from installed data (Track B/C, Gate D)",
+      "body": "`ml::creation_population` (`src/game/ml/career_population.cpp`) gives the career's player records, their order and their state nibble. `ml::build_creation_squads` (`src/game/ml/career_squads.cpp`) gives the club squads and the loan fields. `platform::career_player_files` reads the inputs. Checked against probe 52 Arsenal run 1 at the 1 July 2020 boundary by `career_players_test` and the new `career_squads_test`. The rule is read from the exe; no list derived from a reference dump is used.\n\n**Probes 53 and 54** (Arsenal, Club Team Lineup, created by the user on the VM).\n- Probe 53's day-181 dump equals probe 52 run 1: the same 17,289 players in the same order, the same 659 handles, all 659 rosters equal. So the creation is deterministic for membership, order and squads.\n- Probe 54 dumped EditData at `Competition_MLSetup_Run` `0x141267040` entry (`private-reference/probe54/edit54_run.bin`). There, EditData equals the files exactly (**confirmed**, data): 18,452 players in Player.bin order, and all 555 club and 102 national rosters equal PlayerAssignment.bin. Everything below happens inside the setup.\n- Its second breakpoint, at `0x14126E970`, never fired. That function is the player collection of setup mode kind 8 only: `Competition_MLSetup_Run` calls it at `0x1412671A5` when setup `+0x78` is 8 (**probable**, decompile). The Master League path (kinds 9 and 10) calls `Competition_MLSetup_BuildTeams` `0x14126C640`, then `Competition_MLSetup_RefreshTable`, then `Competition_RegulationTable_RebuildFromList`.\n\n**The collection** (`Competition_MLSetup_BuildTeams`, **probable** as a reading; the model built from it gives 17,289 of 17,289 players in record order from the files alone, **confirmed** as data on probes 52, 53 and 54). The setup appends player records to its vector (setup `+0x30`) in this order:\n1. Every roster player of each club-class team (`+0x420` bits 26-28 = 0), in setup team order, with no duplicate test. State nibble (`+0x13C` bits 0-3) 0. 15,963 players.\n2. Each nation's roster (class 1), skipping a player already held, with state 1. The national rosters are then emptied (`Team_Squad_RemoveRef`). 1,141 players.\n3. The rosters of the extra-team list (setup `+0x80`, `Competition_MLSetup_BuildExtraTeamList` `0x1412659C0`), skipping held players, with state 1. The list holds the teams of the entry keys at `MLSetup_ExtraTeamKeys` `0x1428BFAB0` (69, 71, 27, 67, 26, 28, 73, 74, 30, 70, 75). 5 players, from AFC clubs 65831, 65846 and 69630.\n4. `Competition_MLSetup_AddSpecialClubPlayers` `0x141267790`: every player of the setup lists `+0xC8`, `+0xE0` and `+0xF8`. These are clubs 140, 2469 and 2696, filed by `Competition_MLSetup_CollectSpecialClubs` `0x141264F70`. Their state is 4 or 10, chosen by the user league regulation's `+0x300` bits 25-28 (disassembly read). For Arsenal (region 1) club 140 gets 10, and the 1 July record holds 2: a later step clears bit 3 (**probable**, 28 of 28). 84 players.\n5. `Competition_MLSetup_AddNewfacePlayers` `0x141265080`: the four lists of `MLSetup_NewfaceLists` `0x1428BFB20` (0, 1, 2, 3, the ML_NEWFACE kinds), each player found in EditData. State 3 for the list of the user's region, else 2. 96 players: Europe has state 3 for Arsenal.\n6. Free agents. Every player is a candidate when he is on no team roster. He is skipped when:\n   - he is on the special lists 4, 5, 7 or 8 (`SpecialPlayerList_Contains` `0x1414D68C0`);\n   - he is in the set of `Competition_MLSetup_BuildDeletedSet` `0x1414D9A60`;\n   - his id is in 0x80000000..0x800000BA, or has bits 0x0FF00000 set;\n   - he is already held.\n\n   State 2. None is left in vanilla: the 776 candidates are the 96 newfaces (already held) plus 680 excluded ones.\n\n\"Held\" is `Competition_MLSetup_IsPlayerHeld` `0x1412646D0`: a record in the vector with the same `id & 0x8FFFFFFF` (`Player_IdBaseMask` `0x1414BDAC0`) with bit 18 cleared (`Player_IdClearBit18` `0x141E53280`), and the same `+0x144` nationality (**probable**, decompile). So the 0x4xxxx/0x5xxxx national variants of club players are dropped: 1,205 of the national roster entries.\n\n**The special-player lists** at EditData `+0x184DB1C`: 30,000 u32 ids, list k starts at `+0x1D4C0 + 4k` and its count is at `+0x1D4E8 + 4k`. They are SpecialPlayerAssignment.bin (**confirmed**, data: the nine file kinds equal lists 0-8 in probe 54).\n- The file has 16-byte rows {player id, field, order, kind}. SpecialPlayerAssignmentKind.bin names the kinds:\n  - 1 ML_NEWFACE_EURO, 2 ML_NEWFACE_SAMERICA, 3 ML_NEWFACE_ASIA, 4 ML_NEWFACE_J_LEAGUE;\n  - 5 EXTRA, 6 MONTAGE_PRESET, 7 JAPAN_RESERVE, 8 ML_COACH, 9 ML_COACH_LEGEND.\n- List 9 is PlayerDeleteList.bin (555 ids).\n- The 680 dropped free agents are exactly the 86 EXTRA, 18 MONTAGE_PRESET, 10 ML_COACH, 11 ML_COACH_LEGEND and 555 deleted players (**confirmed**, data).\n- `Competition_MLSetup_BuildDeletedSet` also adds a list held in the EditData owner's `+0x50` object. It is not read, and it has no effect in vanilla.\n- The 1,163 players the creation drops (18,452 at the Run entry, 17,289 kept) are exactly these 680 plus 483 duplicate variants. This replaces K1's \"1,934 clubless players kept by an unknown rule\": `BuiltPlayers::selection_unresolved` and `state_unknown` are removed.\n\n**Team class from Team.bin** (**probable**, three dumps, 669 of 669 teams):\n- class 1 when bit 671 is set;\n- class 2 when bit 669 is set (only WORLD SELECTION, a single example);\n- class 0 otherwise.\n\nSo K2's one `non_club` difference is gone, and `career_teams_test` now checks it exactly.\n\n**Squads and loans** (`build_creation_squads`, `team::build_ml_squads` run in the creation record order):\n\n| Field | Equal | Of |\n|---|---|---|\n| population and record order | 17,289 | 17,289 |\n| state nibble, fame, wage (K1 fields) | 17,289 | 17,289 |\n| club rosters, in order | 554 | 556 |\n| team0 | 17,288 | 17,289 |\n| loan_owner | 17,288 | 17,289 |\n| club164 | 17,289 | 17,289 |\n| loan_end | 17,287 | 17,289 |\n| post_draw (loan flag) | 17,288 | 17,289 |\n| national and special rosters | 1 | 103 |\n\nThe loader keeps 1,021 loans and returns 875; the reference holds 145 on loan and 876 returned.\n\nPer player at 1 July (**confirmed** as data on probe 52; the rule is a fit of the dump):\n- On loan: team0 is the club holding him, club164 = team0, loan_owner is the owner, and the loan flag is set.\n- Returned: team0 is the owner, and loan_owner = club164 = the club he came back from.\n- Other club players: club164 = team0, and loan_owner is invalid.\n\nThe loan end is moved to the close of its half-year (July to December becomes 31 December, January to June becomes 30 June). The Run-entry record still holds the file date, so a later setup step does this; the step is not read. This is a fit of 144 of 145 loans (**probable**), tagged `shortcut:`.\n\nNot explained:\n- Player 61470: his loan ends 2020-12-31 in the file, but the game has already returned him to 2285 by 1 July. This causes the two club-roster differences.\n- Player 117642: the end 2021-12-31 is held as 2020-12-31.\n\n**Still provisional:**\n- National squads: the setup empties them, and a later step (the season-build chain toward `0x1412FD22E`) picks them again. That step is not read, and only 1 of 103 non-club rosters matches. This is the K3 blocker.\n- The transfer and loan list flags (`f14a`, and `f148`'s third byte).\n- `dev.user_club` (K8).\n- Morale, contracts, growth and the dev phase (K7).\n\n**Skeptic results on K2 claims** (pes-skeptic, 2026-11-21):\n- The club-slot rule holds under ablation: every part is needed. Its `+0x1789466 == 0` branch is not exercised by any dump.\n- Country.bin's id and confederation fields are promoted to **confirmed**.\n- Team.bin bit 671 stays **probable**: bit 17 separates the same 102 nations.\n\n**Code changes:**\n- `pesdb::SpecialPlayerAssignment` and `parse_special_assignments` are new, and `pesdb::Team::selection` is bit 669.\n- `TeamFile::cls` is added.\n- `platform::read_creation_tables` reads `0x1428BFAB0` and `0x1428BFB20`.\n- `CareerTeamFiles` gains `key_teams` and `team_class`.\n- `career_player_files` takes the `CareerTeamFiles` and a `CareerUser`. The user-region defaults are the Arsenal values, tagged `shortcut:`.\n- `PlayerFile` gains `state`, `loan_owner` and `loan_end`.\n- New tests: `career_population_test` (unit) and `career_squads_test` (data)."
     }
   ]
 }
