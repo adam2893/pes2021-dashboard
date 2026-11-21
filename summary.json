@@ -193,7 +193,7 @@
     }
   ],
   "counts": {
-    "named_addresses": 899,
+    "named_addresses": 905,
     "tests": 73,
     "port_rows_total": 110,
     "port_rows_by_status": {
