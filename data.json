@@ -3077,9 +3077,9 @@
     {
       "address": "0x141357470",
       "name": "Competition_NextList_Helper57470",
-      "confidence": "guess",
+      "confidence": "probable",
       "reviewed": "no",
-      "evidence": "read in part (pes-porter, probe 45, 2026-11-08)",
+      "evidence": "incomplete league (creation): the league's stored entrants, the country's slot-row count for the qual type (raised by one when a holder plays there and the country's key-23 clubs outnumber its CL rows), then TieredByRank with entry keys (read 2026-11-22; probes 58/59 regs 3, 2, 5 exact)",
       "source": "db/seeds/competition1.tsv"
     },
     {
@@ -3133,9 +3133,9 @@
     {
       "address": "0x141590750",
       "name": "Competition_Regulation_Flag90750",
-      "confidence": "guess",
+      "confidence": "probable",
       "reviewed": "no",
-      "evidence": "regulation predicate used by the relocated 0x1447E9090 (pes-porter 2026-11-08)",
+      "evidence": "(regulation id) the regulation has a runtime competition object (0x14158E080 != 0); false for every regulation at creation (read 2026-11-22; probe 59 runtime block empty)",
       "source": "db/seeds/competition1.tsv"
     },
     {
@@ -3149,25 +3149,25 @@
     {
       "address": "0x141354510",
       "name": "Competition_NextList_Helper54510",
-      "confidence": "guess",
+      "confidence": "probable",
       "reviewed": "no",
-      "evidence": "cup-winner/holder path; not read (pes-porter 2026-11-08)",
+      "evidence": "true for a user club (+0x41D != 0xFF) while EditData +0x17893F4 is clear: TieredByRank skips it (read 2026-11-22)",
       "source": "db/seeds/competition1.tsv"
     },
     {
       "address": "0x141553890",
       "name": "Competition_NextList_Helper53890",
-      "confidence": "guess",
+      "confidence": "probable",
       "reviewed": "no",
-      "evidence": "cup-winner/holder path; not read (pes-porter 2026-11-08)",
+      "evidence": "association limit for a pool pick: count of the club's association among the placed clubs below the limit (tables 0x142988D00 / D30 / D80 / D90 by qual type, +1 for the given association, capped at 4 for types 0 and 1; type 1 never limits) (read 2026-11-22)",
       "source": "db/seeds/competition1.tsv"
     },
     {
       "address": "0x141355750",
       "name": "Competition_NextList_Helper55750",
-      "confidence": "guess",
+      "confidence": "probable",
       "reviewed": "no",
-      "evidence": "read (pes-porter 2026-11-08)",
+      "evidence": "pool fill: team records whose +0x41C & 0x7F equals the pool kind (0x45 for UEFA), optionally only nations or +0x420 bit 25, by club rank, minus placed clubs (and clubs whose association has a league unless the last pass), through TieredByRank (read 2026-11-22)",
       "source": "db/seeds/competition1.tsv"
     },
     {
@@ -4729,6 +4729,270 @@
       "reviewed": "no",
       "evidence": "+0x308 bits 16-22 = count & 0x7F (decompile; emulation K5a)",
       "source": "db/seeds/k5b1.tsv"
+    },
+    {
+      "address": "0x1413556b0",
+      "name": "Competition_Season_CollectResults",
+      "confidence": "probable",
+      "reviewed": "no",
+      "evidence": "(step object) for every regulation, by kind (+0x84: 1, 5, 6 -> 0x14135E3A0, 3 -> 0x14135E0C0, else 0x14135DCF0) records its result list into the step's +0 list; run at the start of every season step (read 2026-11-22)",
+      "source": "db/seeds/k6b1.tsv"
+    },
+    {
+      "address": "0x14135dcf0",
+      "name": "Competition_Season_CollectResultsOther",
+      "confidence": "probable",
+      "reviewed": "no",
+      "evidence": "(step, regulation id) adds the regulation's result rows (handle, position +0x1C) from its runtime competition object when it is complete or the step's +0x32 flag is clear; nothing without a runtime object (read 2026-11-22)",
+      "source": "db/seeds/k6b1.tsv"
+    },
+    {
+      "address": "0x14135e3a0",
+      "name": "Competition_Season_CollectResultsLeague",
+      "confidence": "guess",
+      "reviewed": "no",
+      "evidence": "result collector for kinds 1, 5 and 6 (decompiled, not read in detail, 2026-11-22)",
+      "source": "db/seeds/k6b1.tsv"
+    },
+    {
+      "address": "0x14135e0c0",
+      "name": "Competition_Season_CollectResultsCup",
+      "confidence": "guess",
+      "reviewed": "no",
+      "evidence": "result collector for kind 3 (decompiled, not read in detail, 2026-11-22)",
+      "source": "db/seeds/k6b1.tsv"
+    },
+    {
+      "address": "0x14158e080",
+      "name": "Competition_Runtime_ResultRecord",
+      "confidence": "probable",
+      "reviewed": "no",
+      "evidence": "(regulation id) Competition_Runtime_Find + 4, 0 when the regulation has no runtime object (read 2026-11-22)",
+      "source": "db/seeds/k6b1.tsv"
+    },
+    {
+      "address": "0x14158df30",
+      "name": "Competition_Runtime_FindInGroup",
+      "confidence": "probable",
+      "reviewed": "no",
+      "evidence": "(regulation id, index row) the runtime competition object (owner +0x78 block, 600 objects of 0x187C at +18000) listed in the row whose first u16 is the id (read 2026-11-22)",
+      "source": "db/seeds/k6b1.tsv"
+    },
+    {
+      "address": "0x14159ecd0",
+      "name": "Competition_Runtime_IndexRow",
+      "confidence": "guess",
+      "reviewed": "no",
+      "evidence": "(competition +0x80 kind) the owner +0x78 index row (100 rows of 0xB4) for a competition (read in part 2026-11-22)",
+      "source": "db/seeds/k6b1.tsv"
+    },
+    {
+      "address": "0x1415451a0",
+      "name": "Competition_Regulation_CompetitionKind",
+      "confidence": "probable",
+      "reviewed": "no",
+      "evidence": "(regulation id) the regulation's +0x80 competition kind, invalid when absent (read 2026-11-22)",
+      "source": "db/seeds/k6b1.tsv"
+    },
+    {
+      "address": "0x141353dd0",
+      "name": "Competition_Runtime_CountTeams",
+      "confidence": "probable",
+      "reviewed": "no",
+      "evidence": "(result record) number of valid handles among its 48 rows of 0x10 (read 2026-11-22)",
+      "source": "db/seeds/k6b1.tsv"
+    },
+    {
+      "address": "0x141353e50",
+      "name": "Competition_Season_ResultWinner",
+      "confidence": "probable",
+      "reviewed": "no",
+      "evidence": "(step, out, regulation id, from_results) the club at position 0 of the regulation's result list (or its first row for some kinds); invalid at creation (no runtime objects) (read 2026-11-22)",
+      "source": "db/seeds/k6b1.tsv"
+    },
+    {
+      "address": "0x1413539b0",
+      "name": "Competition_Season_ResultRunnerUp",
+      "confidence": "probable",
+      "reviewed": "no",
+      "evidence": "(step, out, regulation id, from_results) the club at position 1 of the regulation's result list; invalid at creation (read 2026-11-22)",
+      "source": "db/seeds/k6b1.tsv"
+    },
+    {
+      "address": "0x141364ab0",
+      "name": "Competition_Season_BuildNationalCups",
+      "confidence": "probable",
+      "reviewed": "no",
+      "evidence": "(step, confederation, key) the league/cup pairs (0x141362980) whose league is a stored league of the confederation and key zone, then 0x141364370 (read 2026-11-22)",
+      "source": "db/seeds/k6b1.tsv"
+    },
+    {
+      "address": "0x141364de0",
+      "name": "Competition_Season_BuildNationalCups5",
+      "confidence": "probable",
+      "reviewed": "no",
+      "evidence": "confederation-5 twin of 0x141364AB0: a pair with reg 0x3B (Copa Argentina) goes to 0x141363B00 first (read 2026-11-22)",
+      "source": "db/seeds/k6b1.tsv"
+    },
+    {
+      "address": "0x141362980",
+      "name": "Competition_Season_LeagueCupPairs",
+      "confidence": "probable",
+      "reviewed": "no",
+      "evidence": "(step, confederation, out) each league (LeagueRegulationList, confederation, periods 1/6/11) with the first unused cup (0x1414CCC00) of the same country index (read 2026-11-22)",
+      "source": "db/seeds/k6b1.tsv"
+    },
+    {
+      "address": "0x141364370",
+      "name": "Competition_Season_StoreNationalCups",
+      "confidence": "probable",
+      "reviewed": "no",
+      "evidence": "per pair: the league's stored entrants then those of its +0x7E division below, reserve sides (parent club set) left out; DrawPots, StoreEntrants mode 1 (read 2026-11-22; probes 58/59: 13 cups exact)",
+      "source": "db/seeds/k6b1.tsv"
+    },
+    {
+      "address": "0x141363b00",
+      "name": "Competition_Season_StoreCopaArgentina",
+      "confidence": "probable",
+      "reviewed": "no",
+      "evidence": "reg 0x3B: from reg 0x1E's result list when present, else the stored reg 0x1E list with user clubs first and the others by club rank, at most 24; DrawPots, StoreEntrants (read 2026-11-22; probes 58/59 exact)",
+      "source": "db/seeds/k6b1.tsv"
+    },
+    {
+      "address": "0x1414ccc00",
+      "name": "Competition_CupRegulationList",
+      "confidence": "probable",
+      "reviewed": "no",
+      "evidence": "ids of the regulations whose +0x308 type (bits 23-28) is 2, 16 or 17, table order (read 2026-11-22)",
+      "source": "db/seeds/k6b1.tsv"
+    },
+    {
+      "address": "0x14135c200",
+      "name": "Competition_Season_BuildSuperCups",
+      "confidence": "probable",
+      "reviewed": "no",
+      "evidence": "(step, confederation, key) the super cups of the confederation and key zone; with +0x32 clear and no runtime object 0x14135C980, else 0x14135C0C0 (read 2026-11-22)",
+      "source": "db/seeds/k6b1.tsv"
+    },
+    {
+      "address": "0x14135c980",
+      "name": "Competition_Season_StoreSuperCupsFromKeys",
+      "confidence": "probable",
+      "reviewed": "no",
+      "evidence": "creation path: each super cup's own entry key in key order, a key club kept when found in its source regulation's entrants (0x141544680), two places, reversed when +0x300 & 0xE0000000 == 0x40000000; fix-ups 0x14135D1A0 / 0x14135C4F0 (read 2026-11-22; probes 58/59: 11 of 11 exact)",
+      "source": "db/seeds/k6b1.tsv"
+    },
+    {
+      "address": "0x141544680",
+      "name": "Competition_SuperCup_SourceRegulations",
+      "confidence": "guess",
+      "reviewed": "no",
+      "evidence": "(super cup id, out) builds a constant table of super cup -> source league and cup ids on the stack and returns the pair (read in part 2026-11-22)",
+      "source": "db/seeds/k6b1.tsv"
+    },
+    {
+      "address": "0x14135d1a0",
+      "name": "Competition_SuperCup_FixUpA",
+      "confidence": "guess",
+      "reviewed": "no",
+      "evidence": "super cup fix-up for an invalid place (decompiled 2026-11-22, not read)",
+      "source": "db/seeds/k6b1.tsv"
+    },
+    {
+      "address": "0x14135c4f0",
+      "name": "Competition_SuperCup_FixUpB",
+      "confidence": "guess",
+      "reviewed": "no",
+      "evidence": "super cup fix-up for an invalid place (decompiled 2026-11-22, not read)",
+      "source": "db/seeds/k6b1.tsv"
+    },
+    {
+      "address": "0x141364240",
+      "name": "Competition_Season_BuildEuropeanNext",
+      "confidence": "probable",
+      "reviewed": "no",
+      "evidence": "when regs 7, 4, 3, 6 and 5 exist: 0x141360B20 (reg 7 from entry key 25) then BuildByKind(0, 0/1/2); the creation path (thunk 0x141354020 false) (read 2026-11-22; probe 59 StoreEntrants callers)",
+      "source": "db/seeds/k6b1.tsv"
+    },
+    {
+      "address": "0x141364110",
+      "name": "Competition_Season_BuildEuropeanNextFromResults",
+      "confidence": "probable",
+      "reviewed": "no",
+      "evidence": "as 0x141364240 with 0x1413604A0 (reg 7 from the reg 4 and reg 6 results) (read 2026-11-22)",
+      "source": "db/seeds/k6b1.tsv"
+    },
+    {
+      "address": "0x1413604a0",
+      "name": "Competition_Season_StoreHoldersFromResults",
+      "confidence": "probable",
+      "reviewed": "no",
+      "evidence": "reg 7 = winners of regs 4 and 6 from the result list (0x141353E50), runner-up and first-UEFA-club fallbacks; StoreEntrants and the reg's own next list (read 2026-11-22)",
+      "source": "db/seeds/k6b1.tsv"
+    },
+    {
+      "address": "0x141360b20",
+      "name": "Competition_Season_StoreHoldersFromKey",
+      "confidence": "probable",
+      "reviewed": "no",
+      "evidence": "reg 7 from entry key 25 (0x19) in key order: UEFA clubs (0x141511070 == 0), the user's club only with EditData +0x17893F4 set; a club-rank fill when short (not read) (read 2026-11-22; probes 58/59: [103, 102])",
+      "source": "db/seeds/k6b1.tsv"
+    },
+    {
+      "address": "0x1413617e0",
+      "name": "Competition_Regulation_SetNextList",
+      "confidence": "probable",
+      "reviewed": "no",
+      "evidence": "(step, regulation id, list) clears the regulation's stored next list (0x1414C97A0) and appends each team (0x1414C9AA0) (read 2026-11-22)",
+      "source": "db/seeds/k6b1.tsv"
+    },
+    {
+      "address": "0x14157f6f0",
+      "name": "Competition_EventKey_Zone",
+      "confidence": "confirmed",
+      "reviewed": "no",
+      "evidence": "(event key) zone from the 5-row table 0x14298CA00 (0->0, 1->2, 2->1, 3->3, 4->1), 5 when absent (read 2026-11-22; probes 58/59 store sets)",
+      "source": "db/seeds/k6b1.tsv"
+    },
+    {
+      "address": "0x141576140",
+      "name": "Competition_Country_Zone",
+      "confidence": "probable",
+      "reviewed": "no",
+      "evidence": "(country index = regulation area) zone from 24 {area, zone} rows at 0x14298B9B0 plus {0x18, 1} (read 2026-11-22)",
+      "source": "db/seeds/k6b1.tsv"
+    },
+    {
+      "address": "0x1415111c0",
+      "name": "Competition_Team_Confederation",
+      "confidence": "probable",
+      "reviewed": "no",
+      "evidence": "(team handle) club: its league regulation's confederation group (0x141511070), else a nation-table lookup; 6 when unknown; 0 = UEFA (read 2026-11-22)",
+      "source": "db/seeds/k6b1.tsv"
+    },
+    {
+      "address": "0x1415773e0",
+      "name": "Competition_Team_IccEligible",
+      "confidence": "probable",
+      "reviewed": "no",
+      "evidence": "(team handle) its league regulation's country index is not 0 or 0x1D and lies in zone 0 or 3 (always true when EditData +0x1787B58 == 0x56) (read 2026-11-22)",
+      "source": "db/seeds/k6b1.tsv"
+    },
+    {
+      "address": "0x1413b7880",
+      "name": "Thunk_SlotPick_RowsForCountry",
+      "confidence": "probable",
+      "reviewed": "no",
+      "evidence": "thunk to Competition_SlotPick_RowsForCountry (0x1413B7760) (read 2026-11-22)",
+      "source": "db/seeds/k6b1.tsv"
+    },
+    {
+      "address": "0x1413514b0",
+      "name": "Competition_SeasonStep_Init",
+      "confidence": "guess",
+      "reviewed": "no",
+      "evidence": "constructor of the 0x38-byte season step object built by 0x141362480 in BuildSeason (not read)",
+      "source": "db/seeds/k6b1.tsv"
     },
     {
       "address": "0x140a48a10",
@@ -7669,6 +7933,54 @@
       "source": "db/seeds/data/k5b1.tsv"
     },
     {
+      "address": "0x142988d00",
+      "field1": "table",
+      "field2": "Competition_NextList_AssocLimitCl",
+      "field3": "probable",
+      "evidence": "no",
+      "source": "db/seeds/data/k6b1.tsv"
+    },
+    {
+      "address": "0x142988d30",
+      "field1": "table",
+      "field2": "Competition_NextList_AssocLimitEl",
+      "field3": "probable",
+      "evidence": "no",
+      "source": "db/seeds/data/k6b1.tsv"
+    },
+    {
+      "address": "0x142988d80",
+      "field1": "table",
+      "field2": "Competition_NextList_AssocLimitType3",
+      "field3": "guess",
+      "evidence": "no",
+      "source": "db/seeds/data/k6b1.tsv"
+    },
+    {
+      "address": "0x142988d90",
+      "field1": "table",
+      "field2": "Competition_NextList_AssocLimitType7",
+      "field3": "guess",
+      "evidence": "no",
+      "source": "db/seeds/data/k6b1.tsv"
+    },
+    {
+      "address": "0x14298ca00",
+      "field1": "table",
+      "field2": "Competition_EventKey_ZoneTable",
+      "field3": "confirmed",
+      "evidence": "no",
+      "source": "db/seeds/data/k6b1.tsv"
+    },
+    {
+      "address": "0x14298b9b0",
+      "field1": "table",
+      "field2": "Competition_Country_ZoneTable",
+      "field3": "probable",
+      "evidence": "no",
+      "source": "db/seeds/data/k6b1.tsv"
+    },
+    {
       "address": "0x14297d290",
       "field1": "table",
       "field2": "Competition_Regulation_PotKeyTable",
@@ -8887,6 +9199,70 @@
       "source": "db/seeds/ports/competition.tsv"
     },
     {
+      "address": "0x141357470",
+      "status": "reimplemented",
+      "fidelity": "exact",
+      "implementation": "src/game/ml/creation_entrants.cpp creation_detail::uefa_list",
+      "evidence": "creation path (incomplete leagues): probes 58 and 59 regs 3 and 5 exact in order, reg 2 exact after its draw (ctest creation_entrants)",
+      "source": "db/seeds/ports/competition.tsv"
+    },
+    {
+      "address": "0x141355c90",
+      "status": "reimplemented",
+      "fidelity": "exact",
+      "implementation": "src/game/ml/creation_entrants.cpp creation_detail::uefa_list",
+      "evidence": "creation, conference 0 (regs 3, 2, 5): slot picks, holders, kind-0x45 pool, cut to 24/16/40; association limit and the league-association drop not ported (shortcut, no effect on probes 58/59)",
+      "source": "db/seeds/ports/competition.tsv"
+    },
+    {
+      "address": "0x141364370",
+      "status": "reimplemented",
+      "fidelity": "exact",
+      "implementation": "src/game/ml/creation_entrants.cpp creation_entrants",
+      "evidence": "national cups: league plus division below, reserve sides out, key sort and DrawPots; probes 58/59 13 cups exact",
+      "source": "db/seeds/ports/competition.tsv"
+    },
+    {
+      "address": "0x141363b00",
+      "status": "reimplemented",
+      "fidelity": "exact",
+      "implementation": "src/game/ml/creation_entrants.cpp creation_entrants",
+      "evidence": "creation branch only (no reg 0x1E results): probes 58/59 reg 59 exact",
+      "source": "db/seeds/ports/competition.tsv"
+    },
+    {
+      "address": "0x14135c980",
+      "status": "reimplemented",
+      "fidelity": "exact",
+      "implementation": "src/game/ml/creation_entrants.cpp creation_entrants",
+      "evidence": "entry key, two places, mode-2 reversal; source check and fix-ups not ported (shortcut); probes 58/59 11 super cups exact",
+      "source": "db/seeds/ports/competition.tsv"
+    },
+    {
+      "address": "0x141360b20",
+      "status": "reimplemented",
+      "fidelity": "exact",
+      "implementation": "src/game/ml/creation_entrants.cpp creation_entrants",
+      "evidence": "reg 7 from entry key 25; the UEFA-club filter and the club-rank fill not ported (shortcut); probes 58/59 exact",
+      "source": "db/seeds/ports/competition.tsv"
+    },
+    {
+      "address": "0x141365ed0",
+      "status": "reimplemented",
+      "fidelity": "exact",
+      "implementation": "src/game/ml/creation_entrants.cpp creation_entrants",
+      "evidence": "creation leagues: the live list, OrderUserLeague for the user's league, split stage takes the list; probes 58/59 exact",
+      "source": "db/seeds/ports/competition.tsv"
+    },
+    {
+      "address": "0x141359570",
+      "status": "reimplemented",
+      "fidelity": "exact",
+      "implementation": "src/game/ml/creation_entrants.cpp creation_entrants",
+      "evidence": "creation ICC (with competition::draw_reg69_pool, deal_by_association): probes 58/59 regs 105 and 107 exact; eligibility = in a UEFA league (zone 3 not read, shortcut)",
+      "source": "db/seeds/ports/competition.tsv"
+    },
+    {
       "address": "0x1414f6e20",
       "status": "reimplemented",
       "fidelity": "exact",
@@ -9528,6 +9904,11 @@
       "date": "2026-11-22",
       "title": "probe 58, the first BuildSeason's draws and return state (Track C, runtime)",
       "body": "Probe 58 used the same career settings as probe 57: Arsenal, Club Team Lineup, default settings, created 1 July 2020 (day 181). It captured four things:\n- at the first `Competition_Season_BuildSeason` entry: the generator state, the event keys, the include ids and one EditData dump;\n- every `Random_Xorshift128_Below`, `_Next` and `_Float` call until BuildSeason returned (thread, bound, return address, state before the step);\n- one EditData dump at the return;\n- one at the first `ML_DayDriver` entry.\n\nThe logging run took about 4 minutes.\n\n**Draw log (confirmed):**\n- **Entry context:** event keys 0 and 3 (2 keys); 91 include ids; S0 = `806e1199 bfa39692 791e7938 75ffed30`.\n- **Volume:** 12,804 calls (12,797 `Below`, 7 `Next`, 0 `Float`), all on BuildSeason's thread.\n- **Replay:** stepping xorshift128 from S0 reproduces every logged state (0 mismatches). The state after the last step equals the state at the return (S1) and at the first DayDriver (S2). The log is therefore complete, no other thread draws from this generator in that window, and the build is replayable from S0.\n- **Call sites:**\n  - kick-off share and slot (`Competition_Calendar_PickMatchSlot`, 0x14154EC4B 5,870 and 0x14154EC8F 6,334);\n  - empty-list kick-off (0x14154ECEB, 11);\n  - venue (0x14154F41C, 199);\n  - `Random_ShuffleTeams` (0x14152CD70, 382);\n  - `Next` from 0x140F621E5 (7);\n  - one draw in `Competition_Season_OrderUserLeague` (0x141366B47).\n\n**Boundaries (confirmed):**\n- **Return versus first DayDriver (same run):** one dword differs, EditData +0x1789478, a date word (0x010807E4, 1 August 2020, at the return; 0x010707E4 at the DayDriver). Everything else K6 writes is in place when BuildSeason returns.\n- **Probe 58 versus probe 57 at BuildSeason entry:** the Worlds differ only in player contract year, age adjustment, growth and `finance.season_a`, which are setup draws. The regulation state (K5b) is identical.\n- **Probe 58's return versus probe 57's first day:** regulation, round, date, rules and the day table of all 6,345 fixtures are identical. Pairings (shuffles), kick-off hour and night, venues and 26 regulation lists differ.\n- So BuildSeason splits into:\n  - a deterministic structure: which regulations, rounds, dates and day placement;\n  - draws: list orders, kick-offs, venues.\n\n**Instrumentation:** hardware breakpoints do not consume generator values, and the replay shows no interleaving. The fixture structure equals probe 57's, which ran without draw breakpoints. Not established: that thread timing could never change which thread runs the build; on this run it was a single thread."
+    },
+    {
+      "date": "2026-11-22",
+      "title": "K6b, the creation BuildSeason's entrant lists, and probe 59 (Track C, static plus runtime)",
+      "body": "Track C. This moves the constructor one stage closer to building the first season in the host.\n\n**Probe 59** (`tests/behaviour/cdb/mlswap/*59*`): a new Arsenal career, as probe 58, with:\n- EditData and the runtime competition block (owner +0x78) dumped at BuildSeason entry and return;\n- every `Competition_Season_StoreEntrants` (0x14135B8E0) call logged with its regulation, mode, caller and list;\n- every draw logged.\n\nResults:\n- 12,804 draws, the same count as probe 58.\n- **confirmed:** the runtime block holds no competition objects at entry. `Competition_Regulation_Flag90750` (0x141590750) is therefore false for every regulation, and `Competition_Season_ResultWinner` (0x141353E50) returns no winners.\n- **confirmed:** each list's writer, from the logged callers:\n  - leagues: `Competition_Season_StoreLeagueEntrants` (0x141365ED0);\n  - national cups: `Competition_Season_StoreNationalCups` (0x141364370);\n  - super cups: `Competition_Season_StoreSuperCupsFromKeys` (0x14135C980);\n  - reg 7: `Competition_Season_StoreHoldersFromKey` (0x141360B20), reached through `Competition_Season_BuildEuropeanNext` (0x141364240);\n  - regs 3, 2, 5: `Competition_NextList_BuildByKind` (0x141355C90);\n  - regs 105, 107: `Competition_Season_YearRoutine` (0x141358230);\n  - Copa Argentina: `Competition_Season_StoreCopaArgentina` (0x141363B00).\n- Reg 1 is not stored in RunMLSteps.\n\n**Read (probable unless stated).**\n- **Creation branch.** `Competition_Season_YearTurnStepA` (0x141366380, key 0) and `Competition_Season_Dec31StepA` (0x1413664D0, key 3) take the creation branch because the step's +0x32 flag is clear and no regulation has a runtime object.\n- **Leagues.** `Competition_SeasonEnd_FilterLeaguesByConfederation` (0x141365C50) stores the live lists.\n- **National cups.** `Competition_Season_BuildNationalCups` (0x141364AB0) and its confederation-5 twin (0x141364DE0) pair each league with the first unused cup of its country (`Competition_Season_LeagueCupPairs` 0x141362980, `Competition_CupRegulationList` 0x1414CCC00: types 2, 16, 17). The cup takes the league's list and then the division below's, without reserve sides.\n- **Copa Argentina.** Without reg 30 results, the user's clubs come first, then the rest by club rank, at most 24.\n- **Super cups.** Each takes its own entry key in key order, two places. The pair is reversed when +0x300 & 0xE0000000 == 0x40000000. This resolves reg 87's order.\n- **Reg 7** is entry key 25 (0x19) in key order.\n- **Regs 3, 2, 5.** `Competition_NextList_SlotPicks` (0x1413561F0) sends every league through `Competition_NextList_Helper57470` (0x141357470), because no league is complete. A league takes its country's slot-row count for the qual type (table 0x1434F1FA0), with entry-key tiers 23/24 (24/23 for the EL) and club rank, via `Competition_NextList_TieredByRank` (0x141352830). The holders follow (`Competition_NextList_Helper571C0` 0x1413571C0), then the kind-0x45 pool (`Competition_NextList_Helper55750` 0x141355750).\n- **ICC.** `Competition_Season_DrawRegulation69Pool` (0x141359570) draws from entry key 116 with the user's club first. Clubs pass `Competition_Team_IccEligible` (0x1415773E0) only in the fill, not in the shuffle.\n- **confirmed: zones.** A step builds only regulations whose country zone (`Competition_Country_Zone` 0x141576140, table 0x14298B9B0) equals its event key's zone (`Competition_EventKey_Zone` 0x14157F6F0, table 0x14298CA00). This was confirmed by the store sets of both probes.\n\n**Port.** `src/game/ml/creation_entrants.{h,cpp}`, ctest `creation_entrants`. The pre-draw lists are built by these rules. The game's draws run in its own order and reuse `order_user_league`, `sort_by_key_desc` + `draw_pots`, `shuffle_teams`, `draw_reg69_pool` and `deal_by_association`.\n- **confirmed:** probes 58 and 59 each give 60 of 60 lists equal in membership and order.\n- **confirmed:** the generator state after the entrant phase equals the logged state of the first fixture draw on both probes.\n- **confirmed:** probe 59's store order is equal.\n\nShortcuts are listed in plan section 23. None of them changes either probe."
     }
   ]
 }
