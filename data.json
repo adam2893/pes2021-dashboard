@@ -5827,6 +5827,54 @@
       "source": "db/seeds/regtable1.tsv"
     },
     {
+      "address": "0x1412e8480",
+      "name": "Calendar_FillEventSlots",
+      "confidence": "probable",
+      "reviewed": "no",
+      "evidence": "from today's day row to day 364, then days 0 to today - 1, the date advancing one day per row: prunes old entries (0x1412E6E00), then adds each event 0x141575A90 lists for that date ({type, param, date}) to the row's 18 slots at +0x234 unless present; callers Competition_MLSetup_BuildRankings, ML_DayDriver, ML_DayStep_Outer (read 2026-11-22, S1a)",
+      "source": "db/seeds/s1a1.tsv"
+    },
+    {
+      "address": "0x1412e8110",
+      "name": "Calendar_ClearEventSlot",
+      "confidence": "guess",
+      "reviewed": "no",
+      "evidence": "writes an empty event slot (type 0x3F, param 0xFFFF, date LastBumpDate) (read in part 2026-11-22, S1a)",
+      "source": "db/seeds/s1a1.tsv"
+    },
+    {
+      "address": "0x141575a90",
+      "name": "Calendar_EventsForDate",
+      "confidence": "guess",
+      "reviewed": "no",
+      "evidence": "(&out list of 20-byte entries, &date) the events of one date: param at +0, type at +8 (callee of Calendar_FillEventSlots; not read, owner K8)",
+      "source": "db/seeds/s1a1.tsv"
+    },
+    {
+      "address": "0x1412e6e00",
+      "name": "Calendar_PruneDaySlots",
+      "confidence": "guess",
+      "reviewed": "no",
+      "evidence": "(day row, today) prunes a day row's event slots before the fill (not read; S1a)",
+      "source": "db/seeds/s1a1.tsv"
+    },
+    {
+      "address": "0x141306bf0",
+      "name": "ML_DayStep_RefreshTodayEvents",
+      "confidence": "guess",
+      "reviewed": "no",
+      "evidence": "re-reads today's event slots (0x141306930), passes them through relocated code (0x1447909F0, 0x144AD5C40; read only), and writes them back with the same first-free-slot rule (read 2026-11-22, S1a)",
+      "source": "db/seeds/s1a1.tsv"
+    },
+    {
+      "address": "0x141306930",
+      "name": "Calendar_CollectDaySlots",
+      "confidence": "probable",
+      "reviewed": "no",
+      "evidence": "(day row, out) copies the row's used event slots (type not 0 and not 0x3F) into a vector (read 2026-11-22, S1a)",
+      "source": "db/seeds/s1a1.tsv"
+    },
+    {
       "address": "0x1413b7b50",
       "name": "Competition_SlotPick_PickRows",
       "confidence": "probable",
@@ -10273,6 +10321,11 @@
       "date": "2026-11-22",
       "title": "K6e, the creation build's fixture records and competition lists (Track C, static)",
       "body": "Track C. The EditData state the creation build writes beyond the World is now derived from the World and checked byte for byte against probes 58, 59 and 60.\n- **Read, confirmed on three careers:** the round fixture records (+0xD65F64) and the regulations' +0x88 round lists. They come from `Competition_FixtureRecord_Allocate` (0x141579DB0), EmitLeague (0x1413F4430), EmitTie (0x1413F54B0) and `Competition_Knockout_LinkRounds` (0x1413F5B70), with entry helpers 0x1414E32C0, 0x1414E3430, 0x1414D6420, 0x1413438C0, 0x1413F4910 and 0x1413F4960, and the clear 0x140AF1DB0. Result: 2,000 of 2,000 records and 199 of 199 lists equal (`ml::fixture_records`).\n- **Read, confirmed on three careers:** `OnCompetitionEntered` (0x1413AC310) adds each entered regulation to its teams' lists at +0x2EC (`0x14134A920`, condition `0x141548510`) and to 32 lists at EditData +0x178951C (`0x1413AC0B0`). Result: 659 of 659 teams and 32 of 32 lists equal.\n- **Read in part, not ported:** player +0xF0 per-competition entries (`0x141342050`, `0x141342410`; guess: discipline state). The host does not read them; owner: the discipline subsystem (S1).\n- **Read:** `Player_UpdateDerivedState` is not called in the creation build (keys 0 and 3, no include with +0x230 == 1)."
+    },
+    {
+      "date": "2026-11-22",
+      "title": "S1a, the starting wage budget and the untraced setup writers (Track C, static)",
+      "body": "Track C, S1a (plan section 28).\n- **Wage budget (P0), root cause found, confirmed.** `Finance_InitBudgets` (0x141566150, read) values:\n  - the user club's roster entries (team +0x14C, count +0x426) whose player is not on loan (+0x14A bit 0 clear);\n  - then every player on loan (+0x14A bit 0) whose +0x160 owner is the club.\n\n  The port had built that squad from the file rosters (the `budget_squad` shortcut, inferred from probe 52's user clubs). For club 139 (probe 60) that counted 115030 and 135372 and missed 46635. With the setup's roster those 38 players sum to 421,626 (equal to the dump), and the read formula gives 421,626 + 0.9 x 19,124.6 = 438,838, the dump's budget.\n\n  `ml::budget_squad` now reads the constructed World. The budgets are exact for Arsenal (probe 52 runs 1 and 2, probe 58), Vasco da Gama (probe 52 run 3, transfer budget from values) and club 139 (probe 60).\n\n  Where `Finance_UserClubSetup` (virtual) falls in the setup order is still not read. The evidence that it runs after the loan steps is that the squad at BuildSeason entry reproduces the budget.\n- **`renewal.*` and `competition.next_entrants`: not dump dependencies.**\n  - The renewal thresholds are a runtime global (0x1436FCCE0), filled by the first `ComAgent_RenewContracts` call, so unset at creation.\n  - The next-season lists live in the season step object, which `Competition_SeasonStep_Init` (0x1413514B0) builds empty.\n\n  The constructor now sets both to these initial values (provenance \"derived\"); both equal the dump-loaded World.\n- **`calendar.events` and `event_first`: writer found, owner K8.**\n  - `Calendar_FillEventSlots` (0x1412E8480), called from `Competition_MLSetup_BuildRankings` and daily, walks every day row from today and asks `Calendar_EventsForDate` (0x141575A90, not read) for each date's events.\n  - The 172 events on 129 days at BuildSeason entry are identical on probes 58 (Arsenal) and 60 (Argentine club).\n  - `ML_DayStep_RefreshTodayEvents` (0x141306BF0) also rewrites today's slots through relocated code (read only)."
     }
   ]
 }
