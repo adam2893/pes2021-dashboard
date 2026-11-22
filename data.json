@@ -5892,10 +5892,10 @@
     },
     {
       "address": "0x140b88380",
-      "name": "ML_Settings_ApplyOption",
+      "name": "MenuModeStartType_ApplyChoice",
       "confidence": "probable",
       "reviewed": "no",
-      "evidence": "(menu option object) choice == 1 gives b; option 10/16: EditData +0x17893F5 = b; option 9 (ML): +0x17893F4 = !b (the user-club flag Helper54510 and StoreHoldersFromKey test) (read 2026-11-23, S1a; virtual, menu label unknown)",
+      "evidence": "virtual slot 49 of menu::ModeMemberTypeSelect (RTTI vtable 0x1426AF048), the \"modeStartType\" screen: choice = selected item (0x140E3D140), b = choice == 1; mode 10/16: EditData +0x17893F5 = b; mode 9 (Master League): +0x17893F4 = !b, so 1 for \"Club Team Lineup\" (choice_0) and 0 for \"Master League Original Lineup\" (choice_1) (read 2026-11-23, S1a; labels from eng/string/all.str)",
       "source": "db/seeds/s1a1.tsv"
     },
     {
@@ -5912,6 +5912,38 @@
       "confidence": "guess",
       "reviewed": "no",
       "evidence": "second step of BuildLeague's special group path (after 0x1413F3A60) for some regulation ids; its failure makes BuildLeague fail (not read; S1a 2026-11-23)",
+      "source": "db/seeds/s1a1.tsv"
+    },
+    {
+      "address": "0x140b879c0",
+      "name": "MenuModeStartType_Construct",
+      "confidence": "probable",
+      "reviewed": "no",
+      "evidence": "menu::ModeMemberTypeSelect constructor: +0x90 = GameMode_GetKind (9 Master League, 10 and 16 the Become a Legend modes), loads general/modeStartType.bin and the mode's two choice textures modeStartTypeMl_0/1 (Bl_, Blo_) (read 2026-11-23, S1a)",
+      "source": "db/seeds/s1a1.tsv"
+    },
+    {
+      "address": "0x140b87ca0",
+      "name": "MenuModeStartType_SetupPage",
+      "confidence": "probable",
+      "reviewed": "no",
+      "evidence": "sets the help text (mode 9: text 0xE1005F) and, from the static table 0x1434B0DB8 of {mode, item name, label text, description text}, the two items of the current mode; mode 9: choice_0 = 0x1A013E/0x11701B2, choice_1 = 0x1A013C/0x11701B3 (read 2026-11-23, S1a)",
+      "source": "db/seeds/s1a1.tsv"
+    },
+    {
+      "address": "0x140e3d140",
+      "name": "Menu_SelectedChoiceIndex",
+      "confidence": "guess",
+      "reviewed": "no",
+      "evidence": "(menu object) the selected item's index (+0xBC of the focused item, else +0xD8 of the page); read in part 2026-11-23, S1a",
+      "source": "db/seeds/s1a1.tsv"
+    },
+    {
+      "address": "0x141497e20",
+      "name": "Text_FormatById",
+      "confidence": "probable",
+      "reviewed": "no",
+      "evidence": "(text system, out, id, args) id bits 16-31 select a string group (runtime map), bits 0-15 the string id inside it (0x1414996F0) (read 2026-11-23, S1a)",
       "source": "db/seeds/s1a1.tsv"
     },
     {
@@ -8149,6 +8181,22 @@
       "source": "db/seeds/data/findings1.tsv"
     },
     {
+      "address": "0x1426af048",
+      "field1": "table",
+      "field2": "Vtable_MenuModeStartType",
+      "field3": "confirmed",
+      "evidence": "no",
+      "source": "db/seeds/data/findings1.tsv"
+    },
+    {
+      "address": "0x1434b0db8",
+      "field1": "table",
+      "field2": "MenuModeStartType_ItemTable",
+      "field3": "probable",
+      "evidence": "no",
+      "source": "db/seeds/data/findings1.tsv"
+    },
+    {
       "address": "0x1434d66f0",
       "field1": "table",
       "field2": "Pesdb_FileNameTable_Entry18",
@@ -10370,7 +10418,12 @@
     {
       "date": "2026-11-23",
       "title": "S1a groups 4 and 5, creation-entrant branches and fixture-build success (Track C, static)",
-      "body": "- **Group 4: what reaches the unported creation-entrant branches.**\n  - The user-club flag EditData +0x17893F4 is written only by `ML_Settings_ApplyOption` (0x140B88380), for ML option 9: flag = !(choice == 1). So the user-club skip in the UEFA lists (Helper54510) and reg 7's user skip and rank fill are reachable in vanilla careers through that setting, without edited data. Every captured career used the default (flag set).\n  - The association limit (`Competition_NextList_Helper53890` 0x141553890), the league-association drop (`Competition_NextList_AssociationHasLeague` 0x1413540D0, read), the super-cup source check and fix-ups, and reg 7's UEFA filter depend only on the vanilla data, which is the same in every career. They are not triggered on three careers. **probable**: unreachable in vanilla at creation, reclassified P2 (modded data).\n- **Group 4: ICC eligibility ported from the read rule.** `Competition_Team_IccEligible` (0x1415773E0): the club's first league-period regulation (period 1, 6, 11 or 49) has a country index other than 0 and 0x1D, in zone 0 or 3 (always true when EditData +0x1787B58 == 0x56; it is 0xFFFFFFFF in probes 58-60). Probes 58-60 stay exact. The zone-3 path is not exercised by any capture.\n- **Group 5: fixture-build success, read.**\n  - `Competition_FixtureBuilder_BuildLeague` (0x1413F36C0) returns `RoundTable` (0x1413F3E00), which is false only for a missing regulation. The exceptions are the special group builders 0x1413F3A60/0x1413F3010 (not read).\n  - `BuildKnockout` (0x1413F49F0) is false only for a missing regulation or a failed `Competition_Knockout_ApplyOverrides`.\n  - So a filed league or knockout enters the competition even with fewer than two teams. The port's \"no record means no entry\" guess was wrong in general. It is replaced by the read rule, and the 58 entered regulations of probes 58-60 are unchanged.\n- **Combined probe plan:** plan section 29 (final for review, not run)."
+      "body": "- **Group 4: what reaches the unported creation-entrant branches.**\n  - The user-club flag EditData +0x17893F4 is written only by `MenuModeStartType_ApplyChoice` (0x140B88380, formerly `ML_Settings_ApplyOption`), in Master League mode: flag = !(choice == 1). See the next entry: this is the Original Lineup switch. So the user-club skip in the UEFA lists (Helper54510) and reg 7's user skip and rank fill are reachable in vanilla careers through that setting, without edited data. Every captured career used the default (flag set).\n  - The association limit (`Competition_NextList_Helper53890` 0x141553890), the league-association drop (`Competition_NextList_AssociationHasLeague` 0x1413540D0, read), the super-cup source check and fix-ups, and reg 7's UEFA filter depend only on the vanilla data, which is the same in every career. They are not triggered on three careers. **probable**: unreachable in vanilla at creation, reclassified P2 (modded data).\n- **Group 4: ICC eligibility ported from the read rule.** `Competition_Team_IccEligible` (0x1415773E0): the club's first league-period regulation (period 1, 6, 11 or 49) has a country index other than 0 and 0x1D, in zone 0 or 3 (always true when EditData +0x1787B58 == 0x56; it is 0xFFFFFFFF in probes 58-60). Probes 58-60 stay exact. The zone-3 path is not exercised by any capture.\n- **Group 5: fixture-build success, read.**\n  - `Competition_FixtureBuilder_BuildLeague` (0x1413F36C0) returns `RoundTable` (0x1413F3E00), which is false only for a missing regulation. The exceptions are the special group builders 0x1413F3A60/0x1413F3010 (not read).\n  - `BuildKnockout` (0x1413F49F0) is false only for a missing regulation or a failed `Competition_Knockout_ApplyOverrides`.\n  - So a filed league or knockout enters the competition even with fewer than two teams. The port's \"no record means no entry\" guess was wrong in general. It is replaced by the read rule, and the 58 entered regulations of probes 58-60 are unchanged.\n- **Combined probe plan:** plan section 29 (final for review, not run)."
+    },
+    {
+      "date": "2026-11-23",
+      "title": "S1a, the \"option 9\" flag is the Club Team Lineup / Original Lineup choice (Track C, static)",
+      "body": "- **What it is (probable, read; agrees with the confirmed 2026-11-04 probe):**\n  - `0x140B88380` is virtual slot 49 of `menu::ModeMemberTypeSelect` (RTTI vtable 0x1426AF048), the `modeStartType` screen. The \"9\" is the game mode (`GameMode_GetKind`, read by the constructor `MenuModeStartType_Construct` 0x140B879C0 into +0x90), not an option index. Modes 10 and 16 are the Become a Legend variants; they write +0x17893F5 instead.\n  - `MenuModeStartType_SetupPage` (0x140B87CA0) fills the static item table 0x1434B0DB8. For mode 9: choice_0 has label 0x1A013E and description 0x11701B2; choice_1 has 0x1A013C and 0x11701B3. The help text is 0xE1005F.\n  - Text ids: bits 16-31 pick a string group and bits 0-15 the string (`Text_FormatById` 0x141497E20). The group map is built at runtime, so the groups were matched by content in `eng/string/all.str` (dt20_eng_x64.cpk; WESYS header, zlib from +0x10; 208 groups of {id, size, length, offset} rows). Each id pair falls in one group that fits: group 0x1A = Lcm2W (0x13E \"Club Team Lineup\", 0x13C \"Master League Original Lineup\"), 0x117 = Lcm17T (0x1B2 \"Start the game with the full squad of each club at your disposal.\", 0x1B3 \"Start the game with the Master League Original Lineup. ...\"), 0xE1 = Lcm1T (0x5F \"Select the team you wish to start Master League with. ...\", and 0x60, BAL's help text, \"Select the type of player you want to use in Become a Legend.\").\n  - So flag = 1 for Club Team Lineup and 0 for Original Lineup. That matches probe 9 (2026-11-04: Original Lineup 0, Club Team Lineup 1). The choice index order (choice_0 = index 0) is **probable**.\n- **Correction:** the \"option 9, label unknown\" wording of the previous entry and of plan section 29 (risk R1) missed the 2026-11-04 finding. The setting is known.\n- **Consequence for the plan:** the user-club skips of group 4 (a) Helper54510 and (d) reg 7 belong to the Original Lineup branch. That branch also moves the user club down a division (`Competition_MLSetup_SwapUserClubDivision`), drops loans owned by the user club, and builds the generated squad (plan section 2, \"required only for other clubs, leagues or Original Lineup\"). None of it is ported. A probe 61 run in Original Lineup would therefore not be comparable with the current constructor on the K6b/K6c, loan and lineup checks."
     }
   ]
 }
