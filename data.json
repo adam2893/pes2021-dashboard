@@ -5875,6 +5875,22 @@
       "source": "db/seeds/s1a1.tsv"
     },
     {
+      "address": "0x1414f0560",
+      "name": "Pesdb_TeamLoadList",
+      "confidence": "probable",
+      "reviewed": "no",
+      "evidence": "(loader, out) one entry per row of pesdb table 0x19 (Team.bin, stride 0x5FC) holding {row, row +8 = team id}, then sorted (0x1414ED8F0); Pesdb_LoadTeams fills the team records in this order, count = all rows (read 2026-11-22, S1a)",
+      "source": "db/seeds/s1a1.tsv"
+    },
+    {
+      "address": "0x1414ed8f0",
+      "name": "Pesdb_SortByKey",
+      "confidence": "guess",
+      "reviewed": "no",
+      "evidence": "sorts 16-byte {pointer, key} entries; used on the team, coach, tactics lists in Pesdb_LoadTeams (comparator not read; the team list comes out in team-id order)",
+      "source": "db/seeds/s1a1.tsv"
+    },
+    {
       "address": "0x1413b7b50",
       "name": "Competition_SlotPick_PickRows",
       "confidence": "probable",
@@ -10325,7 +10341,7 @@
     {
       "date": "2026-11-22",
       "title": "S1a, the starting wage budget and the untraced setup writers (Track C, static)",
-      "body": "Track C, S1a (plan section 28).\n- **Wage budget (P0), root cause found, confirmed.** `Finance_InitBudgets` (0x141566150, read) values:\n  - the user club's roster entries (team +0x14C, count +0x426) whose player is not on loan (+0x14A bit 0 clear);\n  - then every player on loan (+0x14A bit 0) whose +0x160 owner is the club.\n\n  The port had built that squad from the file rosters (the `budget_squad` shortcut, inferred from probe 52's user clubs). For club 139 (probe 60) that counted 115030 and 135372 and missed 46635. With the setup's roster those 38 players sum to 421,626 (equal to the dump), and the read formula gives 421,626 + 0.9 x 19,124.6 = 438,838, the dump's budget.\n\n  `ml::budget_squad` now reads the constructed World. The budgets are exact for Arsenal (probe 52 runs 1 and 2, probe 58), Vasco da Gama (probe 52 run 3, transfer budget from values) and club 139 (probe 60).\n\n  Where `Finance_UserClubSetup` (virtual) falls in the setup order is still not read. The evidence that it runs after the loan steps is that the squad at BuildSeason entry reproduces the budget.\n- **`renewal.*` and `competition.next_entrants`: not dump dependencies.**\n  - The renewal thresholds are a runtime global (0x1436FCCE0), filled by the first `ComAgent_RenewContracts` call, so unset at creation.\n  - The next-season lists live in the season step object, which `Competition_SeasonStep_Init` (0x1413514B0) builds empty.\n\n  The constructor now sets both to these initial values (provenance \"derived\"); both equal the dump-loaded World.\n- **`calendar.events` and `event_first`: writer found, owner K8.**\n  - `Calendar_FillEventSlots` (0x1412E8480), called from `Competition_MLSetup_BuildRankings` and daily, walks every day row from today and asks `Calendar_EventsForDate` (0x141575A90, not read) for each date's events.\n  - The 172 events on 129 days at BuildSeason entry are identical on probes 58 (Arsenal) and 60 (Argentine club).\n  - `ML_DayStep_RefreshTodayEvents` (0x141306BF0) also rewrites today's slots through relocated code (read only)."
+      "body": "Track C, S1a (plan section 28).\n- **Wage budget (P0), root cause found, confirmed.** `Finance_InitBudgets` (0x141566150, read) values:\n  - the user club's roster entries (team +0x14C, count +0x426) whose player is not on loan (+0x14A bit 0 clear);\n  - then every player on loan (+0x14A bit 0) whose +0x160 owner is the club.\n\n  The port had built that squad from the file rosters (the `budget_squad` shortcut, inferred from probe 52's user clubs). For club 139 (probe 60) that counted 115030 and 135372 and missed 46635. With the setup's roster those 38 players sum to 421,626 (equal to the dump), and the read formula gives 421,626 + 0.9 x 19,124.6 = 438,838, the dump's budget.\n\n  `ml::budget_squad` now reads the constructed World. The budgets are exact for Arsenal (probe 52 runs 1 and 2, probe 58), Vasco da Gama (probe 52 run 3, transfer budget from values) and club 139 (probe 60).\n\n  Where `Finance_UserClubSetup` (virtual) falls in the setup order is still not read. The evidence that it runs after the loan steps is that the squad at BuildSeason entry reproduces the budget.\n- **`renewal.*` and `competition.next_entrants`: not dump dependencies.**\n  - The renewal thresholds are a runtime global (0x1436FCCE0), filled by the first `ComAgent_RenewContracts` call, so unset at creation.\n  - The next-season lists live in the season step object, which `Competition_SeasonStep_Init` (0x1413514B0) builds empty.\n\n  The constructor now sets both to these initial values (provenance \"derived\"); both equal the dump-loaded World.\n- **`calendar.events` and `event_first`: writer found, owner K8.**\n  - `Calendar_FillEventSlots` (0x1412E8480), called from `Competition_MLSetup_BuildRankings` and daily, walks every day row from today and asks `Calendar_EventsForDate` (0x141575A90, not read) for each date's events.\n  - The 172 events on 129 days at BuildSeason entry are identical on probes 58 (Arsenal) and 60 (Argentine club).\n  - `ML_DayStep_RefreshTodayEvents` (0x141306BF0) also rewrites today's slots through relocated code (read only).\n\n**S1a group 3A (same day), the ML team set and record order: partial.** `Pesdb_LoadTeams` (0x1414F5120) fills the team records in the order of `Pesdb_TeamLoadList` (0x1414F0560): every Team.bin row (669), keyed and sorted by the team id at +8, with handle = id << 14. At BuildSeason entry (probes 58, 60) the table instead holds 659 records in club order (Arsenal 101 first, the inferred league-then-category order of `team_keys.cpp`), contiguous, with slots 659-668 empty. So a later ML setup step reorders the table and drops 10 teams. Not that step: `Edit_Tables_RecountSlots` (0x1414BC0A0, only recounts) and four other setup callees read. The order rule in `team_keys.cpp` stays inferred (exact on every capture so far); the writer is open."
     }
   ]
 }
