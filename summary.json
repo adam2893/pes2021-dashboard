@@ -1,5 +1,5 @@
 {
-  "updated": "2026-11-21",
+  "updated": "2026-11-22",
   "headline": {
     "sim_percent": [
       70,
@@ -194,7 +194,7 @@
   ],
   "counts": {
     "named_addresses": 1001,
-    "tests": 82,
+    "tests": 83,
     "port_rows_total": 120,
     "port_rows_by_status": {
       "reimplemented": 109,
