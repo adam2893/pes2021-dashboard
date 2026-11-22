@@ -4173,9 +4173,9 @@
     {
       "address": "0x1413ac310",
       "name": "Competition_Season_OnCompetitionEntered",
-      "confidence": "guess",
+      "confidence": "probable",
       "reviewed": "no",
-      "evidence": "door calls it only on success; body not read",
+      "evidence": "(step, regulation) after a successful build: team competition lists (0x14134A920), round dates (0x14158F420), switch event 0x15, player registration (0x141342050), 0x14134EB80, the 32 entered lists (0x1413AC0B0) (read 2026-11-22, K6e)",
       "source": "db/seeds/findings1.tsv"
     },
     {
@@ -5089,6 +5089,166 @@
       "reviewed": "no",
       "evidence": "(match record) zeroes all 0x254 bytes, then index 0xFFFF, +4 |= 0x3037FFFF, +8 = LastBumpDate, +0xC = 3, both sides invalid, the 34 lineup entries and +0x244 to their empty value; the venue word +0x12 stays 0 (read 2026-11-22, K6d; all 13,000 free records of probes 58 and 59 at BuildSeason entry hold this template)",
       "source": "db/seeds/k6d1.tsv"
+    },
+    {
+      "address": "0x1414e32c0",
+      "name": "Competition_FixtureRecord_FindPairEntry",
+      "confidence": "probable",
+      "reviewed": "no",
+      "evidence": "(record, side 0, side 1) the entry of the record whose match ids reference a match of this pair in either order, else null (read 2026-11-22, K6e)",
+      "source": "db/seeds/k6e1.tsv"
+    },
+    {
+      "address": "0x1414e3430",
+      "name": "Competition_FixtureRecord_AddEntry",
+      "confidence": "probable",
+      "reviewed": "no",
+      "evidence": "(record) the first free entry (index field 0x1F), its index field set to its position (read 2026-11-22, K6e)",
+      "source": "db/seeds/k6e1.tsv"
+    },
+    {
+      "address": "0x1414d6420",
+      "name": "Competition_FixtureEntry_SetMatchId",
+      "confidence": "probable",
+      "reviewed": "no",
+      "evidence": "(entry, leg, match id) leg 0 -> +8, leg 1 -> +0xA, 2 -> +8 with +0xA = 0xFFFF (read 2026-11-22, K6e)",
+      "source": "db/seeds/k6e1.tsv"
+    },
+    {
+      "address": "0x1413438c0",
+      "name": "Competition_FixtureRecord_FindEntryByIndex",
+      "confidence": "probable",
+      "reviewed": "no",
+      "evidence": "(record, index) the entry whose index field (+0xC bits 22-26) equals index, else null (read 2026-11-22, K6e)",
+      "source": "db/seeds/k6e1.tsv"
+    },
+    {
+      "address": "0x1413f4910",
+      "name": "Competition_FixtureRecord_FirstFreeEntry",
+      "confidence": "probable",
+      "reviewed": "no",
+      "evidence": "(record) the first entry whose index field is 0x1F, else null (read 2026-11-22, K6e)",
+      "source": "db/seeds/k6e1.tsv"
+    },
+    {
+      "address": "0x1413f4960",
+      "name": "Competition_FixtureEntry_GetIndex",
+      "confidence": "probable",
+      "reviewed": "no",
+      "evidence": "(entry) +0xC bits 22-26, -1 when 0x1F; its parity picks the back link (+0x18 even, +0x1C odd) in LinkRounds (read 2026-11-22, K6e)",
+      "source": "db/seeds/k6e1.tsv"
+    },
+    {
+      "address": "0x140af1db0",
+      "name": "Competition_FixtureRecord_Clear",
+      "confidence": "probable",
+      "reviewed": "no",
+      "evidence": "(record) zeroes 0x208 bytes, regulation 0xFFFF, +0x204 = 0xDC000000 (round code 0x37, no entries), every entry: invalid sides, ids 0xFFFF, words 0x07F7FFFF (read 2026-11-22, K6e)",
+      "source": "db/seeds/k6e1.tsv"
+    },
+    {
+      "address": "0x14134a920",
+      "name": "Competition_Team_AddEnteredCompetition",
+      "confidence": "probable",
+      "reviewed": "no",
+      "evidence": "(step, regulation) each valid team of the live list gets the regulation in its team +0x2EC list (15 x 0x14) unless present or full, when 0x141548510 holds; then 0x14134A540 (read 2026-11-22, K6e; probes 58-60: 659 of 659 teams exact)",
+      "source": "db/seeds/k6e1.tsv"
+    },
+    {
+      "address": "0x14134a540",
+      "name": "Competition_Team_CopySplitStageByte",
+      "confidence": "guess",
+      "reviewed": "no",
+      "evidence": "(step, regulation) for split-league stages of countries 8, 11, 12, 15: copies or halves the +0x2EE byte between the stages' entries in each team's +0x2EC list (read in part 2026-11-22, K6e)",
+      "source": "db/seeds/k6e1.tsv"
+    },
+    {
+      "address": "0x1413ac0b0",
+      "name": "ML_EnteredCompetitions_Add",
+      "confidence": "probable",
+      "reviewed": "no",
+      "evidence": "(EditData +0x1787A48, &regulation) adds the regulation to each of 32 lists of 200 8-byte entries at +0x1AD0 (stride 0x640, id at +4) unless present or full (read 2026-11-22, K6e; probes 58-60: 32 of 32 exact)",
+      "source": "db/seeds/k6e1.tsv"
+    },
+    {
+      "address": "0x141548510",
+      "name": "Competition_Regulation_ListsTeamCompetition",
+      "confidence": "probable",
+      "reviewed": "no",
+      "evidence": "(regulation) true for type 1, 5, 6 or ids 9, 41, 77, 104; else false with child regulations, false for type 4 with +0x230 == 0, else true (read 2026-11-22, K6e)",
+      "source": "db/seeds/k6e1.tsv"
+    },
+    {
+      "address": "0x14150d2b0",
+      "name": "Competition_Regulation_GetType",
+      "confidence": "probable",
+      "reviewed": "no",
+      "evidence": "(&regulation) +0x84, 7 when absent (read 2026-11-22, K6e)",
+      "source": "db/seeds/k6e1.tsv"
+    },
+    {
+      "address": "0x141546860",
+      "name": "Competition_Regulation_HasChildren",
+      "confidence": "probable",
+      "reviewed": "no",
+      "evidence": "(regulation) Competition_Regulation_GetChildIds is non-empty (read 2026-11-22, K6e)",
+      "source": "db/seeds/k6e1.tsv"
+    },
+    {
+      "address": "0x141542c40",
+      "name": "Competition_Regulation_GetW230",
+      "confidence": "probable",
+      "reviewed": "no",
+      "evidence": "(regulation) +0x230, 3 when absent (read 2026-11-22, K6e)",
+      "source": "db/seeds/k6e1.tsv"
+    },
+    {
+      "address": "0x141342050",
+      "name": "Competition_Players_RegisterForCompetition",
+      "confidence": "guess",
+      "reviewed": "no",
+      "evidence": "(step, regulation) when 0x1415483E0 holds: for each regulation of 0x141341080's list, each player of the listed teams' rosters (team +0x14C, count +0x426), or every player when +0x230 == 1, through 0x141342410 (read 2026-11-22, K6e; not ported: the host does not model per-competition discipline)",
+      "source": "db/seeds/k6e1.tsv"
+    },
+    {
+      "address": "0x141342410",
+      "name": "Competition_Player_SetCompetitionEntry",
+      "confidence": "guess",
+      "reviewed": "no",
+      "evidence": "(step, player, regulation, lists, flag) player +0xF0: 15 u32 entries, regulation id in bits 0-15, bits 22-24 a limit from +0x2F4 (1-3, 7 -> 5, 4 -> 3, 5 -> 4, 6 -> 2) or 0x141341490, bits 25-26 from 0x141341600 (read 2026-11-22, K6e; guess: yellow-card suspension state)",
+      "source": "db/seeds/k6e1.tsv"
+    },
+    {
+      "address": "0x141341080",
+      "name": "Competition_Players_CompetitionLists",
+      "confidence": "guess",
+      "reviewed": "no",
+      "evidence": "builds the three regulation lists Competition_Players_RegisterForCompetition uses (not read; K6e)",
+      "source": "db/seeds/k6e1.tsv"
+    },
+    {
+      "address": "0x141341490",
+      "name": "Competition_Player_EntryLimit",
+      "confidence": "guess",
+      "reviewed": "no",
+      "evidence": "value for player +0xF0 entry bits 22-24 (not read; K6e)",
+      "source": "db/seeds/k6e1.tsv"
+    },
+    {
+      "address": "0x141341600",
+      "name": "Competition_Player_EntryState",
+      "confidence": "guess",
+      "reviewed": "no",
+      "evidence": "value for player +0xF0 entry bits 25-26 (not read; K6e)",
+      "source": "db/seeds/k6e1.tsv"
+    },
+    {
+      "address": "0x1415483e0",
+      "name": "Competition_Regulation_RegistersPlayers",
+      "confidence": "guess",
+      "reviewed": "no",
+      "evidence": "condition of Competition_Players_RegisterForCompetition (not read; K6e)",
+      "source": "db/seeds/k6e1.tsv"
     },
     {
       "address": "0x140a48a10",
@@ -9415,6 +9575,38 @@
       "source": "db/seeds/ports/competition.tsv"
     },
     {
+      "address": "0x141579db0",
+      "status": "reimplemented",
+      "fidelity": "exact",
+      "implementation": "src/game/ml/fixture_records.cpp fixture_records",
+      "evidence": "derived from the World (no stored copy): records allocated in first-match order; probes 58-60 all 2000 records byte for byte and 199 of 199 +0x88 lists (ctest fixture_records)",
+      "source": "db/seeds/ports/competition.tsv"
+    },
+    {
+      "address": "0x1413f5b70",
+      "status": "reimplemented",
+      "fidelity": "exact",
+      "implementation": "src/game/ml/fixture_records.cpp fixture_records",
+      "evidence": "the knockout links (next, two back links by index parity); probes 58-60 exact; the round-1 bye branch (team list writes) not ported, no effect on probes 58-60",
+      "source": "db/seeds/ports/competition.tsv"
+    },
+    {
+      "address": "0x14134a920",
+      "status": "reimplemented",
+      "fidelity": "exact",
+      "implementation": "src/game/ml/fixture_records.cpp team_competitions",
+      "evidence": "from CreationBuildReport::entered; probes 58-60 659 of 659 team lists (ctest season_creation); 0x14134A540 (split-stage byte) not ported, zero at creation",
+      "source": "db/seeds/ports/competition.tsv"
+    },
+    {
+      "address": "0x1413ac0b0",
+      "status": "reimplemented",
+      "fidelity": "exact",
+      "implementation": "src/game/ml/fixture_records.cpp entered_competitions",
+      "evidence": "probes 58-60 32 of 32 lists (ctest season_creation)",
+      "source": "db/seeds/ports/competition.tsv"
+    },
+    {
       "address": "0x1414f6e20",
       "status": "reimplemented",
       "fidelity": "exact",
@@ -10076,6 +10268,11 @@
       "date": "2026-11-22",
       "title": "K1 correction, the user-region inputs of the player collection (Track C, static)",
       "body": "Track C. The constructor's player population now takes the user club's region from the game's own rule instead of Arsenal's defaults.\n- **Read:** `ML_UserClub_Set` (0x140ADFAC0) stores the user league regulation at EditData +0x1789400 through `Competition_Team_GetLeagueRegulation` (0x141510280) mode 0, which is `Competition_Team_FirstLeagueRegulation` (0x141510160): the first regulation in table order with period 1, 6, 11 or 49 that lists the club.\n- **Read:** the special clubs (0x141267790) use that regulation's +0x300 bits 25-28. The newface lists (0x141265080) use `Competition_Regulation_ConfederationGroup` (0x141511070) of it: 0 or 2 -> 2, 1 -> 0, 3 -> 5, 5 -> 1, 6 -> 4, else 6, with groups above 3 falling back to list 0.\n- **confirmed:** the rule's league equals EditData +0x1789400 on probes 58 (17) and 60 (30). With it, the state nibble, fame, wage and `w13c` are exact for all 17,289 players on both careers. Previously 60 players differed on probe 60.\n- **Untested regions:** groups 2, 4, 5 and 6 and the +0x76 parent step are read and unit-tested, with no career reference.\n- **Not covered:** the reserve-pair flag (0x141571BA0 and 0x1415719D0, through team +0x62C and +0x628, guess). No vanilla team has either link, so it is unreachable on vanilla data (`shortcut:`).\n- **Separate gap, misattributed in the K6d entry above:** probe 60's wage budget (438,838 in the dump, 421,375 constructed; the transfer budget is equal) comes from the starting-budget rule, not the population. It is not traced."
+    },
+    {
+      "date": "2026-11-22",
+      "title": "K6e, the creation build's fixture records and competition lists (Track C, static)",
+      "body": "Track C. The EditData state the creation build writes beyond the World is now derived from the World and checked byte for byte against probes 58, 59 and 60.\n- **Read, confirmed on three careers:** the round fixture records (+0xD65F64) and the regulations' +0x88 round lists. They come from `Competition_FixtureRecord_Allocate` (0x141579DB0), EmitLeague (0x1413F4430), EmitTie (0x1413F54B0) and `Competition_Knockout_LinkRounds` (0x1413F5B70), with entry helpers 0x1414E32C0, 0x1414E3430, 0x1414D6420, 0x1413438C0, 0x1413F4910 and 0x1413F4960, and the clear 0x140AF1DB0. Result: 2,000 of 2,000 records and 199 of 199 lists equal (`ml::fixture_records`).\n- **Read, confirmed on three careers:** `OnCompetitionEntered` (0x1413AC310) adds each entered regulation to its teams' lists at +0x2EC (`0x14134A920`, condition `0x141548510`) and to 32 lists at EditData +0x178951C (`0x1413AC0B0`). Result: 659 of 659 teams and 32 of 32 lists equal.\n- **Read in part, not ported:** player +0xF0 per-competition entries (`0x141342050`, `0x141342410`; guess: discipline state). The host does not read them; owner: the discipline subsystem (S1).\n- **Read:** `Player_UpdateDerivedState` is not called in the creation build (keys 0 and 3, no include with +0x230 == 1)."
     }
   ]
 }
