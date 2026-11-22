@@ -63,7 +63,7 @@
       "name": "Competition_SeasonEnd_FilterLeaguesByConfederation",
       "confidence": "probable",
       "reviewed": "no",
-      "evidence": "conf = reg+0x300 bits 25-28; types 1/6/11 kept",
+      "evidence": "(step, confederation, event key, flag) LeagueRegulationList cut to the confederation (+0x300 bits 25-28) and the key's zone (regulation 99 counts as zone 0); every remaining league whose period is not 1, 6 or 11 (mask 0x842) is reset (ResetRegulation) and cleared (ClearRegulationTeams) and dropped; the rest go to StoreLeagueEntrants or 0x141365110 (read 2026-11-22, K6d)",
       "source": "db/seeds/competition1.tsv"
     },
     {
@@ -479,7 +479,7 @@
       "name": "Competition_Season_ClearRegulationTeams",
       "confidence": "probable",
       "reviewed": "no",
-      "evidence": "runtime: SetTeamAt(.., 0xFFFFFFFF) on live reg 17 before the refill (drawprobe run13); also called from Competition_SeasonEnd_FilterLeaguesByConfederation",
+      "evidence": "(step, regulation) sets every live handle to invalid, the count to 0 and the entrants mode (+0x304 bit 8) to 0 (read 2026-11-22); called from FillEntrantLists and FilterLeaguesByConfederation",
       "source": "db/seeds/competition1.tsv"
     },
     {
@@ -519,7 +519,7 @@
       "name": "Competition_Season_StoreEntrants",
       "confidence": "probable",
       "reviewed": "no",
-      "evidence": "writes a regulation's team list into the step object's 0x30-stride entry (entrants at +0x10, 16 bytes each); runtime: reg 17 entry appended complete (drawprobe run14a)",
+      "evidence": "(step, regulation, list, mode) the first store of a regulation appends a 0x30 entry to the step vector at +0x18 {id, +0x84 type, +0x2FC, mode at +0xA, 16-byte entrants at +0x10}; a later store of the same regulation overwrites the list and mode; with mode set it recurses into type 2 split children, type 5 children and type 6 period-12 siblings (read 2026-11-22, K6d)",
       "source": "db/seeds/competition1.tsv"
     },
     {
@@ -4989,9 +4989,9 @@
     {
       "address": "0x1413514b0",
       "name": "Competition_SeasonStep_Init",
-      "confidence": "guess",
+      "confidence": "probable",
       "reviewed": "no",
-      "evidence": "constructor of the 0x38-byte season step object built by 0x141362480 in BuildSeason (not read)",
+      "evidence": "constructor of the 0x38-byte season step object (0x141362480): two empty vectors at +0 and +0x18 (the +0x18 one holds the 0x30-byte regulation entries StoreEntrants appends), +0x30 = 0, +0x32 = 0 (read 2026-11-22, K6d)",
       "source": "db/seeds/k6b1.tsv"
     },
     {
@@ -5033,6 +5033,14 @@
       "reviewed": "no",
       "evidence": "(regulation record, handle) writes +0x234 + count * 4 and increments the count (+0x30C bits 22-28) while below 48 (read 2026-11-22)",
       "source": "db/seeds/k6c1.tsv"
+    },
+    {
+      "address": "0x140af1ed0",
+      "name": "Competition_MatchRecord_Clear",
+      "confidence": "probable",
+      "reviewed": "no",
+      "evidence": "(match record) zeroes all 0x254 bytes, then index 0xFFFF, +4 |= 0x3037FFFF, +8 = LastBumpDate, +0xC = 3, both sides invalid, the 34 lineup entries and +0x244 to their empty value; the venue word +0x12 stays 0 (read 2026-11-22, K6d; all 13,000 free records of probes 58 and 59 at BuildSeason entry hold this template)",
+      "source": "db/seeds/k6d1.tsv"
     },
     {
       "address": "0x140a48a10",
@@ -9307,7 +9315,15 @@
       "status": "reimplemented",
       "fidelity": "exact",
       "implementation": "src/game/ml/season_creation.cpp run_creation_build",
-      "evidence": "creation: every step entry reset and set (stored entries in store order, then the unstored include ids); probes 58/59 199 of 199 regulation words and 73 of 73 lists",
+      "evidence": "creation: the step entries (StoreEntrants first-store order, read) reset and set; the zone leagues FilterLeaguesByConfederation clears (periods other than 1, 6, 11) reset and cleared outside the step; probes 58/59 199 of 199 regulation words and 73 of 73 lists; also exact on the constructed World of probe 58 (ctest creation_constructed)",
+      "source": "db/seeds/ports/competition.tsv"
+    },
+    {
+      "address": "0x141365c50",
+      "status": "reimplemented",
+      "fidelity": "exact",
+      "implementation": "src/game/ml/creation_entrants.cpp creation_entrants",
+      "evidence": "creation: the zone filter and the reset and clear of league-type regulations of other periods (CreationEntrants::cleared); probes 58/59 regs 135, 136, 148, 156, 172, 175 exact; the Flag90750 branch (0x141365110) is not reached at creation",
       "source": "db/seeds/ports/competition.tsv"
     },
     {
@@ -9978,6 +9994,11 @@
       "date": "2026-11-22",
       "title": "K6c, the creation BuildSeason's fixtures and reg 1 (Track C, static plus runtime)",
       "body": "Track C. The host now reproduces the game's first season build of a new career from its BuildSeason-entry state.\n\n**Read.**\n- `Competition_Regulation_SetEntrants` (0x141522B50) is **confirmed**. It clears the list (`Competition_Regulation_ClearTeams` 0x1414C9740, also the count at +0x308 bits 16-22). Then it appends the valid handles (`Competition_Regulation_AppendTeam` 0x1414C9A10) and sets +0x304 bit 8 to the store mode (`Competition_Regulation_SetEntrantsMode` 0x1414CA020). Finally it clears the next list (`Competition_Regulation_ClearNextList` 0x1414C97A0).\n- `Competition_Season_ResetRegulation` (0x141363040, probable) frees each round's slot (`Competition_Regulation_SetRoundIndex` 0x1414C9DF0) and zeroes the round count (`Competition_Regulation_SetRoundCount` 0x1414C9E10, +0x300 bits 19-24).\n- `Competition_Season_BuildFixturesAndEnter` (0x1413AC170) files only regulations with +0x304 bit 8. That is why the CL and EL groups (regs 3 and 5, stored in mode 0) have no fixtures at creation.\n- **Reg 1** is written by BuildSeason's last call into relocated code (0x144AF18E0, argument 4, run when key 0 fired; decompiled and read, never emulated or run). It appends reg 7's first club, the CL holder (103 on probes 58 and 59).\n\n**Port.** `run_creation_build` (`src/game/ml/season_creation.cpp`) chains the K6b lists, FillEntrantLists' reset and set, the July build's `refile_regulation`, the round count and reg 1.\n- **confirmed** against the BuildSeason return dumps of probes 58 and 59: 6,345 of 6,345 match records equal in every field, the day table equal on all 365 day rows, all four regulation words equal on 199 of 199 regulations, 73 of 73 live lists equal.\n- **confirmed:** on both probes the generator ends at the logged S1, so all 12,804 draws of the build are reproduced.\n- **probable (fitted on two probes, not read):** the step entry order (stored regulations in store order, then the unstored include ids).\n- **probable:** a zero venue word on records no venue draw wrote.\n- Day row 365 overlaps calendar state (K8)."
+    },
+    {
+      "date": "2026-11-22",
+      "title": "K6d, step order and venue default read; creation build exact on the constructed World (Track C, static)",
+      "body": "Track C. Two rules K6c had fitted on probes 58 and 59 are now read from code. The creation build also runs on the constructed World. No probe was run.\n\n**Step order: confirmed (read).**\n- `Competition_SeasonStep_Init` (0x1413514B0) builds the step with an empty 0x30-byte entry vector at +0x18.\n- `Competition_Season_StoreEntrants` (0x14135B8E0) appends an entry the first time it stores a regulation. Later stores of the same regulation overwrite the list and mode.\n- `Competition_Season_RunMLSteps` (0x141367290) copies that vector in order to BuildSeason's id list. FillEntrantLists (0x14135BFF0), BuildFixturesAndEnter and ScheduleMatches walk the id list.\n- So the order is StoreEntrants' first-store order. The fitted tail of unstored include ids was wrong in mechanism. It only reached six regulations (135, 136, 148, 156, 172, 175: the period 13 and 14 stages of split leagues 134, 147 and 155).\n- Those six are reset and cleared by `Competition_SeasonEnd_FilterLeaguesByConfederation` (0x141365C50). For every league-type regulation of the zone whose period is not 1, 6 or 11, it calls `ResetRegulation` and `ClearRegulationTeams` (0x141363170: handles invalid, count 0, +0x304 bit 8 cleared).\n- The port follows the read rule (`CreationEntrants::cleared`). Probes 58 and 59 stay exact in every field.\n\n**Venue default: confirmed (read, plus the dumps).**\n- `Competition_Calendar_FileMatchOnDay` (0x141350290) writes +0x12 only when `Competition_Match_VenueNeeded` holds.\n- `Competition_MatchTable_AllocFree` (0x1414BC710) writes only the index, and EmitLeague (0x1413F4430) and EmitTie (0x1413F54B0) write only +4 and the sides.\n- The record clear `Competition_MatchRecord_Clear` (0x140AF1ED0, new name, probable) zeroes all 0x254 bytes and then sets a template that leaves +0x12 at 0.\n- All 13,000 free records at BuildSeason entry in probes 58 and 59 hold that template.\n- The host's `Match::venue` still defaults to −1 outside creation (shortcut: changing it moves the C2 baselines).\n\n**Constructed World: exact on probe 58** (ctest `creation_constructed`). `construct_world` (Arsenal, base = probe 58's entry dump), then `run_creation_build` from S0:\n- **confirmed:** 6,345 of 6,345 records equal in every field, day rows 0 to 364 equal, 199 of 199 regulation words, 73 of 73 lists, and the generator ends at S1.\n- The constructed inputs differ from the dump in player.team0, loans and post_draw (K3), team.roster (104 teams) and team.slots (233 teams) (K4), and in the stand-ins. None changes the output here (**observed on one career only**).\n- Reversing the constructed club ranking changes the lists, so the test is sensitive to constructed state.\n- The build still reads two dump-sourced inputs: `calendar.year` (K8) and the generator state S0 from the probe log (K7). The match and day tables are dump-sourced but empty at entry.\n\n**Open:** a career with another user club (probe 60, proposed in plan section 25), to test the entrant rules that are exact only on Arsenal's careers."
     }
   ]
 }
