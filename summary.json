@@ -195,19 +195,19 @@
   "counts": {
     "named_addresses": 1106,
     "tests": 86,
-    "port_rows_total": 139,
+    "port_rows_total": 141,
     "port_rows_by_status": {
-      "reimplemented": 128,
+      "reimplemented": 130,
       "in host": 11,
       "verified": 0,
       "named": 0
     },
     "port_rows_by_fidelity": {
-      "exact": 99,
-      "behavioural": 39,
+      "exact": 100,
+      "behavioural": 40,
       "free": 1
     },
-    "findings_entries": 210
+    "findings_entries": 212
   },
   "match_metrics": {
     "unique_signatures": {

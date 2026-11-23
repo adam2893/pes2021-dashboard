@@ -9951,6 +9951,22 @@
       "source": "db/seeds/ports/loadtables1.tsv"
     },
     {
+      "address": "0x14126b270",
+      "status": "reimplemented",
+      "fidelity": "exact",
+      "implementation": "src/game/ml/regulation_setup.cpp club_record_order",
+      "evidence": "slot order = MapTeam call order: MapAllTeams lists, then the extra list's club keys with base-id skip; 555 of 555 club records on probe 23 (ctest club_ranking), 659 of 659 positions on probes 58, 60, 61 with the nations and 4971/5129 from build_teams; the user-club call when no league holds it is not ported",
+      "source": "db/seeds/ports/loadtables1.tsv"
+    },
+    {
+      "address": "0x1412659c0",
+      "status": "reimplemented",
+      "fidelity": "behavioural",
+      "implementation": "src/game/ml/regulation_setup.cpp club_record_order; src/platform/pc/career_files.cpp career_player_files",
+      "evidence": "the 11 club keys of the +0x7C = 0x13 branch in order with base-id skip; the nation keys 0-4, the +0x1789468 skip and the 0x1428BFB30 variant ranking are not ported (no effect on probes 58, 60, 61)",
+      "source": "db/seeds/ports/loadtables1.tsv"
+    },
+    {
       "address": "0x1405b6800",
       "status": "reimplemented",
       "fidelity": "exact",
@@ -10580,6 +10596,16 @@
       "date": "2026-11-23",
       "title": "S1a ports after probe 61: stadium availability ported, loan-end normalization blocked on the contract remap (Track C)",
       "body": "- **Stadium availability: ported.** `platform::stadium_list` reads `common/etc/data_st_list.bin` (bits 0-15 of each u32 entry; the flag nibbles are not used by the test); `ml::team_stadium` applies the Pesdb_LoadTeams rule (0 and ids missing from the set become 0x1D); `construct_world` passes the set to `build_teams` and to `build_venue_table`. `career_teams_test`: 53 stadiums, no non-zero Team.bin stadium missing, team.stadium 659 of 659 against probe 52; synthetic unit cases for 0, a missing id, a present id and no set. On vanilla data the output is unchanged.\n- **Loan-end normalization: not ported (blocked).** `MLSetup_NormalizeLoanEnds` caps the end with the player's contract end (+0x138) at the time it runs. That contract is not the Player.bin contract: on probe 61 all 145 loaned players' contracts differ from the file (e.g. 12-31 to 01-31 of the next year for 49, 06-30 to 08-31 for 46, file 0 to a drawn date for 13); the setup remaps or draws contracts before BuildRankings. With file contracts the rule gives 118 of 145; with the dump's contracts 145 of 145. The constructor's contract fields are a K7 placeholder (0), so a faithful port needs the contract remap first. The half-year fit in `career_squads.cpp` stays until then (it is not replaced with a second approximation).\n- **Window dates:** `Date_FromMonthDay` (0x141575680, read) returns the date of the first calendar day-row event slot (EditData +0x16038A8, 365 rows of 0x2C4, 18 slots at +0x234) whose type equals its argument, else the last bump date. The loan pass asks for types 0x11 and 0xF. The World's `calendar.event_first` is that lookup (dump-sourced until K8)."
+    },
+    {
+      "date": "2026-11-23",
+      "title": "S1a 3A ported, the club record order from the MapTeam call order (Track C)",
+      "body": "- **Change:** `ml_club_records` (`src/platform/pc/team_keys.cpp`) no longer uses the inferred order (26 league competition ids, then Team.bin categories 2, 6 and 7 by name, Libertadores and AFC entries). It now calls `ml::club_record_order` (`src/game/ml/regulation_setup.cpp`). That function walks the setup's regulation lists, which come from `build_creation_regulations` with no handles. It maps the teams of types 1, 6 and 11 in table and list order, then the extra-team list's club keys (`read_creation_tables().extra_keys`, 0x1428BFAB0). A base id (id & 0x23FFF) that is already held is skipped. The 11 keys at 0x1428BFAB0 were read from the exe and equal the first 11 of the 16 keys at 0x1428BFAE0 (**confirmed**). The nation records and teams 4971 and 5129 still come from `build_teams`.\n- `career_entry_table` and `career_load_regulations` (`career_files.cpp`) were split out of `career_team_files` so that `ml_club_records` can build the entry table and the load-time table itself. `ml_club_records` now takes the exe path.\n- **Acceptance:** the club record order equals the 555 records of probe 23 (`club_ranking`). A synthetic unit case was added (`regulation_setup_unit`). ctest passes 86 of 86 and check_names shows 0 gaps. The C2 metrics, state and log are byte-identical to the approved baselines, so no baseline changed.\n- **Not ported (shortcut, Original Lineup / probe 62):** the user club's own MapTeam call (0x14126C8E3), made when no league list holds the club; the extra list's skip of the EditData +0x1789468 team; and the 0x1428BFB30 variant ranking. None of them applies to the captured careers."
+    },
+    {
+      "date": "2026-11-23",
+      "title": "Probe 63, the lineup rebuild capture (Track C, VM, captured, not analysed)",
+      "body": "- **Run:** one new Master League career, Club Team Lineup, club 102, vanilla data, default settings. The scripts are in `tests/behaviour/cdb/mlswap/*63*`. The log, the dumps, the SHA-256 sums and copies of the scripts are in `private-reference/probe63/`. The run reached `PROBE63_DONE` at BuildSeason entry.\n- **Content:**\n  - 2,110 `Team_AutoSelectLineup` calls were logged after MLSetup_Run.\n  - 61 mode-1 calls were followed, each with r8 and the 600-byte record before and after. One of them is club 102: call n=905, record id 0x66, caller 0x141572364, return value 6.\n  - Four full EditData dumps were written before and after the call (`al63_pre_k` / `al63_post_k`, 25.6 MB each): the club 102 call (k=4) and the first three other mode-1 calls.\n- **First observation (probable):** the followed record of call n=905 lies at EditData +0xC4CA0C + 600 × 0x66, as the filter assumed. The mode-1 calls at n=359, 361 and 363 pass record id 0. In the dump, that record's bytes after +0x220 (a slot-order list) change from 00 01 02 03 04 FF 05 … to 00 01 02 03 04 0F 05 …. The mode-1 rule itself is not analysed yet."
     }
   ]
 }
