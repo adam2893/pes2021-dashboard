@@ -6003,6 +6003,14 @@
       "source": "db/seeds/s1a1.tsv"
     },
     {
+      "address": "0x141854f00",
+      "name": "Object_GetU16At8",
+      "confidence": "probable",
+      "reviewed": "no",
+      "evidence": "returns the u16 at rcx+8 (5-byte leaf, 100+ callers); Team_Squad_RemovePlayer passes the value at owner +0x50 object +0x35960 as Team_AutoSelectLineup's 4th argument (0xFFFF in probes 56 and 61)",
+      "source": "db/seeds/s1a1.tsv"
+    },
+    {
       "address": "0x1413b7b50",
       "name": "Competition_SlotPick_PickRows",
       "confidence": "probable",
@@ -8271,16 +8279,16 @@
     {
       "address": "0x141572364",
       "field1": "site",
-      "field2": "Team_AutoSelectLineup_Caller@Mode1Return",
-      "field3": "probable",
+      "field2": "Team_Squad_RemovePlayer@AutoSelectLineupReturn",
+      "field3": "confirmed",
       "evidence": "no",
       "source": "db/seeds/data/findings1.tsv"
     },
     {
       "address": "0x14157209c",
       "field1": "site",
-      "field2": "Team_AutoSelectLineup_Caller@Mode3Return",
-      "field3": "probable",
+      "field2": "Team_Squad_AddPlayer@AutoSelectLineupReturn",
+      "field3": "confirmed",
       "evidence": "no",
       "source": "db/seeds/data/findings1.tsv"
     },
@@ -8329,6 +8337,62 @@
       "field1": "site",
       "field2": "Competition_MLSetup_BuildTeams@MapTeam5129",
       "field3": "probable",
+      "evidence": "no",
+      "source": "db/seeds/data/findings1.tsv"
+    },
+    {
+      "address": "0x141504699",
+      "field1": "site",
+      "field2": "Team_AutoSelectLineup_Core@Mode1Branch",
+      "field3": "confirmed",
+      "evidence": "no",
+      "source": "db/seeds/data/findings1.tsv"
+    },
+    {
+      "address": "0x141501143",
+      "field1": "site",
+      "field2": "Lineup_AssignB@Mode1Bench",
+      "field3": "confirmed",
+      "evidence": "no",
+      "source": "db/seeds/data/findings1.tsv"
+    },
+    {
+      "address": "0x141505490",
+      "field1": "site",
+      "field2": "Lineup_SetEntryCriteria@ModeSwitch",
+      "field3": "confirmed",
+      "evidence": "no",
+      "source": "db/seeds/data/findings1.tsv"
+    },
+    {
+      "address": "0x141503854",
+      "field1": "site",
+      "field2": "Lineup_ScoreCandidates@ModeSwitch",
+      "field3": "confirmed",
+      "evidence": "no",
+      "source": "db/seeds/data/findings1.tsv"
+    },
+    {
+      "address": "0x141503a71",
+      "field1": "site",
+      "field2": "Lineup_ScoreCandidates@Mode3StaminaScale",
+      "field3": "confirmed",
+      "evidence": "no",
+      "source": "db/seeds/data/findings1.tsv"
+    },
+    {
+      "address": "0x14150503f",
+      "field1": "site",
+      "field2": "Lineup_Entry@Mode2Criterion",
+      "field3": "probable",
+      "evidence": "no",
+      "source": "db/seeds/data/findings1.tsv"
+    },
+    {
+      "address": "0x1414ff107",
+      "field1": "site",
+      "field2": "Team_AutoSelectLineup@ModeGate",
+      "field3": "confirmed",
       "evidence": "no",
       "source": "db/seeds/data/findings1.tsv"
     },
@@ -10605,7 +10669,12 @@
     {
       "date": "2026-11-23",
       "title": "Probe 63, the lineup rebuild capture (Track C, VM, captured, not analysed)",
-      "body": "- **Run:** one new Master League career, Club Team Lineup, club 102, vanilla data, default settings. The scripts are in `tests/behaviour/cdb/mlswap/*63*`. The log, the dumps, the SHA-256 sums and copies of the scripts are in `private-reference/probe63/`. The run reached `PROBE63_DONE` at BuildSeason entry.\n- **Content:**\n  - 2,110 `Team_AutoSelectLineup` calls were logged after MLSetup_Run.\n  - 61 mode-1 calls were followed, each with r8 and the 600-byte record before and after. One of them is club 102: call n=905, record id 0x66, caller 0x141572364, return value 6.\n  - Four full EditData dumps were written before and after the call (`al63_pre_k` / `al63_post_k`, 25.6 MB each): the club 102 call (k=4) and the first three other mode-1 calls.\n- **First observation (probable):** the followed record of call n=905 lies at EditData +0xC4CA0C + 600 × 0x66, as the filter assumed. The mode-1 calls at n=359, 361 and 363 pass record id 0. In the dump, that record's bytes after +0x220 (a slot-order list) change from 00 01 02 03 04 FF 05 … to 00 01 02 03 04 0F 05 …. The mode-1 rule itself is not analysed yet."
+      "body": "- **Run:** one new Master League career, Club Team Lineup, club 102, vanilla data, default settings. The scripts are in `tests/behaviour/cdb/mlswap/*63*`. The log, the dumps, the SHA-256 sums and copies of the scripts are in `private-reference/probe63/`. The run reached `PROBE63_DONE` at BuildSeason entry.\n- **Content:**\n  - 2,110 `Team_AutoSelectLineup` calls were logged after MLSetup_Run.\n  - 61 mode-1 calls were followed, each with r8 and the 600-byte record before and after. The filter meant to catch club 102 matched record 102 instead (call n=905, team 4086, caller 0x141572364); see the analysis entry below.\n  - Four full EditData dumps were written before and after the call (`al63_pre_k` / `al63_post_k`, 25.6 MB each): the club 102 call (k=4) and the first three other mode-1 calls.\n- **First observation:** superseded by the analysis entry below. The record's first word is the record index, not the team id, so call n=905 (\"id 0x66\") is record 102, team 4086, not club 102."
+    },
+    {
+      "date": "2026-11-23",
+      "title": "S1a 3B, the mode-1 lineup repair read and checked (Track C, static plus probe 63, offline)",
+      "body": "- **Correction (probe 61 and probe 63 filters):** the formation record's first word (+0) is the record index, not the team id. In probe 63's dump, words 0 to 660 equal their index, and record i belongs to the team at table position i: record 0 is team 101, Arsenal, coach Mikel Arteta. Club 102 is at position 4 and record 4. So probe 61's \"club 102 had a mode-1 call (n=803)\" and probe 63's call n=905 are record 102, team 4086. No call on record 4 was logged between MLSetup_Run and BuildSeason in probe 63, so the user club's map is not rebuilt there. **confirmed**.\n- **Full-dump diff:** for each of the four pre/post pairs, the only EditData bytes that change are inside the called record, at +0x225 to +0x247 (capture 1: 25 bytes; 2: 6; 3: 4; 4: 26). Outside it, nothing changed, and no other thread wrote between the entry and the return. **confirmed**.\n- **Call path (read, decompile and disassembly):**\n  - `Team_Squad_RemovePlayer` 0x1415720D0 (return address 0x141572364) zeroes a context and runs `Lineup_Context_Init` (mode 1, cap +8 = 0x17). It sets +4 from the formation byte +0x257 (1 when 0), but the flag-1 path sets it to 1 again. It renumbers the map (FINDINGS 2026-11-18) and calls `Team_AutoSelectLineup` when the team count (+0x424 bits 16-22) is above 10. The 4th argument is the u16 at owner +0x50 object +0x35968 (`Object_GetU16At8` 0x141854F00), which is 0xFFFF in probes 56 and 61. Nothing else is written to the context.\n  - `Team_AutoSelectLineup` 0x1414FF107 returns at once for mode 0 or 7 and above.\n  - `Team_AutoSelectLineup_Core` 0x141504699, mode 1:\n    - The result array keeps the current slot map; mode 3 resets it to 0xFF.\n    - An XI entry whose player is unavailable (or 40 and above) becomes 0xFF and is flagged; a bench entry with an unavailable player is flagged too.\n    - If no slot below the roster count is flagged, the candidate build and both assigns are skipped, and only `Lineup_FinaliseA`/`FinaliseB` run.\n  - `Lineup_AssignB` 0x141501143, mode 1: the 29 existing bench entries are taken first, in order, as placed (available, unused players). So the bench keeps its order.\n  - The mode changes the scoring in three places:\n    - The criteria lists (0x141505490, 0x141503854) are shared by modes 1 and 3; only modes 2, 4, 5 and 6 differ.\n    - The stamina scaling of criteria 2, 3, 6 and 7 (stamina below 0x50) runs only in mode 3 (0x141503A71).\n    - `Lineup_VariantBetter` 0x1415041A0 weights from `Lineup_VariantWeights` 0x14297E438 by mode. Mode 1 is (reg, flag, S, cond, F) = 0, 0, 1, 0, 0; mode 3 is 3, 5, 2, 3, 1. The comparison: a higher flag loses; then the weighted sum; then reg ascending. Mode 3 alone adds a final S tie-break; mode 1 has none (a tie returns false).\n- **Classification:** mode 1 is a repair of the existing map, not a rebuild and not a permutation by rule. Kept XI slots stay. Each open XI slot is filled by the variant search (S-only weights in mode 1). The bench keeps its order and closes up without the filler. Entries at or above the roster count become 0xFF.\n- **Checks:**\n  - **Emulation oracle** (`src/tools/oracles/emu_autoselect.py`, new options `--edit`, `--rec`, `--mode`, `--post`, `--swap`, `--trace-ctx`): the game's own `Team_AutoSelectLineup` in mode 1 with cap 0x17 and r9 0xFFFF. EditData is probe 63's pre-call dump at its captured base, and the other owner objects and sections come from the probe 56 snapshot. Result: **all 600 record bytes equal the post dump for 4 of 4 captures**, with no unmapped access, no unmodelled import and no EditData write outside the team and formation records. Outputs are in `private-reference/s1/l63/oracle_k.txt`. The owner objects are from another career; the exact match shows these four results do not depend on any difference between them.\n  - **Perturbation under the oracle** (capture 1), which confirms the rule:\n    - with slots 0 and 12 swapped, player 11 stays in XI slot 0 and player 0 keeps bench slot 12;\n    - with 1 and 20 swapped, the kept entries stay;\n    - with player 5 moved to the bench, he fills the open slot instead of 15;\n    - mode 3 on the same input gives the same XI and a different bench.\n  - **Structure on all 61 logged record pairs** (`private-reference/s1/l63` data, `probe63/al63_pairs.json`): kept XI unchanged, bench order kept and closed up, result a permutation of the roster, in 61 of 61 cases (31 with one XI hole, 28 bench-only removals, 2 `AddPlayer` mode-1 calls on record 659 that leave the map unchanged). The filler choice is checked only on the four dumped calls.\n- **Constructor comparison** (`private-reference/s1/l63/repair63.cpp`): `career_formations.cpp`'s loss repair (close the bench, the kept starters locked, the open slot from `match::auto_lineup` with keep, `set_starters`) on the four pre-call states gives **40 of 40 slots for 4 of 4**. The structure is the game's. Discrepancies found in the code, none of which shows in these four cases:\n  1. `match::variant_better` uses the mode-3 weights and the final S tie-break; mode 1 uses S only and no final tie-break.\n  2. `match::candidates` applies the stamina scaling in every mode; mode 1 does not. Stamina is 100 at creation, so this matters only in season.\n  3. The port keeps every non-empty XI entry; the game clears unavailable players and also refills them, and skips the search when nothing needs a fill.\n  These are the likely sources of the 5 of 137 repaired XIs that differ on probe 52 (**guess**, not checked: no pre-repair state for them).\n- **No behaviour change.** The shortcut at `career_formations.cpp:52` stays until the port is approved."
     }
   ]
 }

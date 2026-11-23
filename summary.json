@@ -193,7 +193,7 @@
     }
   ],
   "counts": {
-    "named_addresses": 1106,
+    "named_addresses": 1114,
     "tests": 86,
     "port_rows_total": 141,
     "port_rows_by_status": {
@@ -207,7 +207,7 @@
       "behavioural": 40,
       "free": 1
     },
-    "findings_entries": 212
+    "findings_entries": 213
   },
   "match_metrics": {
     "unique_signatures": {
