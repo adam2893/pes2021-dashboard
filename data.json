@@ -1,5 +1,5 @@
 {
-  "updated": "2026-11-22",
+  "updated": "2026-11-23",
   "description": "Community research metadata, not game source or assets. Confidence labels are provisional.",
   "functions": [
     {
@@ -4119,7 +4119,7 @@
       "name": "Competition_MLSetup_BuildDeletedSet",
       "confidence": "probable",
       "reviewed": "no",
-      "evidence": "builds the sorted id set the free-agent filter tests: list 9 of +0x184DB1C (PlayerDeleteList.bin, 555 ids in vanilla) and a list in the EditData owner +0x50 object (+0x153E4, count +0x33CF4; not read further) (2026-11-21)",
+      "evidence": "(out vector) the sorted id set the free-agent filter tests: the ids of SpecialPlayerList 9 of +0x184DB1C (PlayerDeleteList.bin, 555 in vanilla) marked 1, then the ids of the owner +0x50 object's list (u32 at +0x153E4, u16 count at +0x33CF4) marked 0, and the ids still marked 1 form the set (read 2026-11-21; layout and the un-delete semantics re-read 2026-11-23 against probe 61)",
       "source": "db/seeds/competition1.tsv"
     },
     {
@@ -5992,6 +5992,14 @@
       "confidence": "guess",
       "reviewed": "no",
       "evidence": "(dst, src) copies one 0x17C player record; MLSetup_CopyRecordsToEditData's per-player call (not read)",
+      "source": "db/seeds/s1a1.tsv"
+    },
+    {
+      "address": "0x1414bda30",
+      "name": "Team_VariantOfId",
+      "confidence": "probable",
+      "reviewed": "no",
+      "evidence": "(team id) bits 14-16 of the id (id << 14 >> 28 & 7) (read 2026-11-23)",
       "source": "db/seeds/s1a1.tsv"
     },
     {
@@ -8293,6 +8301,38 @@
       "source": "db/seeds/data/findings1.tsv"
     },
     {
+      "address": "0x14126c8e3",
+      "field1": "site",
+      "field2": "Competition_MLSetup_BuildTeams@MapUserClub",
+      "field3": "probable",
+      "evidence": "no",
+      "source": "db/seeds/data/findings1.tsv"
+    },
+    {
+      "address": "0x14126ce00",
+      "field1": "site",
+      "field2": "Competition_MLSetup_BuildTeams@MapExtraTeams",
+      "field3": "probable",
+      "evidence": "no",
+      "source": "db/seeds/data/findings1.tsv"
+    },
+    {
+      "address": "0x14126e60f",
+      "field1": "site",
+      "field2": "Competition_MLSetup_BuildTeams@MapTeam4971",
+      "field3": "probable",
+      "evidence": "no",
+      "source": "db/seeds/data/findings1.tsv"
+    },
+    {
+      "address": "0x14126e64e",
+      "field1": "site",
+      "field2": "Competition_MLSetup_BuildTeams@MapTeam5129",
+      "field3": "probable",
+      "evidence": "no",
+      "source": "db/seeds/data/findings1.tsv"
+    },
+    {
       "address": "0x1434d66f0",
       "field1": "table",
       "field2": "Pesdb_FileNameTable_Entry18",
@@ -10525,6 +10565,21 @@
       "date": "2026-11-23",
       "title": "Probe 61, the S1a combined capture (Track C, VM)",
       "body": "- **Run:** one new Master League career, Club Team Lineup, user club 102 (Chelsea, file name \"CHELSEA B\"), vanilla data, default settings. Scripts `tests/behaviour/cdb/mlswap/*61*`. Log, dumps, SHA-256 sums and copies of the scripts are in `private-reference/probe61/`. The start-type flag was logged as 1 at MLSetup_Run and BuildSeason entry (EditData +0x17893F4 = 01, +0x17893F5 = 00). The generator states are logged at MLSetup_Run entry (SML), BuildSeason entry (S0) and return (S1), with 12,805 draws in between.\n- **Constructor check (no code change):** `creation_constructed_test`, run once with a temporary probe 61 line (reverted, not committed): user league regulation 17 (rule 17), region 1, newface list 0. The creation build on the constructed World equals the BuildSeason return: 60 entries, 6,345 records, generator S1, all regulation words, team lists, league and entry keys. The input differences against the entry dump are the same fields and counts as on probes 58 and 60, apart from the user-club stand-in (17,249 of 17,289). `calendar.day_matches` is 365 of 366 on all three probes (dump-sourced K6 field). Output in `private-reference/probe61/constructed61.txt`. No observation contradicts the implementation.\n- **3A, team table: writer identified (confirmed by watchpoint).** `Pesdb_LoadTeams` fills the table at boot in team-id order (669 teams, slot 0 = team 1). In setup, `Competition_MLSetup_RefreshTable` calls `0x1414BBE60`, which clears the player and team tables (memset, then `0x1414C59F0` writes the empty team record and `0x140AA1700` the empty player record). `RebuildFromList` then calls `MLSetup_CopyRecordsToEditData` (0x141269090), which copies the setup's team vector into the table (`0x140B158D0` per record). Slot 0 became team 101 at `0x140B15900`. So the 669 to 659 step is a rebuild from the setup vector, not a reorder in place, and the ten teams are never mapped (not discarded).\n  - The setup vector is filled by `Competition_MLSetup_MapTeam` calls in `BuildTeams`. `MapAllTeams` (read and confirmed 2026-11-22) maps the teams of every league-type setup regulation in list order. Check: the league regulations (types 1, 6 and 11) in table order, teams in list order, first occurrence, give the first 480 positions of the 659 exactly on probes 61 and 60. **confirmed** for positions 0-479.\n  - Positions 480-658 (179 teams) come from later MapTeam calls: the user club when absent, the extra-team list, special clubs and the other BuildTeams steps. **Not read**; `team_keys.cpp`'s inferred order stays the implementation until they are.\n- **3B, loan end: writer identified and the rule checked (confirmed).** `0x141574A20`, called by `Competition_MLSetup_BuildRankings` after `0x14156B980`, walks every player. A loan (+0x148 bit 16) with a valid club and owner, club different from owner, and an end other than `Competition_SeasonEvents_LastBumpDate` gets a new end:\n  - file month below 5: December 31 of the previous year; months 5 to 10: June 30 of the same year; months 11 and 12: December 31 of the same year (the two dates come from `Date_FromMonthDay` with ids 0x11 and 0xF; they were 2020-12-31 and 2021-06-30 on the stack at the hit, the ids themselves are not read);\n  - then one year back while the end is after the contract end (+0x138);\n  - with the setup flag (setup +0x1B0) set, a loan ending before the season start (+0x178946C) is dropped.\n  - Check (`private-reference/s1/loanrule.cpp`): 145 of 145 loans on probes 58, 60 and 61. Player 117642 needs no special case: December 31 2021 is after his contract end (August 31 2021), so the year steps back to 2020.\n  - The watchpoint itself followed a record slot, not the player: the setup clears and rebuilds the player table (18,452 records at MLSetup_Run, 17,289 at BuildSeason), so slot 9652 held another player after the rebuild. The writer was identified from that player's hit at `0x141574D9E`.\n- **3D, stadium availability: source identified (confirmed).** The resource is `common/etc/data_st_list.bin` (the path is in the resource object; the 212-byte buffer equals the file). 53 entries of u32: stadium id in bits 0-15 and four flag nibbles. Rule check (`private-reference/s1/stadcheck.cpp`): Team.bin stadium, 0 or not in the set gives 29, is 659 of 659 on probes 61 and 60. Every non-zero vanilla stadium is in the set, so the current port gives the same result.\n- **3C, system data (partly).** The owner +0x50 object is 0x40000 bytes or larger (both dumps succeeded); `!heap -x` found no heap block, so it is probably a separate allocation like EditData. The word at +0x3FCCE is 0x16, as assumed by the regulation table. The deleted-list layout (+0x153E4 list, +0x33CF4 count) is not confirmed: the count word reads 45,237,737 and +0x153E4 holds 17,897 sorted ids. **open**.\n- **3B, lineup (mode 1): not captured.** The filter compared the record's first word with the club handle; that word is the team id (0x66 for 102). 2,008 calls were logged: mode 1 from `0x141572364` (876 calls) and `0x14157209C` (10), mode 3 from `0x14157209C` (866), `0x141333A74` (154) and `0x141316FE7` (102). Club 102 had a mode-1 call (n=803). No before or after state was dumped, so the mode-1 path stays open.\n- **K7/K8 reference:** full EditData at MLSetup_Run entry, BuildSeason entry and return, the runtime block at entry and return, the team table after the pesdb load, and the generator states."
+    },
+    {
+      "date": "2026-11-23",
+      "title": "S1a 3A, the ML team table order, all 659 positions (Track C, static plus probe 58/60/61 dumps)",
+      "body": "- **Mechanism (read):** the table position is the handle's low 14 bits (position == handle & 0x3FFF for 659 of 659 teams on probes 58, 60 and 61), which `Competition_MLSetup_MapTeam` takes from `Competition_MLSetup_AllocTeamSlot` (0x14126B270, its only caller) in call order. `MLSetup_CopyRecordsToEditData` then copies the setup vector in that order. MapTeam's callers in the Master League path, in order:\n  1. `Competition_MLSetup_MapAllTeams`: the teams of every setup regulation of live type 1, 6 or 11, in list order.\n  2. `BuildTeams` at 0x14126C8E3: the user club, when no mapped team has its id.\n  3. `BuildTeams` at 0x14126CE00: the extra-team list (setup +0x80) in list order, skipping a team whose base id (`Team_IdFromHandle`, id & 0x23FFF) is already mapped; for a held base the variant's roster is handled on the held team instead.\n  4. `BuildTeams` at 0x14126E60F and 0x14126E64E: teams 0x136B (4971) and 0x1409 (5129), found with `Competition_Entries_FindTeamByHandleId`.\n- **The extra-team list (`Competition_MLSetup_BuildExtraTeamList` 0x1412659C0):** with setup +0x7C = 0x13 (the value of every Master League career, FINDINGS 2026-11-04 probe 8) it walks the 16 keys of `0x1428BFAE0` (69, 71, 27, 67, 26, 28, 73, 74, 30, 70, 75, then the nation keys 0, 1, 2, 3, 4) in order, takes each entry unless it equals EditData +0x1789468 (unset, 0x3FFFF, in these careers), and skips an entry whose base id is already listed. Keys 0x10 and 0x11 follow only when EditData +0x1789466 is 0 (it is 1 on probes 58, 60, 61). A final pass keeps, among entries sharing a base id, the variant with the lowest rank in the pair table `0x1428BFB30` ({2,0}, {3,1}, {6,2}, {1,3}, {5,4}, {4,5}, {0,6}; variant = id bits 14-16 via 0x1414BDA30); after the base-id skip it finds no pairs.\n- **Check (`private-reference/s1/tailorder.cpp`):** the league-list prefix (480 teams) plus steps 3 and 4 give 659 of 659 positions on probes 58, 60 and 61: positions 480-554 are 75 club extras, 555-656 the 102 nations of keys 0-4 (55, 14, 6, 10, 17), then 4971 and 5129. The ten Team.bin teams absent from the table are never mapped. **confirmed** on the three careers; step 2 (user club absent from every league) is not exercised.\n- **Contradiction with the current code (no output effect):** `career_files.cpp:68` ports the +0x7C = 0x12 branch (11 keys) and its comment says every captured career is 0x12. The captured careers are 0x13 (16 keys, with nations). The player population is still exact (17,289 of 17,289); why the nation keys add no players there is not read. `team_keys.cpp`'s inferred order gives the same 659 positions on vanilla; it is not replaced yet."
+    },
+    {
+      "date": "2026-11-23",
+      "title": "S1a 3C, the deleted-player set's second list (Track C, static plus the probe 61 system-data dump)",
+      "body": "- **Layout (read, `Competition_MLSetup_BuildDeletedSet` 0x1414D9A60):** the owner +0x50 object's list is u32 player ids at +0x153E4 with a **u16** count at +0x33CF4. The earlier reading of a u32 count was wrong: probe 61's word 0x02B245E9 is count 0x45E9 = 17,897 plus an unrelated high half.\n- **Semantics (read):** the function first marks every id of SpecialPlayerList 9 (PlayerDeleteList.bin) with 1, then marks every id of the +0x50 list with 0, and keeps the ids still marked 1. So the second list removes ids from the deleted set; it does not add to it. The 2026-11-21 note (\"also adds a list\") is corrected.\n- **Contents (probe 61, `private-reference/s1/dellist.cpp`):** 17,897 distinct ids in ascending order, every one in Player.bin, none in PlayerDeleteList.bin, and they are exactly Player.bin's 18,452 ids minus its 555 deleted ids. So on vanilla data the deleted set is PlayerDeleteList.bin unchanged, which is why the population is exact. **confirmed** for this dump. The writer of the list is not read and only one career has the dump, so the item stays partly open: whether the list ever differs from \"Player.bin minus deleted\" (edited data, saves) is not known."
+    },
+    {
+      "date": "2026-11-23",
+      "title": "S1a ports after probe 61: stadium availability ported, loan-end normalization blocked on the contract remap (Track C)",
+      "body": "- **Stadium availability: ported.** `platform::stadium_list` reads `common/etc/data_st_list.bin` (bits 0-15 of each u32 entry; the flag nibbles are not used by the test); `ml::team_stadium` applies the Pesdb_LoadTeams rule (0 and ids missing from the set become 0x1D); `construct_world` passes the set to `build_teams` and to `build_venue_table`. `career_teams_test`: 53 stadiums, no non-zero Team.bin stadium missing, team.stadium 659 of 659 against probe 52; synthetic unit cases for 0, a missing id, a present id and no set. On vanilla data the output is unchanged.\n- **Loan-end normalization: not ported (blocked).** `MLSetup_NormalizeLoanEnds` caps the end with the player's contract end (+0x138) at the time it runs. That contract is not the Player.bin contract: on probe 61 all 145 loaned players' contracts differ from the file (e.g. 12-31 to 01-31 of the next year for 49, 06-30 to 08-31 for 46, file 0 to a drawn date for 13); the setup remaps or draws contracts before BuildRankings. With file contracts the rule gives 118 of 145; with the dump's contracts 145 of 145. The constructor's contract fields are a K7 placeholder (0), so a faithful port needs the contract remap first. The half-year fit in `career_squads.cpp` stays until then (it is not replaced with a second approximation).\n- **Window dates:** `Date_FromMonthDay` (0x141575680, read) returns the date of the first calendar day-row event slot (EditData +0x16038A8, 365 rows of 0x2C4, 18 slots at +0x234) whose type equals its argument, else the last bump date. The loan pass asks for types 0x11 and 0xF. The World's `calendar.event_first` is that lookup (dump-sourced until K8)."
     }
   ]
 }
