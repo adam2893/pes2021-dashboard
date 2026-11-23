@@ -6011,6 +6011,14 @@
       "source": "db/seeds/s1a1.tsv"
     },
     {
+      "address": "0x14151d610",
+      "name": "Lineup_PlayerAvailable",
+      "confidence": "probable",
+      "reviewed": "no",
+      "evidence": "the per-player availability Lineup_CopyRoster stores at +0x3B68: valid record, player +0x148 == 0, MatchSim_PlayerUnavailable when FUN_14149F5E0(mode manager) is true, and a competition check unless the id is 0xFFFF (decompile 2026-11-23)",
+      "source": "db/seeds/s1a1.tsv"
+    },
+    {
       "address": "0x1413b7b50",
       "name": "Competition_SlotPick_PickRows",
       "confidence": "probable",
@@ -8397,6 +8405,22 @@
       "source": "db/seeds/data/findings1.tsv"
     },
     {
+      "address": "0x14150287f",
+      "field1": "site",
+      "field2": "Lineup_AssignB@SortStart",
+      "field3": "confirmed",
+      "evidence": "no",
+      "source": "db/seeds/data/findings1.tsv"
+    },
+    {
+      "address": "0x141503b5f",
+      "field1": "site",
+      "field2": "Lineup_ScoreCandidates@ScoreSum",
+      "field3": "confirmed",
+      "evidence": "no",
+      "source": "db/seeds/data/findings1.tsv"
+    },
+    {
       "address": "0x1434d66f0",
       "field1": "table",
       "field2": "Pesdb_FileNameTable_Entry18",
@@ -9330,8 +9354,8 @@
       "address": "0x141504580",
       "status": "reimplemented",
       "fidelity": "exact",
-      "implementation": "src/game/match/match_day.cpp auto_lineup",
-      "evidence": "mode 3 CPU path; probe 36: 94 of 95 lineups (Python), 45 of 45 matches draw-exact in C++ (match_day_test)",
+      "implementation": "src/game/match/match_day.cpp auto_lineup; repair_lineup_slots",
+      "evidence": "mode 3 CPU path; probe 36: 94 of 95 lineups (Python), 45 of 45 matches draw-exact in C++ (match_day_test). Mode 1 (2026-11-23): the kept map, unavailable XI entries cleared, no search when no slot below the count needs a fill; probe 63: 4 of 4 captures, 40 of 40 slots, natively (the game code under emulation gives 600 of 600 bytes); probe 52 creation replay: loss repairs 137 of 137 full maps",
       "source": "db/seeds/ports/competition.tsv"
     },
     {
@@ -9787,7 +9811,7 @@
       "status": "reimplemented",
       "fidelity": "exact",
       "implementation": "src/game/match/match_day.cpp auto_lineup_slots",
-      "evidence": "the bench on the flag-clear path, for caps 7 and 0x17 (Lineup_RetagCandidates, Lineup_SetEntryCriteria, Lineup_PickNthCandidate, the alternative-position tables, the qsort order); all 40 slots equal the game (emulation oracle on the probe 56 snapshot) for 555 of 555 clubs with each cap; the mode 1 path (param_4 + 4 == 1) and the flag-set branches are not ported",
+      "evidence": "the bench on the flag-clear path, for caps 7 and 0x17 (Lineup_RetagCandidates, Lineup_SetEntryCriteria, Lineup_PickNthCandidate, the alternative-position tables, the qsort order); all 40 slots equal the game (emulation oracle on the probe 56 snapshot) for 555 of 555 clubs with each cap; the mode 1 path (param_4 + 4 == 1) and the flag-set branches are not ported. Mode 1 (2026-11-23): the old bench entries first, in order (available, unused), the qsorts start after them",
       "source": "db/seeds/ports/competition.tsv"
     },
     {
@@ -9943,6 +9967,30 @@
       "source": "db/seeds/ports/competition.tsv"
     },
     {
+      "address": "0x1415041a0",
+      "status": "reimplemented",
+      "fidelity": "exact",
+      "implementation": "src/game/match/match_day.cpp better_variant",
+      "evidence": "modes 1 and 3: weights from Lineup_VariantWeights by mode, the flag rule, reg ascending, the S tie-break in mode 3 only (disassembly 2026-11-23); unit test career_formations_unit",
+      "source": "db/seeds/ports/competition.tsv"
+    },
+    {
+      "address": "0x141503610",
+      "status": "reimplemented",
+      "fidelity": "exact",
+      "implementation": "src/game/match/match_day.cpp candidates",
+      "evidence": "modes 1 and 3: the shared criteria list, score weight of criterion 1 from 0x14297E3E0 (5 or 10), stamina scaling in mode 3 only (disassembly 2026-11-23); unit test career_formations_unit",
+      "source": "db/seeds/ports/competition.tsv"
+    },
+    {
+      "address": "0x141504e10",
+      "status": "reimplemented",
+      "fidelity": "exact",
+      "implementation": "src/game/match/match_day.cpp auto_lineup build",
+      "evidence": "the goalkeeper flag is set only by a picked goalkeeper slot, not by a kept one (decompile 2026-11-23; the port set it for a kept goalkeeper and read the skip table at index -1)",
+      "source": "db/seeds/ports/competition.tsv"
+    },
+    {
       "address": "0x1414f6e20",
       "status": "reimplemented",
       "fidelity": "exact",
@@ -10049,9 +10097,9 @@
     {
       "address": "0x1415720d0",
       "status": "reimplemented",
-      "fidelity": "behavioural",
-      "implementation": "src/game/ml/squad.h roster_remove",
-      "evidence": "the slot renumbering (k to 0xFF, above k minus one) is the read algorithm; the closed bench matches dumps (probe 42: 456 of 459, 262 of 264 with one starter gone) but is not in the code read; the refill of a vacated starting slot (the game: Team_AutoSelectLineup context mode 1, scoring unread) is ours: first bench entry. Not replayed",
+      "fidelity": "exact",
+      "implementation": "src/game/ml/career_formations.cpp remove_and_repair; src/game/ml/squad.h roster_remove",
+      "evidence": "creation replay: remove_and_repair is the read algorithm (renumbering, then mode 1 with cap 0x17 when more than 10 players remain), probe 63 4 of 4 and probe 52 137 of 137 loss repairs; the in-season squad.h roster_remove still refills with the first bench entry (ours) until Step B is approved",
       "source": "db/seeds/ports/squad1.tsv"
     },
     {
@@ -10675,6 +10723,11 @@
       "date": "2026-11-23",
       "title": "S1a 3B, the mode-1 lineup repair read and checked (Track C, static plus probe 63, offline)",
       "body": "- **Correction (probe 61 and probe 63 filters):** the formation record's first word (+0) is the record index, not the team id. In probe 63's dump, words 0 to 660 equal their index, and record i belongs to the team at table position i: record 0 is team 101, Arsenal, coach Mikel Arteta. Club 102 is at position 4 and record 4. So probe 61's \"club 102 had a mode-1 call (n=803)\" and probe 63's call n=905 are record 102, team 4086. No call on record 4 was logged between MLSetup_Run and BuildSeason in probe 63, so the user club's map is not rebuilt there. **confirmed**.\n- **Full-dump diff:** for each of the four pre/post pairs, the only EditData bytes that change are inside the called record, at +0x225 to +0x247 (capture 1: 25 bytes; 2: 6; 3: 4; 4: 26). Outside it, nothing changed, and no other thread wrote between the entry and the return. **confirmed**.\n- **Call path (read, decompile and disassembly):**\n  - `Team_Squad_RemovePlayer` 0x1415720D0 (return address 0x141572364) zeroes a context and runs `Lineup_Context_Init` (mode 1, cap +8 = 0x17). It sets +4 from the formation byte +0x257 (1 when 0), but the flag-1 path sets it to 1 again. It renumbers the map (FINDINGS 2026-11-18) and calls `Team_AutoSelectLineup` when the team count (+0x424 bits 16-22) is above 10. The 4th argument is the u16 at owner +0x50 object +0x35968 (`Object_GetU16At8` 0x141854F00), which is 0xFFFF in probes 56 and 61. Nothing else is written to the context.\n  - `Team_AutoSelectLineup` 0x1414FF107 returns at once for mode 0 or 7 and above.\n  - `Team_AutoSelectLineup_Core` 0x141504699, mode 1:\n    - The result array keeps the current slot map; mode 3 resets it to 0xFF.\n    - An XI entry whose player is unavailable (or 40 and above) becomes 0xFF and is flagged; a bench entry with an unavailable player is flagged too.\n    - If no slot below the roster count is flagged, the candidate build and both assigns are skipped, and only `Lineup_FinaliseA`/`FinaliseB` run.\n  - `Lineup_AssignB` 0x141501143, mode 1: the 29 existing bench entries are taken first, in order, as placed (available, unused players). So the bench keeps its order.\n  - The mode changes the scoring in three places:\n    - The criteria lists (0x141505490, 0x141503854) are shared by modes 1 and 3; only modes 2, 4, 5 and 6 differ.\n    - The stamina scaling of criteria 2, 3, 6 and 7 (stamina below 0x50) runs only in mode 3 (0x141503A71).\n    - `Lineup_VariantBetter` 0x1415041A0 weights from `Lineup_VariantWeights` 0x14297E438 by mode. Mode 1 is (reg, flag, S, cond, F) = 0, 0, 1, 0, 0; mode 3 is 3, 5, 2, 3, 1. The comparison: a higher flag loses; then the weighted sum; then reg ascending. Mode 3 alone adds a final S tie-break; mode 1 has none (a tie returns false).\n- **Classification:** mode 1 is a repair of the existing map, not a rebuild and not a permutation by rule. Kept XI slots stay. Each open XI slot is filled by the variant search (S-only weights in mode 1). The bench keeps its order and closes up without the filler. Entries at or above the roster count become 0xFF.\n- **Checks:**\n  - **Emulation oracle** (`src/tools/oracles/emu_autoselect.py`, new options `--edit`, `--rec`, `--mode`, `--post`, `--swap`, `--trace-ctx`): the game's own `Team_AutoSelectLineup` in mode 1 with cap 0x17 and r9 0xFFFF. EditData is probe 63's pre-call dump at its captured base, and the other owner objects and sections come from the probe 56 snapshot. Result: **all 600 record bytes equal the post dump for 4 of 4 captures**, with no unmapped access, no unmodelled import and no EditData write outside the team and formation records. Outputs are in `private-reference/s1/l63/oracle_k.txt`. The owner objects are from another career; the exact match shows these four results do not depend on any difference between them.\n  - **Perturbation under the oracle** (capture 1), which confirms the rule:\n    - with slots 0 and 12 swapped, player 11 stays in XI slot 0 and player 0 keeps bench slot 12;\n    - with 1 and 20 swapped, the kept entries stay;\n    - with player 5 moved to the bench, he fills the open slot instead of 15;\n    - mode 3 on the same input gives the same XI and a different bench.\n  - **Structure on all 61 logged record pairs** (`private-reference/s1/l63` data, `probe63/al63_pairs.json`): kept XI unchanged, bench order kept and closed up, result a permutation of the roster, in 61 of 61 cases (31 with one XI hole, 28 bench-only removals, 2 `AddPlayer` mode-1 calls on record 659 that leave the map unchanged). The filler choice is checked only on the four dumped calls.\n- **Constructor comparison** (`private-reference/s1/l63/repair63.cpp`): `career_formations.cpp`'s loss repair (close the bench, the kept starters locked, the open slot from `match::auto_lineup` with keep, `set_starters`) on the four pre-call states gives **40 of 40 slots for 4 of 4**. The structure is the game's. Discrepancies found in the code, none of which shows in these four cases:\n  1. `match::variant_better` uses the mode-3 weights and the final S tie-break; mode 1 uses S only and no final tie-break.\n  2. `match::candidates` applies the stamina scaling in every mode; mode 1 does not. Stamina is 100 at creation, so this matters only in season.\n  3. The port keeps every non-empty XI entry; the game clears unavailable players and also refills them, and skips the search when nothing needs a fill.\n  These are the likely sources of the 5 of 137 repaired XIs that differ on probe 52 (**guess**, not checked: no pre-repair state for them).\n- **No behaviour change.** The shortcut at `career_formations.cpp:52` stays until the port is approved."
+    },
+    {
+      "date": "2026-11-23",
+      "title": "S1a 3B, the mode-1 repair ported (Track C)",
+      "body": "- **Change:** `match::repair_lineup_slots` (`src/game/match/match_day.cpp`) is Team_AutoSelectLineup in context mode 1, used by the creation replay through the new `ml::remove_and_repair` (`career_formations.cpp`), which is Team_Squad_RemovePlayer with the transfer flag: renumber, then mode 1 with cap 0x17 when more than 10 players remain. The mode is now a parameter of the shared search (`auto_lineup`, `candidates`, the variant comparison); mode 3 callers are unchanged. Exe evidence for each rule:\n  - candidate score: criterion 1 weighs 5 in mode 1 and 10 in mode 3 (table 0x14297E3E0, u8 [mode][12] by criterion id, read at 0x141503B5F). **This is a fourth difference** that the earlier entry missed;\n  - stamina scaling of criteria 2, 3, 6, 7: mode 3 only (0x141503A71);\n  - variant comparison: weights by mode (0x14297E438), flag rule, reg ascending, final S tie-break in mode 3 only (0x1415041A0);\n  - core: kept map, unavailable XI entries cleared, no search when no slot below the roster count needs a fill (0x141504699); `Lineup_FinaliseA`/`B` (decompiled) only pick the captain and the set-piece roles, so the no-fill path leaves the slots as they are;\n  - AssignB: the old bench entries first, in order, if available and unused; their positions count against the per-round pick limit; the qsorts start after them (0x14150287F), so a kept bench that reaches the cap is not sorted; unavailable players not placed go last.\n- **Bug found and fixed in the shared search (`Lineup_BuildVariant` 0x141504E10, decompile):** the game sets its goalkeeper flag only when `Lineup_NextSlot` hands it the goalkeeper slot. The port also set it for a kept goalkeeper, which shifted the skip index of the first pick to -1 (an out-of-bounds read of the skip table). Only the keep path was affected; mode 3 without kept starters is unchanged.\n- **Availability (decompile of 0x14151D610):** valid record and +0x148 == 0, which the port has (`days_out == 0`), plus `MatchSim_PlayerUnavailable` (unread) when `FUN_14149F5E0(mode manager)` is true; the competition check is skipped for r9 = 0xFFFF. The unread clause is shared with mode 3 and stays open.\n- **Checks:**\n  - native, probe 63: 40 of 40 slots for 4 of 4 captures (`private-reference/s1/l63/repair63.cpp`);\n  - probe 52 creation replay (`career_formations_test`): loss repairs 137 of 137 XIs and 137 of 137 full maps (were 132 and 106). All clubs: 553 of 555 XIs, 552 of 555 maps (were 548 and 521); the rest are the two K3 residual-roster clubs and the user club 101's full map (XI equal; the AddPlayer mode-1 path is not ported). Floors raised. So the 5 of 137 probe 52 XIs that differed are now explained by evidence: the replay matches all of them;\n  - unit tests (`career_formations_unit`, synthetic): candidate order by mode (score weight), the variant rule by mode (cond weight, ties, reg, flag rule), stamina scaling by mode end to end, no-fill, an empty starter slot with bench order and stale entries, an unavailable starter and an unavailable bench player, a bench hole, and the 10-player threshold;\n  - gates: ctest 86 of 86, check_names 933 of 933 with 0 gaps, C2 metrics, state and log byte-identical.\n- **Not done (Step B, needs approval):** the in-season `squad.h` `roster_remove` (transfers, releases, the season and winter switches) still refills with the first bench entry. The game runs mode 1 there too; switching it will change C2.\n- **Creation input recorded:** the user chose Pep Guardiola as the manager in every probe (9 to 63). The coach choice is not modelled by the constructor; it is a fixed input of every capture so far."
     }
   ]
 }

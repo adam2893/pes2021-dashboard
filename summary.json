@@ -193,21 +193,21 @@
     }
   ],
   "counts": {
-    "named_addresses": 1114,
+    "named_addresses": 1117,
     "tests": 86,
-    "port_rows_total": 141,
+    "port_rows_total": 144,
     "port_rows_by_status": {
-      "reimplemented": 130,
+      "reimplemented": 133,
       "in host": 11,
       "verified": 0,
       "named": 0
     },
     "port_rows_by_fidelity": {
-      "exact": 100,
-      "behavioural": 40,
+      "exact": 104,
+      "behavioural": 39,
       "free": 1
     },
-    "findings_entries": 213
+    "findings_entries": 214
   },
   "match_metrics": {
     "unique_signatures": {
