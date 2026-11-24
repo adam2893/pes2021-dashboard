@@ -5251,6 +5251,38 @@
       "source": "db/seeds/k6e1.tsv"
     },
     {
+      "address": "0x14156b980",
+      "name": "MLSetup_RemapContracts",
+      "confidence": "probable",
+      "reviewed": "no",
+      "evidence": "called by Competition_MLSetup_BuildRankings before MLSetup_NormalizeLoanEnds; loop 1 per player with a valid ref: wage +0x15C (0x1415683B0), contract +0x138 from MLSetup_ContractYears and the club's calendar type (summer 0/3: (2020+y)-08-31, else ((setting 0/3 ? 2021 : 2020)+y)-01-31; states 2/3 Date_Invalid; the user ref 2021-08-31 or 2022-01-31), +0x168, confederation +0x140 bits 27-29, loan clear, MLSetup_FlagPlayer in game kind 9; loop 2 (user-squad importance list) not read (read 2026-11-24; research/k7 byte-identical under emulation on probe 61 and 340 mutated states)",
+      "source": "db/seeds/k7a1.tsv"
+    },
+    {
+      "address": "0x14156ce00",
+      "name": "MLSetup_ContractYears",
+      "confidence": "probable",
+      "reviewed": "no",
+      "evidence": "contract invalid or on/before the season start +0x178946C: 1 + Below(2/3/5/2 by age <24/<30/<35/else); else whole years DaysBetween(contract moved onto the Date_FromMonthDay 5/8 window, season start) / 365 (read 2026-11-24, oracle PoC)",
+      "source": "db/seeds/k7a1.tsv"
+    },
+    {
+      "address": "0x141574970",
+      "name": "MLSetup_FlagPlayer",
+      "confidence": "probable",
+      "reviewed": "no",
+      "evidence": "players with a club: one Below(100); sets +0x144 bit 30 when the draw < (field 0x30 + 2) x 10, or age < 25, or the club's (or on loan the owner's) league regulation is 0x13 or 0x50 (read 2026-11-24, oracle PoC)",
+      "source": "db/seeds/k7a1.tsv"
+    },
+    {
+      "address": "0x1415683b0",
+      "name": "MLSetup_PlayerWage",
+      "confidence": "guess",
+      "reviewed": "no",
+      "evidence": "(ref, team) -> the wage MLSetup_RemapContracts stores at +0x15C; calls Finance_Player_WageValue (read in part 2026-11-24; run under emulation only, not ported)",
+      "source": "db/seeds/k7a1.tsv"
+    },
+    {
       "address": "0x140a48a10",
       "name": "Match_World_GetPlayerData",
       "confidence": "probable",
@@ -8525,6 +8557,22 @@
       "source": "db/seeds/data/findings1.tsv"
     },
     {
+      "address": "0x14351ae30",
+      "field1": "global",
+      "field2": "SquadRef_Invalid",
+      "field3": "probable",
+      "evidence": "no",
+      "source": "db/seeds/data/findings1.tsv"
+    },
+    {
+      "address": "0x14156bcea",
+      "field1": "site",
+      "field2": "MLSetup_RemapContracts@loop1_exit",
+      "field3": "probable",
+      "evidence": "no",
+      "source": "db/seeds/data/findings1.tsv"
+    },
+    {
       "address": "0x1434d66f0",
       "field1": "table",
       "field2": "Pesdb_FileNameTable_Entry18",
@@ -10889,7 +10937,7 @@
     {
       "date": "2026-11-24",
       "title": "S1a closed; venue default 0 host-wide; K9 established (Track C)",
-      "body": "- **Venue default (user decision 2026-11-24, conditional on the exe).** `Match::venue` defaults to 0 everywhere; the creation-only loop in `season_creation.cpp` is removed. Evidence is the confirmed read of 2026-11-22: `Competition_MatchRecord_Clear` (0x140AF1ED0) zeroes the record and `Competition_Calendar_FileMatchOnDay` (0x141350290) writes +0x12 only when `Competition_Match_VenueNeeded` holds; all 13,000 free records of probes 58 and 59 hold 0. Semantics: no host code reads the field except the state writer and the world diff.\n- **Regression (C2 five seasons).** Metrics byte-identical. State differs only in the `matches` hashes (19 checkpoints, plus `all`). **Divergence check:** the old code with an unset venue (−1) serialised as 0 reproduces the new state file byte for byte, so the default is the only change. The C2 state baseline is replaced; the old files are kept as `*_c2_pre_venue0.tsv`.\n- **S1a closed** against the criteria of plan section 30: every P0/P1 row of groups G1-G3 is resolved, reclassified P2 with a reason, or assigned to a named milestone with its dependency. Assigned rows are not implemented and keep their shortcut markers: roles (match engine), the two probe 52 slot maps and the loan-end rule (K7), the suspension clause (discipline subsystem), the winter switch draws and the in-season roster_add rebuild (S1b, user decision), the Original Lineup branch (K9).\n- **K9** (plan section 31) is the Original Lineup constructor (EditData +0x17893F4 = 0): the offline read list, probes 62 and 62b, and the acceptance rules. Nothing of it is implemented."
+      "body": "- **Venue default (user decision 2026-11-24, conditional on the exe).** `Match::venue` defaults to 0 everywhere; the creation-only loop in `season_creation.cpp` is removed. Evidence is the confirmed read of 2026-11-22: `Competition_MatchRecord_Clear` (0x140AF1ED0) zeroes the record and `Competition_Calendar_FileMatchOnDay` (0x141350290) writes +0x12 only when `Competition_Match_VenueNeeded` holds; all 13,000 free records of probes 58 and 59 hold 0. Semantics: no host code reads the field except the state writer and the world diff.\n- **Regression (C2 five seasons).** Metrics byte-identical. State differs only in the `matches` hashes (19 checkpoints, plus `all`). **Divergence check:** the old code with an unset venue (−1) serialised as 0 reproduces the new state file byte for byte, so the default is the only change. The C2 state baseline is replaced; the old files are kept as `*_c2_pre_venue0.tsv`.\n- **S1a closed** against the criteria of plan section 30: every P0/P1 row of groups G1-G3 is resolved, reclassified P2 with a reason, or assigned to a named milestone with its dependency. Assigned rows are not implemented and keep their shortcut markers: roles (match engine), the two probe 52 slot maps and the loan-end rule (K7), the suspension clause (discipline subsystem), the winter switch draws and the in-season roster_add rebuild (S1b, user decision), the Original Lineup branch (K9).\n- **K9** (plan section 31) is the Original Lineup constructor (EditData +0x17893F4 = 0): the offline read list, probes 62 and 62b, and the acceptance rules. Nothing of it is implemented.\n\n## 2026-11-24/25: oracle methodology PoC, phases 1 and 2 (Track C, research tooling)\n\nReport: `docs/oracle-poc-2026-11-24.md`. Nothing in `src/engine`, `src/game`, the host or a C2 baseline changed. `oracle_prod` is built only with `-DPES_RESEARCH_TOOLS=ON`.\n- **Runner** (`src/tools/oracle/pesemu.py`): single functions of the pinned exe under Unicorn on captured state. Strict: any read of uncaptured or undefined memory stops the run; every defined value carries its evidence; `.impdata` is never executed; MXCSR 0x1F80 assumed (not captured).\n- **club_strength vs `Team_ComputeStrength` (0x1413225D0): confirmed equal** on probe 61 (555/555) and 300 mutated states; the EditData adapter matches the game's `Player_GetField` (0x1414C66C0) on 15,963 players.\n- **K7 port (`research/k7`) vs `MLSetup_RemapContracts` (0x14156B980) loop 1 and `MLSetup_NormalizeLoanEnds` (0x141574A20): confirmed byte-identical at function level** (same input, dependency answers from the game), full probe 61 table and 340 mutated states, generator state included. Also read: `MLSetup_ContractYears` (0x14156CE00), `MLSetup_FlagPlayer` (0x141574970), the wage helper 0x1415683B0, `SquadRef_Invalid` (0x14351AE30), the loop 1 exit 0x14156BCEA.\n- **K7 chain level: not established.** On contracts restored from the MLSetup_Run-entry dump, kept-year contracts match 7513/7569; all 56 differences are file-loan players (probable: their loan state at the remap is not captured). Drawn values not compared (generator at the remap not captured). Next: the remap-entry capture (user approval 2026-11-25).\n- **AutoSelect** on the generic runner: identical to `src/tools/oracles/emu_autoselect.py` for 154/154 clubs; the old tool is kept."
     }
   ]
 }
