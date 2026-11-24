@@ -10219,7 +10219,7 @@
       "status": "reimplemented",
       "fidelity": "free",
       "implementation": "src/game/ml/squad.h roster_add",
-      "evidence": "append at index count is the read algorithm; the slot (first free after the bench) is ours: the game's rebuild (mode 3 for non-user teams) rewrote the map of 860 of 860 clubs that only gained players (probes 42 and 51)",
+      "evidence": "append at index count is the read algorithm; the slot (first free after the bench) is ours: the game's rebuild (mode 3 for non-user teams) rewrote the map of 860 of 860 clubs that only gained players (probes 42 and 51); the creation replay (career_formations.cpp step 4) runs the read rule since 2026-11-24: mode 1 on the kept map for the user club, mode 3 for others, both only above 10 players (probe 52 full maps 553 of 555, the user club exact)",
       "source": "db/seeds/ports/squad1.tsv"
     },
     {
@@ -10870,6 +10870,11 @@
       "date": "2026-11-24",
       "title": "S1a, the lineup availability clause is the suspension check (Track C, static)",
       "body": "- **`Lineup_PlayerAvailable` (0x14151D610, read again with its callees).** A player is available when:\n  - his record is valid and byte `+0x148` is 0;\n  - when `GameMode_ChecksSuspensionFirst` (0x14149F5E0) is true, `MatchSim_PlayerUnavailable` is false;\n  - when the match id is not 0xFFFF and one of his 15 discipline entries (`+0xF0`, 4 bytes each, u16 key first) has the match's competition key (0x1415139B0), `MatchSim_PlayerUnavailable` is false.\n- **`GameMode_ChecksSuspensionFirst` (0x14149F5E0, read).** True for game-mode kinds 13 to 19, 21, 22, 28 and 29 (the first int of the 16-byte `GameModeTable` row of the mode manager's +0xF0), and for kind 20 except mode 0x2F. Master League (mode 0x13) has kind 9, so it is false.\n- **`MatchSim_PlayerUnavailable` (0x14151DB10, read).** In game modes 30 to 34, 36, 38 and 39 (mask 0xD7C0000000) a suspension count (bits 27-29) in the player's key-0 entry makes him unavailable. Otherwise, for a real match, the player is looked up on both sides' rosters, and the bits 27-29 of his entry for the match's competition decide.\n- **Meaning for the port (probable).** In Master League the clause drops a player who is suspended in the competition of the match being lined up. Calls with match id 0xFFFF skip it: the creation rebuild, and the `Team_Squad_RemovePlayer` repairs that pass 0xFFFF (FINDINGS 2026-11-23). So the creation replay and the C2 repairs are unaffected. The host keeps no cards or suspensions (plan section 28, G3 P2 \"player +0xF0 discipline block\"), so the clause waits for that subsystem. The `match_day.h` availability comment now states it as a shortcut."
+    },
+    {
+      "date": "2026-11-24",
+      "title": "S1a, the user club's add path at creation ported (Track C)",
+      "body": "- **Rule (read earlier, `Team_Squad_AddPlayer` 0x141571EC0).** The function appends the player and writes no slot byte. With more than 10 players it then calls `Team_AutoSelectLineup` with match id 0xFFFF. The mode is the formation byte `+0x257` (1 when it is 0) for the team of kind 3 (the user's team) and 3 for every other team. With flag 0 it also clears the role bytes `+0x248..+0x24D`, which the host does not model.\n- **Change.** `build_creation_formations` step 4 (the setup's loan returns) now runs `match::repair_lineup_slots` (mode 1, cap 0x17) on the user club's kept map. Other clubs keep the mode 3 rebuild. Both now apply the more-than-10 threshold. `+0x257` is taken as 0, which means mode 1 (shortcut: the byte is not modelled).\n- **Check (probe 52 run 1, `career_formations_test`).** Full maps 553 of 555 (were 552): the user club 101 now matches in all 40 slots. The two that differ are the K3 residual-roster clubs. The floor is raised to 553. XIs are unchanged at 553 of 555.\n- **Not changed.** The in-season `squad.h` `roster_add` still places the new player in the first free slot and runs no rebuild (fidelity \"free\"). Porting the add rebuild there moves C2 and needs a baseline proposal."
     }
   ]
 }
