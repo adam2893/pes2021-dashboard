@@ -8573,6 +8573,22 @@
       "source": "db/seeds/data/findings1.tsv"
     },
     {
+      "address": "0x14350b340",
+      "field1": "global",
+      "field2": "SecurityCookie",
+      "field3": "probable",
+      "evidence": "no",
+      "source": "db/seeds/data/findings1.tsv"
+    },
+    {
+      "address": "0x141269b4d",
+      "field1": "site",
+      "field2": "Competition_MLSetup_BuildRankings@call_NormalizeLoanEnds",
+      "field3": "confirmed",
+      "evidence": "no",
+      "source": "db/seeds/data/findings1.tsv"
+    },
+    {
       "address": "0x1434d66f0",
       "field1": "table",
       "field2": "Pesdb_FileNameTable_Entry18",
@@ -10938,6 +10954,11 @@
       "date": "2026-11-24",
       "title": "S1a closed; venue default 0 host-wide; K9 established (Track C)",
       "body": "- **Venue default (user decision 2026-11-24, conditional on the exe).** `Match::venue` defaults to 0 everywhere; the creation-only loop in `season_creation.cpp` is removed. Evidence is the confirmed read of 2026-11-22: `Competition_MatchRecord_Clear` (0x140AF1ED0) zeroes the record and `Competition_Calendar_FileMatchOnDay` (0x141350290) writes +0x12 only when `Competition_Match_VenueNeeded` holds; all 13,000 free records of probes 58 and 59 hold 0. Semantics: no host code reads the field except the state writer and the world diff.\n- **Regression (C2 five seasons).** Metrics byte-identical. State differs only in the `matches` hashes (19 checkpoints, plus `all`). **Divergence check:** the old code with an unset venue (−1) serialised as 0 reproduces the new state file byte for byte, so the default is the only change. The C2 state baseline is replaced; the old files are kept as `*_c2_pre_venue0.tsv`.\n- **S1a closed** against the criteria of plan section 30: every P0/P1 row of groups G1-G3 is resolved, reclassified P2 with a reason, or assigned to a named milestone with its dependency. Assigned rows are not implemented and keep their shortcut markers: roles (match engine), the two probe 52 slot maps and the loan-end rule (K7), the suspension clause (discipline subsystem), the winter switch draws and the in-season roster_add rebuild (S1b, user decision), the Original Lineup branch (K9).\n- **K9** (plan section 31) is the Original Lineup constructor (EditData +0x17893F4 = 0): the offline read list, probes 62 and 62b, and the acceptance rules. Nothing of it is implemented.\n\n## 2026-11-24/25: oracle methodology PoC, phases 1 and 2 (Track C, research tooling)\n\nReport: `docs/oracle-poc-2026-11-24.md`. Nothing in `src/engine`, `src/game`, the host or a C2 baseline changed. `oracle_prod` is built only with `-DPES_RESEARCH_TOOLS=ON`.\n- **Runner** (`src/tools/oracle/pesemu.py`): single functions of the pinned exe under Unicorn on captured state. Strict: any read of uncaptured or undefined memory stops the run; every defined value carries its evidence; `.impdata` is never executed; MXCSR 0x1F80 assumed (not captured).\n- **club_strength vs `Team_ComputeStrength` (0x1413225D0): confirmed equal** on probe 61 (555/555) and 300 mutated states; the EditData adapter matches the game's `Player_GetField` (0x1414C66C0) on 15,963 players.\n- **K7 port (`research/k7`) vs `MLSetup_RemapContracts` (0x14156B980) loop 1 and `MLSetup_NormalizeLoanEnds` (0x141574A20): confirmed byte-identical at function level** (same input, dependency answers from the game), full probe 61 table and 340 mutated states, generator state included. Also read: `MLSetup_ContractYears` (0x14156CE00), `MLSetup_FlagPlayer` (0x141574970), the wage helper 0x1415683B0, `SquadRef_Invalid` (0x14351AE30), the loop 1 exit 0x14156BCEA.\n- **K7 chain level: not established.** On contracts restored from the MLSetup_Run-entry dump, kept-year contracts match 7513/7569; all 56 differences are file-loan players (probable: their loan state at the remap is not captured). Drawn values not compared (generator at the remap not captured). Next: the remap-entry capture (user approval 2026-11-25).\n- **AutoSelect** on the generic runner: identical to `src/tools/oracles/emu_autoselect.py` for 154/154 clubs; the old tool is kept."
+    },
+    {
+      "date": "2026-11-25",
+      "title": "probe 64, K7 remap chain level on independent captures (Track C)",
+      "body": "- **Run:** one new Master League career, Club Team Lineup, Chelsea (club 102), vanilla data, default settings. Scripts `tests/behaviour/cdb/mlswap/*64*`; log, dumps and SHA-256 sums in `private-reference/probe64/`. One-shot dumps at `MLSetup_RemapContracts` (0x14156B980) entry, its loop 1 exit (0x14156BCEA) and return, `MLSetup_NormalizeLoanEnds` (0x141574A20) entry and return; one thread. Report section: `docs/oracle-poc-2026-11-24.md`, \"K7, chain level on independent captures\".\n- **Confirmed:** the `research/k7` port of loop 1 on the captured entry state gives the game's loop 1 exit state byte for byte over all of EditData, generator included. The emulated game gives the same. The normalisation (port and emulation) gives the captured return state.\n- **Drop flag:** the only direct call (0x141269B4D in `Competition_MLSetup_BuildRankings`) passes `byte [r13+0x1B0]`; it was 0 in this run, so loans ending before the season start are not dropped there. 1,021 players are on loan at remap entry. By BuildSeason entry (probe 61) the loans ending 2020-06-30 have been returned; the step that does this is not read (probable: a loan return after the 2020-07-01 setup date).\n- **Probe 61 residuals explained (confirmed):** all 7,569 kept-year contracts and every +0x168 of probe 64's real remap output equal probe 61's BuildSeason values by player id. The 56 and 76 differences of the reconstructed-input check came from the missing loan state.\n- **Loop 2 (confirmed equal under emulation, not ported):** 84 24-byte entries at EditData +0x1674E88 (container +0x1674D90). The emulation differs only in 60 bytes of uninitialised padding (entry +0xA..+0xB, not written by the code).\n- **Assumptions checked:** MXCSR 0x1FA0 at the remap (control bits = 0x1F80; bit 5 is a sticky status flag); x87 control word 0x27F. Of the 26 `.data` bytes the oracle took from the file image, 20 equal the runtime values; 6 are the MSVC security cookie at 0x14350B340 (file value 0x00002B992DDFA232), used only by the stack check."
     }
   ]
 }
