@@ -5851,6 +5851,46 @@
       "source": "db/seeds/regtable1.tsv"
     },
     {
+      "address": "0x1414e2dd0",
+      "name": "SystemData_SeenPlayers_Append",
+      "confidence": "probable",
+      "reviewed": "no",
+      "evidence": "read 2026-11-24: on the owner +0x50 list (+0x153E4: u32 ids, u16 count at +0x1E910 of the list, cap 30000) marks every EditData player id, then PlayerDeleteList ids (special list 9) as skipped, then every team roster member again, then ids already listed as skipped; appends the rest in ascending id order and sets the system-data dirty byte +0x3FCC6 when the count changed",
+      "source": "db/seeds/regtable1.tsv"
+    },
+    {
+      "address": "0x1414e2930",
+      "name": "SystemData_SeenTeams_Append",
+      "confidence": "probable",
+      "reviewed": "no",
+      "evidence": "read 2026-11-24: the same append for teams on the list at +0x1D4C0 of the object (u16 count +0x1E912, cap 1300): formation-record team ids, minus the +0x186B030 list 0, plus team records, minus ids already listed",
+      "source": "db/seeds/regtable1.tsv"
+    },
+    {
+      "address": "0x1414e2900",
+      "name": "SystemData_SeenLists_Clear",
+      "confidence": "probable",
+      "reviewed": "no",
+      "evidence": "read 2026-11-24: zeroes the 0x1E910-byte seen lists and both counts; called by OwnerData50_Reset",
+      "source": "db/seeds/regtable1.tsv"
+    },
+    {
+      "address": "0x14130d960",
+      "name": "SystemData_RefreshSeenLists",
+      "confidence": "guess",
+      "reviewed": "no",
+      "evidence": "read in part 2026-11-24 (virtual, no static caller): compares three values with +0x35730/+0x35738, sets the dirty byte, then runs SystemData_SeenPlayers_Append and SystemData_SeenTeams_Append",
+      "source": "db/seeds/regtable1.tsv"
+    },
+    {
+      "address": "0x1413ab230",
+      "name": "Boot_SystemDataStep",
+      "confidence": "guess",
+      "reviewed": "no",
+      "evidence": "read in part 2026-11-24: a state machine; state 10 runs the two seen-list appends and moves to state 11",
+      "source": "db/seeds/regtable1.tsv"
+    },
+    {
       "address": "0x1412e8480",
       "name": "Calendar_FillEventSlots",
       "confidence": "probable",
@@ -10770,6 +10810,11 @@
       "date": "2026-11-24",
       "title": "S1a, the regulation owner word is the ball id (Track C, static plus data)",
       "body": "- **What it is (probable, read; the data check is exact).** The owner `+0x50` object's u16 at `+0x3FCCE`, copied into bits 0-15 of every regulation's w300, is written by two functions in the whole executable (a displacement scan of the code sections):\n  - `OwnerData50_Reset` (0x1414C5530, read in part, guess name) sets it to 0xFFFF when its flag argument is 0;\n  - `Pesdb_LoadBalls` (0x1414F0710, read) sets it at the end of the first pesdb load step. `Pesdb_LoadAllTables` (0x1414F6C60) calls this step before the regulation loader.\n- **The rule.** `Pesdb_LoadBalls` walks BallCondition.bin (pesdb table 1; 8-byte rows: u16 ball id, condition in byte +4 & 0x3F). It keeps the ball id of the last row whose condition is 0x1A. With no such row it takes the id of record 0 of the loaded Ball.bin table (table 0, 0x8C-byte records, filled after a sort that is not read).\n- **Data check.** Vanilla BallCondition.bin has 70 rows; row 25 is ball 22 with condition 0x1A, the only one. So the word is 22 = 0x16, the value in all 27 earlier dumps and in probe 61.\n- **Port.** `ml::regulation_ball` (`regulation_table.cpp`) implements the rule. `platform::read_regulation_rules` now takes the mounted data and sets `owner_word` from it, so the dump-taken constant is gone (plan section 28, G2 row resolved). The no-0x1A fallback takes the file's first record instead of the sorted table's; vanilla never reaches it (shortcut marked, P2 modded data).\n- **Tests.** `regulation_table_unit` checks the rule (last 0x1A row wins, the condition masked to 6 bits, the fallback, empty input). `regulation_table` checks that vanilla data gives 0x16 and still compares w300 for 214 of 214 records with probe 54. C2 cannot move: the value is unchanged.\n- **Not done:** the ball tables themselves are not built (nothing in the host uses them yet), and what condition 0x1A means is not read."
+    },
+    {
+      "date": "2026-11-24",
+      "title": "S1a 3C, the writer of the deleted set's second list (Track C, static plus data)",
+      "body": "- **Writer (probable, read).** The owner `+0x50` object's list at `+0x153E4` (u32 ids, u16 count at list +0x1E910, cap 30,000) has three users in the code sections:\n  - `SystemData_SeenLists_Clear` (0x1414E2900), called by `OwnerData50_Reset`, zeroes it;\n  - `SystemData_SeenPlayers_Append` (0x1414E2DD0), called by `SystemData_RefreshSeenLists` (0x14130D960, virtual) and by state 10 of `Boot_SystemDataStep` (0x1413AB230), appends to it.\n- **The append.** It builds an id map:\n  - every EditData player record's id is marked \"add\";\n  - every PlayerDeleteList id (special list 9) is marked \"skip\";\n  - every team roster member is marked \"add\" again, even a deleted one;\n  - every id already in the list is marked \"skip\".\n\n  The \"add\" ids (not 0, not the invalid id) are appended in ascending order. When the count changes, the system-data dirty byte `+0x3FCC6` is set. A sibling, `SystemData_SeenTeams_Append` (0x1414E2930), does the same for teams in the list at +0x1D4C0 (cap 1,300).\n- **Meaning.** The `+0x50` object is system data (the dirty byte; both callers belong to system-data handling), and the list only grows. It is a \"players already seen\" list kept over the install's life. `Competition_MLSetup_BuildDeletedSet` keeps a PlayerDeleteList id only when it is not in that list. So a delete list from a later update cannot remove a player the install has already seen.\n- **Effect on the port.** From a cleared list, one append gives (players not deleted) plus roster members. The deleted set is then PlayerDeleteList minus roster members. On vanilla data no deleted id is on a roster (0 of 555 ids in 18,582 PlayerAssignment rows), so the port's \"PlayerDeleteList.bin only\" is the same set. It also agrees with probe 61's list (Player.bin minus the 555 deleted ids). No code change; the shortcut comment in `career_files.cpp` now states the mechanism.\n- **Open (P2):**\n  - an install whose system save saw players that a later delete list removes, or edited data with a deleted player on a roster, needs the system save itself;\n  - whether a new career clears the list first (the `OwnerData50_Reset` caller) is not read."
     }
   ]
 }
