@@ -7055,8 +7055,8 @@
     {
       "address": "0x1437f47f8",
       "field1": "global",
-      "field2": "Competition_SeasonEvents_LastBumpDate",
-      "field3": "guess",
+      "field2": "Date_Invalid",
+      "field3": "probable",
       "evidence": "no",
       "source": "db/seeds/data/findings1.tsv"
     },
@@ -10815,6 +10815,11 @@
       "date": "2026-11-24",
       "title": "S1a 3C, the writer of the deleted set's second list (Track C, static plus data)",
       "body": "- **Writer (probable, read).** The owner `+0x50` object's list at `+0x153E4` (u32 ids, u16 count at list +0x1E910, cap 30,000) has three users in the code sections:\n  - `SystemData_SeenLists_Clear` (0x1414E2900), called by `OwnerData50_Reset`, zeroes it;\n  - `SystemData_SeenPlayers_Append` (0x1414E2DD0), called by `SystemData_RefreshSeenLists` (0x14130D960, virtual) and by state 10 of `Boot_SystemDataStep` (0x1413AB230), appends to it.\n- **The append.** It builds an id map:\n  - every EditData player record's id is marked \"add\";\n  - every PlayerDeleteList id (special list 9) is marked \"skip\";\n  - every team roster member is marked \"add\" again, even a deleted one;\n  - every id already in the list is marked \"skip\".\n\n  The \"add\" ids (not 0, not the invalid id) are appended in ascending order. When the count changes, the system-data dirty byte `+0x3FCC6` is set. A sibling, `SystemData_SeenTeams_Append` (0x1414E2930), does the same for teams in the list at +0x1D4C0 (cap 1,300).\n- **Meaning.** The `+0x50` object is system data (the dirty byte; both callers belong to system-data handling), and the list only grows. It is a \"players already seen\" list kept over the install's life. `Competition_MLSetup_BuildDeletedSet` keeps a PlayerDeleteList id only when it is not in that list. So a delete list from a later update cannot remove a player the install has already seen.\n- **Effect on the port.** From a cleared list, one append gives (players not deleted) plus roster members. The deleted set is then PlayerDeleteList minus roster members. On vanilla data no deleted id is on a roster (0 of 555 ids in 18,582 PlayerAssignment rows), so the port's \"PlayerDeleteList.bin only\" is the same set. It also agrees with probe 61's list (Player.bin minus the 555 deleted ids). No code change; the shortcut comment in `career_files.cpp` now states the mechanism.\n- **Open (P2):**\n  - an install whose system save saw players that a later delete list removes, or edited data with a deleted player on a roster, needs the system save itself;\n  - whether a new career clears the list first (the `OwnerData50_Reset` caller) is not read."
+    },
+    {
+      "date": "2026-11-24",
+      "title": "S1a, the season-event \"last bump date\" is the invalid date (Track C, static)",
+      "body": "- **Read (probable).** The global 0x1437F47F8, named `Competition_SeasonEvents_LastBumpDate` on 2026-11-03, is written only by a static initializer (0x140222210: `or dword, 0xFFFF`, then `mov word [+2], 0`). A scan of every rip-relative operand in the code sections finds about 1,450 sites; all the others read it. So it is the invalid date (u16 year 0xFFFF, month 0, day 0), renamed `Date_Invalid`. This fits its other uses: loan drops, the cleared match record and the empty calendar slot store it as \"no date\", and every dump holds 0xFFFF.\n- **Effect.** `Competition_SeasonEvents_Load` (0x14157E850) bumps key-13 rows when today differs from `Date_Invalid` and the year is 2020 or 2021. The year test already implies the first condition, so `apply_loader_year_bump` was exact; the shortcut marker in `season_select.h` is removed (plan section 28, G2 row resolved). No behaviour change."
     }
   ]
 }
