@@ -1325,9 +1325,9 @@
     {
       "address": "0x14151db10",
       "name": "MatchSim_PlayerUnavailable",
-      "confidence": "guess",
+      "confidence": "probable",
       "reviewed": "no",
-      "evidence": "(player id, match id) check that removes a player from the bench pool; not read",
+      "evidence": "(suspension check) read 2026-11-24: in game modes 30-34, 36, 38, 39 (mask 0xD7C0000000 on the mode manager +0xF0) a suspension count (bits 27-29) in the player's key-0 discipline entry (+0xF0, 15 x 4 bytes) makes him unavailable; otherwise, for a real match (id not 0xFFFF), the entry for the match competition (0x1415139B0) of a player on either side's roster decides; not modes 0x13 (ML)",
       "source": "db/seeds/competition1.tsv"
     },
     {
@@ -5912,6 +5912,14 @@
       "confidence": "probable",
       "reviewed": "no",
       "evidence": "read 2026-11-24: weighted sum over the 59 rows of 0x14297FB80 ({stat, field, kind, weight}) whose stat matches: kind 0 terms averaged, kind 1 terms added, plus 0.5; field 0x28 counts as 14 * v + 1; stat 8 scaled by position kind (0x1414C0300: 9, 12 or 15), stat 0x12 by a ramp; clamp 40..99; 70 for an invalid record",
+      "source": "db/seeds/regtable1.tsv"
+    },
+    {
+      "address": "0x14149f5e0",
+      "name": "GameMode_ChecksSuspensionFirst",
+      "confidence": "guess",
+      "reviewed": "no",
+      "evidence": "read 2026-11-24: true for game-mode kinds 13-19, 21, 22, 28 and 29 (GameModeTable +0 by mode manager +0xF0), and kind 20 except mode 0x2F; Master League (mode 0x13) has kind 9, so false; Lineup_PlayerAvailable then calls MatchSim_PlayerUnavailable only through the competition entry",
       "source": "db/seeds/regtable1.tsv"
     },
     {
@@ -10857,6 +10865,11 @@
       "date": "2026-11-24",
       "title": "S1a, the lineup captain and set-piece roles read; port deferred (Track C, static)",
       "body": "- **Where they live (read, `Team_AutoSelectLineup` 0x1414FF0E0).** The wrapper copies the formation record into the lineup context and back:\n  - captain: record `+0x251`, context `+0`;\n  - six roles: record `+0x248..+0x24D`, context `+4..+0x18` (one int each);\n  - tactic block 0: context `+0x1C` (its first 11 bytes are the kind-0 position codes);\n  - slot map: context `+0xBC`.\n- **`Lineup_FinaliseA` (0x141500A60), the captain.** The captain is kept when he is in the XI and available (the availability byte at +0x3B68 of the player context). Otherwise the available XI player with the highest `Lineup_CaptainScore` (0x1415099A0) takes it: the first maximum wins, and the first XI entry is the default. The score is clamp(40, 99) of a byte: int(15·f(0x5C) + 5·f(0x5E) − int((f(0x27) + 1)·−0.05) + 4·min(f(0x30), 7) + (age − 25)·1.5) + 30, where f is `Player_GetField`.\n- **`Lineup_FinaliseB` (0x141500D30), roles 0 to 5.**\n  - A holder in the XI is kept, but role 2 is re-picked when it equals role 1.\n  - Otherwise the role goes to the available XI player with the highest `Lineup_RoleScore` (0x14150FD00). For roles 1 to 5 a goalkeeper slot (position code 0) scores 1.\n  - `Lineup_RoleScore` maps role 0 to stat 0xD, roles 1 and 2 to 0x14, roles 3 and 4 to 0x15, and role 5 to 0x16; each score is at least 40.\n  - The stats come from `Player_StatRating` (0x1415092B0): weighted rows of the table at 0x14297FB80 (59 rows: stat, field, kind, int weight). Kind 0 terms are averaged, kind 1 terms added, then 0.5 is added. Stat 8 is scaled by position kind and stat 0x12 by a ramp. The result is clamped to 40..99.\n- **Why not ported now.** The ratings need `Player_GetField` ids up to 0x6B (the 41 skills and the abilities), which the World's player model does not carry, plus the ML class 0x30. Nothing in the host reads the roles yet (no match engine), so they cannot move C2.\n- **What the port needs, when the match engine wants roles:** the role bytes in the World's team state (loaded from PlayerAssignment's role flags), the five float constants of `Player_StatRating`, `0x1414C0300` (not read), and the probe 52/58/60/61 formation dumps to check against (`+0x248..+0x251` for 659 teams). Plan section 28 keeps the item open, deferred to the match engine (milestone 11)."
+    },
+    {
+      "date": "2026-11-24",
+      "title": "S1a, the lineup availability clause is the suspension check (Track C, static)",
+      "body": "- **`Lineup_PlayerAvailable` (0x14151D610, read again with its callees).** A player is available when:\n  - his record is valid and byte `+0x148` is 0;\n  - when `GameMode_ChecksSuspensionFirst` (0x14149F5E0) is true, `MatchSim_PlayerUnavailable` is false;\n  - when the match id is not 0xFFFF and one of his 15 discipline entries (`+0xF0`, 4 bytes each, u16 key first) has the match's competition key (0x1415139B0), `MatchSim_PlayerUnavailable` is false.\n- **`GameMode_ChecksSuspensionFirst` (0x14149F5E0, read).** True for game-mode kinds 13 to 19, 21, 22, 28 and 29 (the first int of the 16-byte `GameModeTable` row of the mode manager's +0xF0), and for kind 20 except mode 0x2F. Master League (mode 0x13) has kind 9, so it is false.\n- **`MatchSim_PlayerUnavailable` (0x14151DB10, read).** In game modes 30 to 34, 36, 38 and 39 (mask 0xD7C0000000) a suspension count (bits 27-29) in the player's key-0 entry makes him unavailable. Otherwise, for a real match, the player is looked up on both sides' rosters, and the bits 27-29 of his entry for the match's competition decide.\n- **Meaning for the port (probable).** In Master League the clause drops a player who is suspended in the competition of the match being lined up. Calls with match id 0xFFFF skip it: the creation rebuild, and the `Team_Squad_RemovePlayer` repairs that pass 0xFFFF (FINDINGS 2026-11-23). So the creation replay and the C2 repairs are unaffected. The host keeps no cards or suspensions (plan section 28, G3 P2 \"player +0xF0 discipline block\"), so the clause waits for that subsystem. The `match_day.h` availability comment now states it as a shortcut."
     }
   ]
 }
