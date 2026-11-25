@@ -1,5 +1,5 @@
 {
-  "updated": "2026-11-24",
+  "updated": "2026-11-25",
   "headline": {
     "sim_percent": [
       70,
@@ -193,7 +193,7 @@
     }
   ],
   "counts": {
-    "named_addresses": 1138,
+    "named_addresses": 1145,
     "tests": 86,
     "port_rows_total": 145,
     "port_rows_by_status": {
@@ -207,7 +207,7 @@
       "behavioural": 39,
       "free": 1
     },
-    "findings_entries": 225
+    "findings_entries": 226
   },
   "match_metrics": {
     "unique_signatures": {

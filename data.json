@@ -1,5 +1,5 @@
 {
-  "updated": "2026-11-24",
+  "updated": "2026-11-25",
   "description": "Community research metadata, not game source or assets. Confidence labels are provisional.",
   "functions": [
     {
@@ -5283,6 +5283,38 @@
       "source": "db/seeds/k7a1.tsv"
     },
     {
+      "address": "0x140f068e0",
+      "name": "MLSquadMeter_Insert",
+      "confidence": "probable",
+      "reviewed": "no",
+      "evidence": "(container, 24-byte entry): returns when the ref is invalid or already in the 40 entries at container +8; else copies the whole entry into the last free slot (slot 0 when none is free); remap loop 2 writes the user squad (read 2026-11-25, K7 stage 3)",
+      "source": "db/seeds/k7a1.tsv"
+    },
+    {
+      "address": "0x140f06670",
+      "name": "MLSquadStats_Insert",
+      "confidence": "probable",
+      "reviewed": "no",
+      "evidence": "(container, ref): returns when the ref is already in the 69 entries of 0x2C at container +0x3C8; else clears the first free entry and writes the ref (read 2026-11-25, K7 stage 3)",
+      "source": "db/seeds/k7a1.tsv"
+    },
+    {
+      "address": "0x1414b8060",
+      "name": "Country_FindById",
+      "confidence": "probable",
+      "reviewed": "no",
+      "evidence": "binary search of 0x4C-byte country records on +0x48 & 0x1FF; 0 when absent (read 2026-11-25)",
+      "source": "db/seeds/k7a1.tsv"
+    },
+    {
+      "address": "0x1414bb0b0",
+      "name": "EditData_GetCountryRecord",
+      "confidence": "probable",
+      "reviewed": "no",
+      "evidence": "country record of an id in the EditData table +0x1843F20 (count +0x184B5E0) through Country_FindById; the first record when absent (read 2026-11-25)",
+      "source": "db/seeds/k7a1.tsv"
+    },
+    {
       "address": "0x140a48a10",
       "name": "Match_World_GetPlayerData",
       "confidence": "probable",
@@ -8589,6 +8621,30 @@
       "source": "db/seeds/data/findings1.tsv"
     },
     {
+      "address": "0x142980220",
+      "field1": "table",
+      "field2": "Confederation_ByCountryGroup",
+      "field3": "probable",
+      "evidence": "no",
+      "source": "db/seeds/data/findings1.tsv"
+    },
+    {
+      "address": "0x142980250",
+      "field1": "table",
+      "field2": "Confederation_ByNationKind",
+      "field3": "probable",
+      "evidence": "no",
+      "source": "db/seeds/data/findings1.tsv"
+    },
+    {
+      "address": "0x14253ee30",
+      "field1": "const",
+      "field2": "Float_100",
+      "field3": "confirmed",
+      "evidence": "no",
+      "source": "db/seeds/data/findings1.tsv"
+    },
+    {
       "address": "0x1434d66f0",
       "field1": "table",
       "field2": "Pesdb_FileNameTable_Entry18",
@@ -10959,6 +11015,11 @@
       "date": "2026-11-25",
       "title": "probe 64, K7 remap chain level on independent captures (Track C)",
       "body": "- **Run:** one new Master League career, Club Team Lineup, Chelsea (club 102), vanilla data, default settings. Scripts `tests/behaviour/cdb/mlswap/*64*`; log, dumps and SHA-256 sums in `private-reference/probe64/`. One-shot dumps at `MLSetup_RemapContracts` (0x14156B980) entry, its loop 1 exit (0x14156BCEA) and return, `MLSetup_NormalizeLoanEnds` (0x141574A20) entry and return; one thread. Report section: `docs/oracle-poc-2026-11-24.md`, \"K7, chain level on independent captures\".\n- **Confirmed:** the `research/k7` port of loop 1 on the captured entry state gives the game's loop 1 exit state byte for byte over all of EditData, generator included. The emulated game gives the same. The normalisation (port and emulation) gives the captured return state.\n- **Drop flag:** the only direct call (0x141269B4D in `Competition_MLSetup_BuildRankings`) passes `byte [r13+0x1B0]`; it was 0 in this run, so loans ending before the season start are not dropped there. 1,021 players are on loan at remap entry. By BuildSeason entry (probe 61) the loans ending 2020-06-30 have been returned; the step that does this is not read (probable: a loan return after the 2020-07-01 setup date).\n- **Probe 61 residuals explained (confirmed):** all 7,569 kept-year contracts and every +0x168 of probe 64's real remap output equal probe 61's BuildSeason values by player id. The 56 and 76 differences of the reconstructed-input check came from the missing loan state.\n- **Loop 2 (confirmed equal under emulation, not ported):** 84 24-byte entries at EditData +0x1674E88 (container +0x1674D90). The emulation differs only in 60 bytes of uninitialised padding (entry +0xA..+0xB, not written by the code).\n- **Assumptions checked:** MXCSR 0x1FA0 at the remap (control bits = 0x1F80; bit 5 is a sticky status flag); x87 control word 0x27F. Of the 26 `.data` bytes the oracle took from the file image, 20 equal the runtime values; 6 are the MSVC security cookie at 0x14350B340 (file value 0x00002B992DDFA232), used only by the stack check."
+    },
+    {
+      "date": "2026-11-25",
+      "title": "K7 stage 3, dependencies, loan returns, loop 2, date semantics (Track C, research)",
+      "body": "Report: `docs/k7-stage3-2026-11-25.md`. No production code or baseline changed. Tools: `oracle_prod deps` / `typed` / `days`, `research/k7/remap_queries.{h,cpp}`, `src/tools/oracle/spec_date_days.py`.\n- **The five remap dependencies equal typed queries on the production World (probe 64 A):** window dates (`World::event_first`) 4 of 4; first league regulation (0x141510160) 556 of 556 teams; `Competition_Team_Confederation` (0x1415111C0) 556 of 556, with the no-league fallback through `Confederation_ByCountryGroup` (0x142980220) on the country group (EditData country table +0x1843F20 via `EditData_GetCountryRecord` 0x1414BB0B0, `Country_FindById` 0x1414B8060; 214 of 214 equal Country.bin byte 4); calendar type (0x1415762A0) 27 of 27 regulations; wage (production `creation_wage` at the slot-0 club) 17,289 of 17,289. **confirmed** on this state (game functions under emulation, and loop 1 with these answers equals the capture). The national-team path (`Confederation_ByNationKind` 0x142980250) is not exercised.\n- **Typed end to end:** the port with all answers from those queries (no emulator) gives probe 64's loop 1 exit byte for byte, generator included, and the normalisation gives its return state. **confirmed** (one career, setting 0, drop 0).\n- **Remap input contract** = Player.bin contract end for 17,286 of 17,289; the 3 others are 2024-02-29 in the file and 02-28 in the game (probable: the loader clamps the day, February 28).\n- **The loan-return step is `MLTransfer_LoanReturns_Run` (0x140F17730)**, first pass of `MLSetup_TransferSteps_Run` (0x140F68300), after `Competition_MLSetup_BuildRankings` (0x1412695B0), which holds the remap and the normalisation. It moves every record whose +0x16C is before the season start +0x178946C to +0x160 (`MLTransfer_Player_Move` 0x140F14420: skipped when either team or the ref is invalid or a transfer entry exists; clears +0x148 bit 16, +0x16C = Date_Invalid). Data: 876 of 1,021 probe 64 loans have a normalised end before 2020-08-01; the other 145 equal probe 61's BuildSeason loans by id, end and owner (145 of 145, another career). **confirmed** (read plus two sessions).\n- **Correction (FINDINGS 2026-11-24, players 61470 and 117642):** 61470 is not dropped by the normalisation (its flag is 0 at creation, probe 64); his end steps back to 2019-12-31 and the loan return above moves him. The outcome stated there is unchanged.\n- **Production K3 order differs from the game:** `build_creation_squads` returns expired loans on the raw file ends before the remap (875 returns, 61470 missed) and fits kept ends to the half-year close (shortcut). Both K3 residual players come from this.\n- **Remap loop 2** writes the user squad (30 players) into the squad meter (`MLSquadMeter_Insert` 0x140F068E0, last free slot down) and the user-squad stats table EditData +0x1675158 (`MLSquadStats_Insert` 0x140F06670, 69 entries of 0x2C). The earlier \"84 entries\" was a miscount. Meter value 20 when the record's +0x14C holds the user club or +0x150 is 0x12, else by `Player_AgeCurveClass` and `Player_TeamImportance` x `Float_100` (0x14253EE30). The 60 differing bytes are confirmed uninitialised (meter entry +0xA..+0xB, never stored before the 24-byte copy). The meter is required for K7 (`squad_meter` dump-sourced); not ported: `Player_TeamImportance` and the slot-position reader need reading first. The stats table has no production reader; deferred.\n- **Date semantics (`spec_date_days.py`: `Date_DaysBetween` 0x140AC53D0 under emulation vs `renew_days_between`):**\n  - Equal on valid dates (90 of 90), on Date_Invalid on either side (64 of 64) and on day past month end (20 of 20).\n  - Differ on year-0xFFFF words other than 0x0000FFFF (4 of 4: production returns 0; the game counts days, and on 0xFFFFFFFF it does not return within 2M instructions), day 0 (11 of 20, off by one), month 0 (20 of 20) and month 13 (14 of 20).\n  - None of the differing classes occur in probes 64 A to E. **confirmed** (emulation, synthetic pairs).\n  - Tool fix: `Emu.call` ignored its block limit, so the first runs never ended. It now takes `max_insns`, passed to Unicorn as an instruction count."
     }
   ]
 }
