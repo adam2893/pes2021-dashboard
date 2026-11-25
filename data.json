@@ -5491,6 +5491,62 @@
       "source": "db/seeds/k7a1.tsv"
     },
     {
+      "address": "0x141513110",
+      "name": "Player_GetPositionRatingByRef",
+      "confidence": "probable",
+      "reviewed": "no",
+      "evidence": "(ref ptr, &position, condition): Player_GetRecord of the ref, then Player_GetPositionRating; MLSetup_DevPhasePass calls it with position 0xD (registered) and condition 2 (disassembly 2026-11-26)",
+      "source": "db/seeds/k7a1.tsv"
+    },
+    {
+      "address": "0x141538370",
+      "name": "PlayerDev_PhaseProgressMark",
+      "confidence": "probable",
+      "reviewed": "no",
+      "evidence": "(phase, level): progress mark of the phase's category: 1: 0/0x20/0x30 (levels other/2/3), 2: 0x40, 3: 0x40/0x60/0x80, 4: 0xA0, 5: 0xA0/0xC0/0xE0, 6 and 7: 0xFF, else 0 (read 2026-11-26)",
+      "source": "db/seeds/k7a1.tsv"
+    },
+    {
+      "address": "0x1414db7d0",
+      "name": "PlayerDev_AddCategoryScore",
+      "confidence": "probable",
+      "reviewed": "no",
+      "evidence": "(record bytes, category, v): the pair byte whose first category is it loses v, whose second gains v; clamped to -100..100 (read 2026-11-26)",
+      "source": "db/seeds/k7a1.tsv"
+    },
+    {
+      "address": "0x1414c0260",
+      "name": "PlayerDev_SkillFieldId",
+      "confidence": "probable",
+      "reviewed": "no",
+      "evidence": "skill index -> Player_GetField id from 0x142979100 (DevTables::skill_ids); 0x43 above 0x28 (read 2026-11-26)",
+      "source": "db/seeds/k7a1.tsv"
+    },
+    {
+      "address": "0x140f17a60",
+      "name": "MLTransfer_PhaseAfterMove",
+      "confidence": "probable",
+      "reviewed": "no",
+      "evidence": "the moved player's record: phase 1 or 2 -> 0, 0x12 -> 0xD, each with bucket (+0x140 bits 30-31) 0; then tail call 0x141571C60 (not read); callers MLTransfer_Player_Move, TransferManager_ExecuteDeal_B / _Mode0, TransferManager_OnMessage11 (disassembly 2026-11-26)",
+      "source": "db/seeds/k7a1.tsv"
+    },
+    {
+      "address": "0x1412e4c60",
+      "name": "PlayerRecord_Unpack",
+      "confidence": "guess",
+      "reviewed": "no",
+      "evidence": "builds a player record from a packed form (fields 0xE.. from the packed words, +0x140 bits 0-6 from its word 0x25 bits 23-29, +0x150..+0x155 from words 0x1A/0x1B) and the previous record (+0x140 bits 7-26); save-format path (read in part 2026-11-26)",
+      "source": "db/seeds/k7a1.tsv"
+    },
+    {
+      "address": "0x141328070",
+      "name": "PlayerDev_RecomputeNoTeam",
+      "confidence": "probable",
+      "reviewed": "no",
+      "evidence": "(_, record): PlayerDev_ComputeRecord(record, 1, 0, -1, 0, -1) then PlayerDev_AssignTeamPhase(record, no team); caller 0x1413E3F50 (disassembly 2026-11-26)",
+      "source": "db/seeds/k7a1.tsv"
+    },
+    {
       "address": "0x140a48a10",
       "name": "Match_World_GetPlayerData",
       "confidence": "probable",
@@ -8949,6 +9005,38 @@
       "source": "db/seeds/data/findings1.tsv"
     },
     {
+      "address": "0x140f17b0d",
+      "field1": "site",
+      "field2": "MLTransfer_PhaseAfterMove@phase_0d",
+      "field3": "confirmed",
+      "evidence": "no",
+      "source": "db/seeds/data/findings1.tsv"
+    },
+    {
+      "address": "0x140f17b16",
+      "field1": "site",
+      "field2": "MLTransfer_PhaseAfterMove@phase_0",
+      "field3": "confirmed",
+      "evidence": "no",
+      "source": "db/seeds/data/findings1.tsv"
+    },
+    {
+      "address": "0x140f1397a",
+      "field1": "site",
+      "field2": "TransferManager_OnContractExpired@phase_0d",
+      "field3": "confirmed",
+      "evidence": "no",
+      "source": "db/seeds/data/findings1.tsv"
+    },
+    {
+      "address": "0x140f1560e",
+      "field1": "site",
+      "field2": "TransferManager_OnPlayerLeaves@phase_0d",
+      "field3": "confirmed",
+      "evidence": "no",
+      "source": "db/seeds/data/findings1.tsv"
+    },
+    {
       "address": "0x1434d66f0",
       "field1": "table",
       "field2": "Pesdb_FileNameTable_Entry18",
@@ -9978,8 +10066,8 @@
       "address": "0x1415396d0",
       "status": "reimplemented",
       "fidelity": "exact",
-      "implementation": "src/game/team/dev_sample.cpp dev_record",
-      "evidence": "probe 37: record bytes +0x151..0x154 for 145 of 145 stepped players",
+      "implementation": "src/game/team/dev_sample.cpp dev_record; src/game/ml/dev_pass.cpp compute_progress",
+      "evidence": "probe 37: record bytes +0x151..0x154 for 145 of 145 stepped players; the third-argument-1 progress byte: emulation oracle spec_dev_pass.py part 1 (2026-11-26)",
       "source": "db/seeds/ports/competition.tsv"
     },
     {
@@ -10636,6 +10724,46 @@
       "fidelity": "exact",
       "implementation": "src/game/match/match_day.cpp lineup_captain",
       "evidence": "keep rule and first-maximum pick; with the load captain and the setup's lineup steps every club captain equals probes 52 (555 of 555) and 64 A/E (555 of 555); in-season after every CPU lineup and removal repair (2026-11-26)",
+      "source": "db/seeds/ports/competition.tsv"
+    },
+    {
+      "address": "0x141329ef0",
+      "status": "reimplemented",
+      "fidelity": "exact",
+      "implementation": "src/game/ml/dev_pass.cpp creation_dev_pass",
+      "evidence": "Club Team Lineup branch (the Original Lineup specials and 0x16 pick are K9); constructor equals probe 52 on all 17,289 records (phase, bucket, progress, pairs, mark) and probes 58 / 60 (creation_constructed); emulation oracle spec_dev_pass.py (2026-11-26)",
+      "source": "db/seeds/ports/competition.tsv"
+    },
+    {
+      "address": "0x141327ec0",
+      "status": "reimplemented",
+      "fidelity": "exact",
+      "implementation": "src/game/ml/dev_pass.cpp assign_team_phase",
+      "evidence": "0x13 kept, club icon 0x12, NextPhase, the home-club phase 1; inside the pass oracle (2026-11-26)",
+      "source": "db/seeds/ports/competition.tsv"
+    },
+    {
+      "address": "0x14153e150",
+      "status": "reimplemented",
+      "fidelity": "exact",
+      "implementation": "src/game/ml/dev_pass.cpp set_own_phase_special",
+      "evidence": "the own-phase call (level 1, copy 1, minus 1) only; inside the pass oracle (2026-11-26)",
+      "source": "db/seeds/ports/competition.tsv"
+    },
+    {
+      "address": "0x141538370",
+      "status": "reimplemented",
+      "fidelity": "exact",
+      "implementation": "src/game/ml/dev_pass.cpp phase_progress_mark",
+      "evidence": "read; inside the pass oracle (2026-11-26)",
+      "source": "db/seeds/ports/competition.tsv"
+    },
+    {
+      "address": "0x140f17a60",
+      "status": "reimplemented",
+      "fidelity": "exact",
+      "implementation": "src/game/ml/dev_phase.h phase_after_move",
+      "evidence": "creation loan returns (the 13 probe 52 differences); in-season move sites pending (S1b) (2026-11-26)",
       "source": "db/seeds/ports/competition.tsv"
     },
     {
@@ -11469,6 +11597,11 @@
       "date": "2026-11-26",
       "title": "K8 club captains: the PlayerAssignment captain, kept by Lineup_FinaliseA; one shared implementation for the setup and the season (Track C)",
       "body": "- **Where the phase pass's captains come from.** At `MLSetup_Run` entry (probe 61) the team table is the pre-setup one (669 teams, handle id << 14, +0x28C unset). The setup's team load writes the captain.\n  - `Pesdb_LoadTeams` (store at 0x1414F62C9, disassembly): +0x251 (and team +0x5D1) = roster index of the team's first PlayerAssignment row with +0xC bit 21. The six roles come from `PlayerAssignment_GetRoleFlag` (0x1414F06A0) the same way, first row each; roles 1 and 2 share bit 17. **confirmed** (read).\n  - Probe 64 A (remap entry, after the pass) and E: every club's captain is the flagged player's roster index (555 of 555). `Lineup_CaptainScore` alone (the first XI maximum) gives only 274 of 555, so the captain is kept, not re-picked. **confirmed** (data).\n  - `pesdb::PlayerAssignment::captain` now reads bit 21.\n- **`ML_UserMatch_Prepare` (0x1415251E0) is not the setup's captain step.** Its captain writers `Lineup_SetCaptainPlayer` (0x1415745E0) and `Lineup_PickCaptainExcept` (0x141574690, scores by `Lineup_CaptainScoreByRef` 0x141509AF0) are only in its game-kind-10 branch (the user player at +0x1819540). In Master League it runs `Team_AutoSelectLineup` per match of today's day row, and at creation that row holds no match. Its two `Random_Xorshift128_Below` calls are in the same kind-10 branch. **probable** (read; the kind-9 path at creation not traced at runtime). The earlier names (`MLSetup_TeamRoleAssign`, `MLSetup_TeamCaptainPick`, guesses) are replaced.\n- **`Lineup_CaptainScore` (0x1415099A0) ported** (`match::captain_score`): constants -0.05f (0x1425A2678) and 1.5f (0x14259BDDC); field 0x2D defaults to 0x14. Emulation oracle (`private-reference/oracle/scratch/cap_score.py`): equal on all 17,289 records of probe 64 A. **confirmed**.\n- **`Lineup_FinaliseA` (0x141500A60) ported** (`match::lineup_captain`) and run after every lineup select the host makes: the creation replay's kind rebuilds and loan-return selects (`ml/career_formations`), the removal repair (`remove_and_repair`, only with more than 10 players left, as the game) and every CPU match's lineup (`run_day`). One implementation for the setup and the season.\n- **Removal renumbering** (`Team_Squad_RemovePlayer` slot walk 0x141572200, disassembly): the captain is lowered with the slot entry equal to it, once; a captain equal to the removed index is left as it is (it then names the next player, and the repair's FinaliseA decides). **confirmed** (read). `squad_detail::renumber_after_removal` holds it for both removal paths.\n- **World:** `Team::captain` (formation +0x251), loaded from dumps and built by the constructor, compared as a player id (`team.captain`), its own state component `team_captain`.\n- **Verified:** constructor on probe 52 (creation boundary): every club captain equal (555 of 555); the 102 national teams differ (their squad pick is K4). After the later setup steps, a static check on probe 61's BuildSeason-entry dump (file captain if in the XI and available, else the first maximum) fits 549 of 555 clubs; the other 6 depend on their removal and re-add order, which only the replay can follow (the constructor's replay gives 555 of 555 on probe 52).\n- **Not modelled:** the six set-piece roles (`Lineup_FinaliseB` needs `Lineup_RoleScore` and `Player_StatRating`; deferred to the match engine, plan section 28). National team captains: K4.\n- The setup's +0x1795D25 (the lineup kind rebuild's gate) now comes from `ml::august_start`, replacing the K4 shortcut.\n- **Set-piece roles: no Master League consumer found** (`private-reference/oracle/scratch/scan_access.py`, byte operands at +0x248..+0x24D, whole `.trace`, 57 hits, 2026-11-26). The ML-area hits are the lineup code (`Team_AutoSelectLineup` and its core, `Team_Squad_AddPlayer`/`RemovePlayer`, `Pesdb_LoadTeams`, `NationalSquad_Pick`), role clears to 0xFF ahead of a select (0x1415724E0, 0x14156A730, 0x141563F20, 0x141550480, 0x141573090, `ML_UserMatch_Prepare`), and a slot remap that copies the role and captain bytes (0x141386982). The remaining hits (0x140D7xxxx, 0x1411Exxxx and others) are not resolved as tactic-record accesses. **probable**. The roles stay a deferred obligation (match engine, plan section 28).\n- **Retained captain bytes:** after a removal with 10 or fewer players left (no repair), the byte can equal the roster size. Every reader treats an index at or above the roster count as no captain: `lineup_captain` re-picks, `team.captain` compares -1, and the coming phase-pass port takes the game's own handling from the pass's disassembly (the lineup functions read a roster index through a count check, giving `SquadRef_Invalid` above it). Unit test: `squad_test` case 8.\n- **C2 baseline (state only), 2026-11-26, user-approved:** the new `team_captain` component. Metrics and log byte-identical; the state file without `team_captain` reproduces the previous one (300 of 300 rows, `state_without_component.py`). Previous file kept as `private-reference/remediation/state5_c2_pre_captain.tsv`.\n- **National team captains: K4.** They come from `NationalSquad_Pick`'s `Team_AutoSelectLineup` (FinaliseA on the picked squad); verified when the national squads are built."
+    },
+    {
+      "date": "2026-11-26",
+      "title": "K8 development-phase pass ported (Club Team Lineup), exact; +0x140 bits 0-6 and the pair bytes are persistent state; moves reset the phase (Track C)",
+      "body": "Production: `ml/dev_pass` (`creation_dev_pass`, `compute_progress`, `assign_team_phase`, `set_own_phase_special`, `phase_progress_mark`), `ml::phase_after_move` (`ml/dev_phase.h`), `DevSamplePlayer::pairs` and `::phase_mark`, the constructor running the pass at the setup's point (after SetFame, before the remap), the load phase 0x13 (`PlayerFile::phase_19`). `creation_icon_phases` is removed: the squad meter reads the pass's phases.\n\n- **The pass, read in full** (`MLSetup_DevPhasePass` 0x141329EF0): global fame range; per club team (valid handle, kind not 0x7B, +0x420 & 0x1C000000 clear) the top-rating list (`Player_GetPositionRatingByRef` 0x141513110: registered position, condition 2; ties kept), the top-fame list (ties kept) and the team's fame range; the captain's ref only when +0x251 is below the squad count (else `SquadRef_Invalid`, no bonus); per squad player `PlayerDev_ComputeRecord` (phase kept), +10 per list and for the captain (byte arithmetic), `PlayerDev_AssignTeamPhase` with the team; the user's team's own-phase setter; loop 2 over records with states other than 0, 3, 5, 6 (phase 0, no team). **confirmed** (read; oracle below).\n- **`PlayerDev_ComputeRecord`'s progress byte** (third argument 1): 192 / (fame range) x (fame - minimum), averaged with the team's when given, rounded half away; x field 0x30 / 6, rounded; x 0.9, rounded; +10 with skill flag `skill_ids[0x26]` (`PlayerDev_SkillFieldId` 0x1414C0260); + age - 15. Single precision, uint32 differences, cvttss2si semantics (an equal range gives inf x 0 = NaN, converted to INT_MIN, low byte 0). **confirmed** (oracle).\n- **`PlayerDev_AssignTeamPhase`** (0x141327EC0): phase 0x13 kept (progress 0xFF, mark 0x13, bucket 0); a club icon of the team gets 0x12 (progress 0xFF, mark 0x12, bucket 0); else `PlayerDev_NextPhase` and the bucket rule, and a phase-0 player at his home club (`Team_IdOfHandle`(+0x14C) equal) gets phase 1 with mark 1. `PlayerDev_PhaseProgressMark` (0x141538370) gives the marks. **confirmed**.\n- **The own-phase setter** (`PlayerDev_SetSpecialPhase` with level 1, copy 1, minus 1): the phase row's scores over the record's (`PlayerDev_AddCategoryScore` 0x1414DB7D0, clamped -100..100), progress = mark(level 1) - 1, then the first candidate of the highest category (candidates on the record with phase 0) with bucket 3, or phase 0 with bucket 0. **confirmed** (oracle).\n- **+0x140 bits 0-6, the phase mark:** 0 for every player at `MLSetup_Run` entry (probe 61); after the pass 1 (3,248), 0x12 (50), 0x13 (2), always the phase `AssignTeamPhase` set on those paths; kept when the phase later changes (13 players at BuildSeason entry hold mark 1 with phase 0). Kept by the save format (`PlayerRecord_Unpack` 0x1412E4C60, guess), read by `ML_PlayerDevelopment_DailySample` (mark 0x12 and age 30 or more takes a branch our port does not have) and under `FUN_14153D290` (0x14153D0A0, 0x14153D440). Persistent player state: `DevSamplePlayer::phase_mark`. **confirmed** (data and read).\n- **The pair bytes +0x151..+0x154** are persistent too: written by `ComputeRecord` and the own-phase setter (which makes them differ from `dev_record`), and by the daily sample on a step (now stored by `run_day`). `DevSamplePlayer::pairs`.\n- **A move resets the phase** (`MLTransfer_PhaseAfterMove` 0x140F17A60, from `MLTransfer_Player_Move`, `TransferManager_ExecuteDeal_B` / `_Mode0` and `TransferManager_OnMessage11`; the same code inlined in `TransferManager_OnContractExpired` and `TransferManager_OnPlayerLeaves`, stores 0x140F17B0D / 0x140F17B16, 0x140F1397A, 0x140F1560E): phase 1 or 2 becomes 0, 0x12 becomes 0xD, each with bucket 0. **confirmed** (disassembly). It explains the last 13 constructor differences (players whose loan return took them away from their home club). Applied to the setup's loan returns.\n- **Verified:**\n  - constructor, probe 52 (creation boundary): phase, bucket, progress, pairs and mark equal on all 17,289 records; probes 58 and 60 (`creation_constructed`, BuildSeason entry) equal; club captains 555 of 555 on each;\n  - emulation oracle (`src/tools/oracle/spec_dev_pass.py`): the progress byte on 3,336 cases (random, equal global and team ranges, the no-team bounds, ages 0-63, field 0x30 0-7, the skill flag) with 0 differences; the whole game pass on probe 64 A with the development bytes reset to the load's values against `creation_dev_pass` on the same state: every field equal on all 17,289 records. One stated substitution: `Team_IdOfHandle`'s thunk (its body is relocated, read: invalid handle -> 0x7FFF, else a tail jump to `Team_IdFromHandle`, executed). **confirmed**.\n  - gates: ctest 87/87; C2 metrics and log byte-identical; the state without the new `dev_bytes` component equals the previous approved file (320 of 320 rows). The component also changes in season (the daily sample's stored pair bytes); nothing reads it there yet.\n- **Limits:** Club Team Lineup only (the Original Lineup specials and the 0x16 pick are K9). The pass's side tables (+0x16ECBCC, +0x1798AB0, +0x181C1B0) have no World reader and are not built.\n- **S1b obligations** (user decision 2026-11-26): the in-season phase reset at every move and departure (one call in `roster_remove(World&)`; its six callers are the six game sites); the daily sample's mark-0x12 branch; regen handling of the pair bytes and the mark (`season_switch` resets phase and progress only); other readers and writers of the new fields (0x141538720, 0x141328ED0, `PlayerDev_RecomputeNoTeam` 0x141328070 under 0x1413E3F50)."
     }
   ]
 }
