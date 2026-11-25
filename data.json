@@ -9882,8 +9882,8 @@
       "address": "0x140ac53d0",
       "status": "reimplemented",
       "fidelity": "exact",
-      "implementation": "src/game/ml/player_event.cpp date_days_between",
-      "evidence": "read from the decompile 2026-11-15; no-leap calendar and symmetric result checked by the type 16 draws (365 yes, 366 no); LastBumpDate sentinel not ported",
+      "implementation": "src/game/ml/date.cpp days_between",
+      "evidence": "one implementation since 2026-11-25 (replaces renew_days_between and date_days_between); Date_Invalid compared on four bytes; spec_date_days.py equal on 90 of 90 valid pairs and 64 of 64 with Date_Invalid; words outside the supported domain return 0 (the game's loop can fail to end), none at current callers",
       "source": "db/seeds/ports/competition.tsv"
     },
     {
@@ -10009,9 +10009,9 @@
     {
       "address": "0x14126a8f0",
       "status": "reimplemented",
-      "fidelity": "behavioural",
+      "fidelity": "exact",
       "implementation": "src/game/ml/career_squads.cpp build_creation_squads",
-      "evidence": "the loan loader and returns (team::build_ml_squads) in creation record order with the loan fields; 17,288 of 17,289 team0 and loan_owner, 554 of 556 club rosters (probe 52 run 1); one early return and one end date not explained, the end date moved by a fit",
+      "evidence": "the loan loader (team::load_ml_loans) in creation record order; with the K7 remap, normalisation and returns: probe 52 squad and loan fields 17,289 of 17,289, club rosters 556 of 556; probe 64 loans 1,021 of 1,021 (2026-11-25)",
       "source": "db/seeds/ports/competition.tsv"
     },
     {
@@ -10138,16 +10138,16 @@
       "address": "0x141510160",
       "status": "reimplemented",
       "fidelity": "exact",
-      "implementation": "src/game/ml/career_population.cpp user_region",
-      "evidence": "the user league regulation on the load-time table; probes 58 and 60 equal EditData +0x1789400 (ctest creation_constructed), branches unit-tested (career_population)",
+      "implementation": "src/game/ml/regulation_queries.cpp first_league_regulation",
+      "evidence": "one implementation (user_region, creation_entrants, the remap); probe 64 A 556 of 556 teams under emulation; probes 58 and 60 equal EditData +0x1789400",
       "source": "db/seeds/ports/competition.tsv"
     },
     {
       "address": "0x141511070",
       "status": "reimplemented",
       "fidelity": "exact",
-      "implementation": "src/game/ml/career_population.cpp user_region",
-      "evidence": "the confederation group for the newface list; probes 58 (group 0) and 60 (group 1) give exact state nibbles for all 17,289 players; groups 2, 4, 5, 6 unit-tested only",
+      "implementation": "src/game/ml/regulation_queries.cpp confederation_group",
+      "evidence": "one implementation (user_region and the remap's queries); probe 64 A 556 of 556 teams (through Competition_Team_Confederation); probes 58 and 60 exact state nibbles",
       "source": "db/seeds/ports/competition.tsv"
     },
     {
@@ -10212,6 +10212,46 @@
       "fidelity": "exact",
       "implementation": "src/game/match/match_day.cpp auto_lineup build",
       "evidence": "the goalkeeper flag is set only by a picked goalkeeper slot, not by a kept one (decompile 2026-11-23; the port set it for a kept goalkeeper and read the skip table at index -1)",
+      "source": "db/seeds/ports/competition.tsv"
+    },
+    {
+      "address": "0x140f17730",
+      "status": "reimplemented",
+      "fidelity": "exact",
+      "implementation": "src/game/ml/career_squads.cpp return_expired_loans",
+      "evidence": "on the normalised loan ends, after the remap (2026-11-25): probe 64 876 of 876 returned, probe 52 every player; the team/ml_squads.cpp row above (raw file ends) remains for compute_team_keys (shortcut)",
+      "source": "db/seeds/ports/competition.tsv"
+    },
+    {
+      "address": "0x14156b980",
+      "status": "reimplemented",
+      "fidelity": "exact",
+      "implementation": "src/game/ml/career_contracts.cpp remap_contracts",
+      "evidence": "first loop (wage, contract, loan clears, FlagPlayer draw); loop 2 (squad meter) not ported. Every player exact: probe 64 A->E wage and contract 17,289/17,289 (captured seed); probes 52, 58, 60 with recovered seeds (2026-11-25)",
+      "source": "db/seeds/ports/competition.tsv"
+    },
+    {
+      "address": "0x14156ce00",
+      "status": "reimplemented",
+      "fidelity": "exact",
+      "implementation": "src/game/ml/career_contracts.cpp contract_years",
+      "evidence": "kept and drawn years; 9,596 drawn years of probes 52, 58 and 60 reproduced from one seed word each; probe 64 all contracts",
+      "source": "db/seeds/ports/competition.tsv"
+    },
+    {
+      "address": "0x141574a20",
+      "status": "reimplemented",
+      "fidelity": "exact",
+      "implementation": "src/game/ml/career_contracts.cpp normalize_loan_ends",
+      "evidence": "without the drop option (0 at creation, probe 64); probe 64 D->E 98 ends moved, all equal; research port also equal with drop 1",
+      "source": "db/seeds/ports/competition.tsv"
+    },
+    {
+      "address": "0x1415762a0",
+      "status": "reimplemented",
+      "fidelity": "exact",
+      "implementation": "src/game/ml/regulation_queries.cpp calendar_type",
+      "evidence": "probe 64 A 27 of 27 regulations under emulation",
       "source": "db/seeds/ports/competition.tsv"
     },
     {
@@ -11020,6 +11060,11 @@
       "date": "2026-11-25",
       "title": "K7 stage 3, dependencies, loan returns, loop 2, date semantics (Track C, research)",
       "body": "Report: `docs/k7-stage3-2026-11-25.md`. No production code or baseline changed. Tools: `oracle_prod deps` / `typed` / `days`, `research/k7/remap_queries.{h,cpp}`, `src/tools/oracle/spec_date_days.py`.\n- **The five remap dependencies equal typed queries on the production World (probe 64 A):** window dates (`World::event_first`) 4 of 4; first league regulation (0x141510160) 556 of 556 teams; `Competition_Team_Confederation` (0x1415111C0) 556 of 556, with the no-league fallback through `Confederation_ByCountryGroup` (0x142980220) on the country group (EditData country table +0x1843F20 via `EditData_GetCountryRecord` 0x1414BB0B0, `Country_FindById` 0x1414B8060; 214 of 214 equal Country.bin byte 4); calendar type (0x1415762A0) 27 of 27 regulations; wage (production `creation_wage` at the slot-0 club) 17,289 of 17,289. **confirmed** on this state (game functions under emulation, and loop 1 with these answers equals the capture). The national-team path (`Confederation_ByNationKind` 0x142980250) is not exercised.\n- **Typed end to end:** the port with all answers from those queries (no emulator) gives probe 64's loop 1 exit byte for byte, generator included, and the normalisation gives its return state. **confirmed** (one career, setting 0, drop 0).\n- **Remap input contract** = Player.bin contract end for 17,286 of 17,289; the 3 others are 2024-02-29 in the file and 02-28 in the game (probable: the loader clamps the day, February 28).\n- **The loan-return step is `MLTransfer_LoanReturns_Run` (0x140F17730)**, first pass of `MLSetup_TransferSteps_Run` (0x140F68300), after `Competition_MLSetup_BuildRankings` (0x1412695B0), which holds the remap and the normalisation. It moves every record whose +0x16C is before the season start +0x178946C to +0x160 (`MLTransfer_Player_Move` 0x140F14420: skipped when either team or the ref is invalid or a transfer entry exists; clears +0x148 bit 16, +0x16C = Date_Invalid). Data: 876 of 1,021 probe 64 loans have a normalised end before 2020-08-01; the other 145 equal probe 61's BuildSeason loans by id, end and owner (145 of 145, another career). **confirmed** (read plus two sessions).\n- **Correction (FINDINGS 2026-11-24, players 61470 and 117642):** 61470 is not dropped by the normalisation (its flag is 0 at creation, probe 64); his end steps back to 2019-12-31 and the loan return above moves him. The outcome stated there is unchanged.\n- **Production K3 order differs from the game:** `build_creation_squads` returns expired loans on the raw file ends before the remap (875 returns, 61470 missed) and fits kept ends to the half-year close (shortcut). Both K3 residual players come from this.\n- **Remap loop 2** writes the user squad (30 players) into the squad meter (`MLSquadMeter_Insert` 0x140F068E0, last free slot down) and the user-squad stats table EditData +0x1675158 (`MLSquadStats_Insert` 0x140F06670, 69 entries of 0x2C). The earlier \"84 entries\" was a miscount. Meter value 20 when the record's +0x14C holds the user club or +0x150 is 0x12, else by `Player_AgeCurveClass` and `Player_TeamImportance` x `Float_100` (0x14253EE30). The 60 differing bytes are confirmed uninitialised (meter entry +0xA..+0xB, never stored before the 24-byte copy). The meter is required for K7 (`squad_meter` dump-sourced); not ported: `Player_TeamImportance` and the slot-position reader need reading first. The stats table has no production reader; deferred.\n- **Date semantics (`spec_date_days.py`: `Date_DaysBetween` 0x140AC53D0 under emulation vs `renew_days_between`):**\n  - Equal on valid dates (90 of 90), on Date_Invalid on either side (64 of 64) and on day past month end (20 of 20).\n  - Differ on year-0xFFFF words other than 0x0000FFFF (4 of 4: production returns 0; the game counts days, and on 0xFFFFFFFF it does not return within 2M instructions), day 0 (11 of 20, off by one), month 0 (20 of 20) and month 13 (14 of 20).\n  - None of the differing classes occur in probes 64 A to E. **confirmed** (emulation, synthetic pairs).\n  - Tool fix: `Emu.call` ignored its block limit, so the first runs never ended. It now takes `max_insns`, passed to Unicorn as an instruction count."
+    },
+    {
+      "date": "2026-11-25",
+      "title": "K7 integration stages 1-4: regulation queries, dates, contract remap, loan returns in the setup's order (Track C)",
+      "body": "Production; plan `docs/k7-stage3-2026-11-25.md` section 10. Moves the constructor closer to running a new career in the host without dumps.\n\n- **Stage 1 (no behaviour change):** `ml/regulation_queries` holds the regulation-word fields, the league-type set (0xF9C2, `Competition_Regulation_IsLeagueType` 0x1414CF750), the first-league periods (0x2000000000842), `first_league_regulation` (0x141510160), `confederation_group` (0x141511070) and `calendar_type` (0x1415762A0). The copies in `continental_next`, `season_refile`, `career_population`, `creation_entrants`, `competition_rules`, `season_creation` and `regulation_setup` now call it.\n- **Stage 2 (no behaviour change on the supported domain):** `ml/date.h` is the one date implementation: `kDateInvalid` (exact four-byte compare), the game's date order, the 365-day day number, and `days_between` (`Date_DaysBetween` 0x140AC53D0).\n  - Supported domain: valid dates and Date_Invalid. Outside it `days_between` returns 0, where the game's stepping loop can fail to end.\n  - Callers: the renewal thresholds and checks (calendar events and contract ends, which are always the month's last day), the remap's contract years (window dates against the season start), and player event type 16 (`Candidate::contract_end` is never filled in production). None passes a word outside the domain, so a 0 cannot stand for a real interval at any current call site.\n  - The two former copies (`renew_days_between`, `date_days_between`) and the third 365-day count (`world_calendar`) are removed. `day_count` (`player_event.cpp`, civil calendar, signed, the maturity step `FUN_140f62a00`) is left: a different function, not read.\n- **Stages 3-4:** `ml/career_contracts` (`remap_contracts`, `normalize_loan_ends`, `creation_generator`). The constructor now follows the game's order: loan loader (`team::load_ml_loans`), setup regulations, remap, normalisation, `ml::return_expired_loans`, then the formations.\n  - The wage moved from `build_players` (wage at the file club) to the remap (wage at the club in squad slot 0, `MLSetup_PlayerWage` 0x1415683B0).\n  - The half-year loan-end fit is deleted; `team0`, loans, wage and contract are constructed fields.\n  - Not stored, as nothing reads them: +0x140 bits 27-29, +0x144 bit 30 (its draw is made) and +0x168. The remap's user-player branch never runs at ML creation: the user ref equals the invalid ref (probe 64 A, `.data` 0x14351AE30), and those records are skipped first.\n- **Verification against independent captures, every player exact:**\n  - probe 64 (Chelsea; seed word captured at A, 0x13A31A65; new `career_contracts_test`), against E: wage 17,289/17,289, contract 17,289/17,289; loans kept 145/145, returned 876/876, none 16,268/16,268.\n  - probe 52 (Arsenal, creation boundary): wage, contract, team0, loan end, loan owner, club164 and post_draw 17,289/17,289 each; club rosters 556/556 in order; formations 555/555 (XI and all 40 slots; were 553). Players 61470 and 117642 now equal the capture. **confirmed**.\n  - probes 58 (Arsenal) and 60 (club 139, Argentine league) BuildSeason entry: no squad, loan, wage or contract difference; the build still ends at S1.\n  - `career_budgets` unchanged: Arsenal and Vasco equal probe 52.\n- **Recovered seed words (not captured):** probe 52 0x0005820F, probe 58 0x049DA7B3, probe 60 0x0693FE32.\n  - Procedure: `oracle_prod seed <data> <dump> <club>` (research only) builds the remap's draw schedule from the constructed World and tries every seed word of 2^32 against the dump's 9,596 drawn contract years. For each probe exactly one word gives all 9,596.\n  - Assumption: generator words 1-3 are Random_Xorshift128's initial words, observed directly only at probe 64 A. Consistent with probes 58 and 60: the remap's final generator reaches the logged BuildSeason-entry S0 after 19,398 and 19,546 further steps.\n  - Production does not search: `construct_world` takes the seed word as a parameter (where the game takes it from is not read).\n- **Test expectations tightened (user approval 2026-11-25):**\n  - `career_squads`: all five fields exact, rosters 556/556.\n  - `career_formations`: floors 555/555.\n  - `construct_world` and `creation_constructed`: team0, loan owner, loan end and post_draw leave the known-difference sets.\n  - `career_players`: wage and contract become provisional, as the remap sets them; `construct_world_test` (probe 52) and `career_contracts_test` (probe 64) assert them exactly.\n  - Constructor tests use the recovered seeds.\n- **Obligations (tracked, not resolved):**\n  - K8: the season start (2020-08-01, the August-start case), the setup option `EditData +0x1795D20` (0) and the calendar events 5, 8, 0xF and 0x11 (dump-sourced) feed `creation_contract_setup`. With no base calendar, the constructor reports the missing events as issues.\n  - shortcut: `team::build_ml_squads` still returns loans on the raw file ends. Its caller is `platform/pc/team_keys.cpp` `compute_team_keys` (ml_date set), used by `season_cli.cpp` (season host); the constructor no longer uses it.\n- **Stage 5 prerequisites read (not ported):**\n  - +0x14C is Player.bin's u32 at +0x00 as a team id (`id << 14`; 0 -> 0xFFFFFFFF): 17,289 of 17,289 on probe 64 A (`oracle_prod fieldscan`). Equal in probes 52 and 64 for every player. **confirmed**.\n  - +0x150 is the development phase (`dev.phase`, a stand-in). It is no single Player.bin field (widths 1-16), and 17,274 of 17,289 are equal across probes 52 and 64. Its creation rule is not read.\n  - `age_adj` is 0 for every player at A. `Player_TeamImportance` (0x14156FDB0) is read: the slots 0-10 the player can play, rank against squad mates, sort, merge duplicate positions, minimum, tie rule and cap. Not yet read: its sort (FUN_141678F00), the team's tactic-block lookup and its float constants.\n- ctest 87 of 87 (new `career_contracts`); C2 metrics, state and log byte-identical after stages 1-2 and after 1-4."
     }
   ]
 }
