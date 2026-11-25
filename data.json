@@ -5411,19 +5411,75 @@
       "source": "db/seeds/k7a1.tsv"
     },
     {
-      "address": "0x141538040",
-      "name": "PlayerDev_PhaseCheck",
-      "confidence": "guess",
-      "reviewed": "no",
-      "evidence": "per-phase eligibility of a record for PlayerDev_PhaseCandidates (not read)",
-      "source": "db/seeds/k7a1.tsv"
-    },
-    {
       "address": "0x14153e150",
       "name": "PlayerDev_SetSpecialPhase",
       "confidence": "guess",
       "reviewed": "no",
       "evidence": "sets a record's phase (0x14, 0x15, 0x16 or its own) with its record bytes; called by MLSetup_DevPhasePass (not read)",
+      "source": "db/seeds/k7a1.tsv"
+    },
+    {
+      "address": "0x141575d40",
+      "name": "Calendar_EventTable_Copy",
+      "confidence": "probable",
+      "reviewed": "no",
+      "evidence": "copies the 200 20-byte rows of the static table 0x14298A9E0 into a vector (read 2026-11-25)",
+      "source": "db/seeds/k7a1.tsv"
+    },
+    {
+      "address": "0x141543350",
+      "name": "Team_LeagueArea",
+      "confidence": "probable",
+      "reviewed": "no",
+      "evidence": "the area (+0x30C >> 7 & 0x3F) of the first league-type regulation (Competition_LeagueRegulationList) whose team list holds the team; 0x1D when none (read 2026-11-25)",
+      "source": "db/seeds/k7a1.tsv"
+    },
+    {
+      "address": "0x141576670",
+      "name": "Date_InCurrentSeason",
+      "confidence": "probable",
+      "reviewed": "no",
+      "evidence": "true when a date lies in the season that starts in month EditData +0x1789470 of the reference date's season (Date_Invalid -> today) (read 2026-11-25)",
+      "source": "db/seeds/k7a1.tsv"
+    },
+    {
+      "address": "0x1415752c0",
+      "name": "Sort_CalendarEvents",
+      "confidence": "probable",
+      "reviewed": "no",
+      "evidence": "MSVC std::sort over 20-byte event entries by the u32 at +0 (comparator 0x1415754C0), insertion below 33 (read 2026-11-25)",
+      "source": "db/seeds/k7a1.tsv"
+    },
+    {
+      "address": "0x141538040",
+      "name": "PlayerDev_PhaseCheck",
+      "confidence": "confirmed",
+      "reviewed": "no",
+      "evidence": "{qualifies, progress reached} of a phase by its category's rule over the pair scores, the row thresholds +0x24/+0x25 and progress; ml::phase_check, oracle-equal through next_phase (2026-11-25)",
+      "source": "db/seeds/k7a1.tsv"
+    },
+    {
+      "address": "0x1415745e0",
+      "name": "MLSetup_TeamRoleAssign",
+      "confidence": "guess",
+      "reviewed": "no",
+      "evidence": "writes the tactic record +0x251 (captain); called by ML_UserMatch_Prepare (not read)",
+      "source": "db/seeds/k7a1.tsv"
+    },
+    {
+      "address": "0x141574690",
+      "name": "MLSetup_TeamCaptainPick",
+      "confidence": "guess",
+      "reviewed": "no",
+      "evidence": "(team, tactic record, ref): walks the slots +0x220 and writes +0x251; called by ML_UserMatch_Prepare (read in part 2026-11-25)",
+      "source": "db/seeds/k7a1.tsv"
+    },
+    {
+      "address": "0x141537d80",
+      "name": "PlayerDev_Bucket",
+      "confidence": "confirmed",
+      "reviewed": "no",
+      "evidence": "the bucket (+0x140 >> 30) of a phase with flag +0x27 and category 1, 3 or 5 from progress +0x155 (marks 0x20/0x30, 0x60/0x80, 0xC0/0xE0); else 0; ml::dev_bucket oracle-equal (2026-11-25)",
       "source": "db/seeds/k7a1.tsv"
     },
     {
@@ -8773,6 +8829,86 @@
       "source": "db/seeds/data/findings1.tsv"
     },
     {
+      "address": "0x14298a9e0",
+      "field1": "table",
+      "field2": "Calendar_EventTable",
+      "field3": "confirmed",
+      "evidence": "no",
+      "source": "db/seeds/data/findings1.tsv"
+    },
+    {
+      "address": "0x14132ab82",
+      "field1": "site",
+      "field2": "MLSetup_DevPhasePass@special_own_phase",
+      "field3": "confirmed",
+      "evidence": "no",
+      "source": "db/seeds/data/findings1.tsv"
+    },
+    {
+      "address": "0x14258c260",
+      "field1": "const",
+      "field2": "Float_0_9",
+      "field3": "confirmed",
+      "evidence": "no",
+      "source": "db/seeds/data/findings1.tsv"
+    },
+    {
+      "address": "0x14259bdec",
+      "field1": "const",
+      "field2": "Float_6",
+      "field3": "confirmed",
+      "evidence": "no",
+      "source": "db/seeds/data/findings1.tsv"
+    },
+    {
+      "address": "0x1429863b0",
+      "field1": "const",
+      "field2": "Float_192",
+      "field3": "confirmed",
+      "evidence": "no",
+      "source": "db/seeds/data/findings1.tsv"
+    },
+    {
+      "address": "0x14132a71e",
+      "field1": "site",
+      "field2": "MLSetup_DevPhasePass@special_gate",
+      "field3": "confirmed",
+      "evidence": "no",
+      "source": "db/seeds/data/findings1.tsv"
+    },
+    {
+      "address": "0x14132a77d",
+      "field1": "site",
+      "field2": "MLSetup_DevPhasePass@special_1415",
+      "field3": "confirmed",
+      "evidence": "no",
+      "source": "db/seeds/data/findings1.tsv"
+    },
+    {
+      "address": "0x14132a8b4",
+      "field1": "site",
+      "field2": "MLSetup_DevPhasePass@pick16_gate",
+      "field3": "confirmed",
+      "evidence": "no",
+      "source": "db/seeds/data/findings1.tsv"
+    },
+    {
+      "address": "0x14132a8e4",
+      "field1": "site",
+      "field2": "MLSetup_DevPhasePass@pick16_draw",
+      "field3": "confirmed",
+      "evidence": "no",
+      "source": "db/seeds/data/findings1.tsv"
+    },
+    {
+      "address": "0x14132a935",
+      "field1": "site",
+      "field2": "MLSetup_DevPhasePass@pick16_set",
+      "field3": "confirmed",
+      "evidence": "no",
+      "source": "db/seeds/data/findings1.tsv"
+    },
+    {
       "address": "0x1434d66f0",
       "field1": "table",
       "field2": "Pesdb_FileNameTable_Entry18",
@@ -10415,6 +10551,38 @@
       "source": "db/seeds/ports/competition.tsv"
     },
     {
+      "address": "0x1412e8480",
+      "status": "reimplemented",
+      "fidelity": "exact",
+      "implementation": "src/game/ml/calendar_fill.cpp fill_creation_calendar",
+      "evidence": "the creation fill on an empty day table; probe 52 runs 1 (August) and 3 (January): events 366/366 and event_first 57/57 (2026-11-25)",
+      "source": "db/seeds/ports/competition.tsv"
+    },
+    {
+      "address": "0x141575a90",
+      "status": "reimplemented",
+      "fidelity": "exact",
+      "implementation": "src/game/ml/calendar_fill.cpp events_for_date",
+      "evidence": "game kind 9; +0x1787B58 = 0x56 branch not taken on vanilla (P2); same evidence as the fill (2026-11-25)",
+      "source": "db/seeds/ports/competition.tsv"
+    },
+    {
+      "address": "0x141539380",
+      "status": "reimplemented",
+      "fidelity": "exact",
+      "implementation": "src/game/ml/dev_phase.cpp next_phase",
+      "evidence": "third argument 1; spec_dev_phase.py: 17,289 captured and 3,000 random records equal (2026-11-25)",
+      "source": "db/seeds/ports/competition.tsv"
+    },
+    {
+      "address": "0x141537d80",
+      "status": "reimplemented",
+      "fidelity": "exact",
+      "implementation": "src/game/ml/dev_phase.cpp dev_bucket",
+      "evidence": "same oracle run (2026-11-25)",
+      "source": "db/seeds/ports/competition.tsv"
+    },
+    {
       "address": "0x1414f6e20",
       "status": "reimplemented",
       "fidelity": "exact",
@@ -11230,6 +11398,16 @@
       "date": "2026-11-25",
       "title": "K7b squad meter; the setup's development-phase pass read (Track C)",
       "body": "Production (uncommitted, awaiting review): `ml/squad_meter`, `team::position_flag` (moved from `match_day`), pesdb `Player::home_club` (+0x00) and `phase_19`, `MlTables::club_icons`. `squad_meter` is now a constructed field.\n\n- **Where the meter comes from:**\n  - The remap's second loop: for each user-squad player in order, `MLSquadMeter_Insert` (0x140F068E0) with the value of `FUN_14156D0E0` (`MLSquadMeter_Value`, inlined in the loop).\n  - The value is 20 when the player's development phase is 0x12 or his +0x14C club is the user club. Otherwise it follows the age-curve class (`Player_AgeCurveClass` 0x141531AB0) and team importance x 100: class 0 gives 60, or 40 above 100; class 1 gives 50, or 30 above 100; class 2 gives 30. At most 100.\n  - The loan returns then change it. `MLTransfer_Player_Move` posts message 0x10C0015 (`FUN_140F16FA0`, through `FUN_1414A03E0`) for moves touching the user club.\n    - The leave handler `FUN_140F069E0` (any message type but 1; the move's is 2) clears the player's entry.\n    - The join handler `FUN_140EF3DC0` inserts one, with the same value function.\n  - The post's immediate-delivery flag is 0, so delivery is deferred: joiners are valued on the squad after all returns. **probable**. Valuing each joiner on the squad right after its own move gives the same values on probes 52, 58, 60 and 64.\n- **`Player_TeamImportance` (0x14156FDB0, third argument 0) read and ported:**\n  - Entries come from the formation slots the player can play: `TacticBlock_GetSlotPosition` (0x1414C61D0) kind 0, i.e. the tactic record at EditData +0xC4CA0C + (team +0x28C) x 600, bytes +0x40..+0x4A. These are the same bytes as `Team::pos`. The playable flag is `PlayerSearch_PositionIdxToField`.\n  - Each entry's value is 100 x (1 + the squad mates who can play the position with a higher rating at condition 2).\n  - The sort `FUN_141678F00` is MSVC `std::sort`; at most 11 entries means the stable insertion sort `FUN_141569E80`, keyed by position code.\n  - Repeated positions are merged in place (an entry marked 0xD is what the next one compares with). Then the minimum, the tie divide, the above-100 adjustment, and the cap: 3.0 when x 10 is above 29.\n  - Constants: 5.0 (0x14259222C) for an invalid ref or team, 3.0 (`Float_3`), 100, 1.0 (0x14256AE1C), 10.0 (0x142588210).\n  - Team record lookup: `EditData_GetTeamRecordByHandle` (0x1414BCA80, formerly `Competition_RegulationTable_FindByTeam`); tactic: `Team_GetTacticRef` (0x1408E1460, team +0x28C) and `EditData_GetTacticRecord` (0x1414BC780).\n- **Executable oracle** (`spec_team_importance.py`, probe 64 A): every squad player of all 555 clubs, 15,963 calls. Importance bit-exact 15,963/15,963, age-curve class 15,963/15,963, none stopped. The values cover ties (3,649 non-integer results), the above-100 adjustment and the 3.0 fallback (5,540). **confirmed**.\n- **Independent captures, every entry exact:**\n  - probe 64 C: 30 of 30 remap entries (10 joiners are not captured there).\n  - probe 52 (Arsenal, creation boundary): 31 of 31, including 4 joiners and the removal of 3 loanees who returned to their owners.\n  - probes 58 and 60 (BuildSeason entry): no difference (31 and 38 entries; club 139 has 8 joiners).\n  - No test expectation changed: `squad_meter` moved from dump-sourced to constructed and equals every reference.\n- **+0x14C (`home_club`):** `Pesdb_LoadPlayerRecord` (0x1414F8420) writes Player.bin u32 +0x00 << 14 (0 gives the invalid handle; above 0x3FFFF gives -1). 17,289 of 17,289 on probe 64 A. **confirmed** (read plus data). The loader also clamps a contract or loan end day to the month's length; this explains 2024-02-29 becoming 02-28. **confirmed**.\n- **The development phase at the remap (+0x150): the setup's phase pass `FUN_141329EF0` (`MLSetup_DevPhasePass`), called from `Competition_MLSetup_BuildRankings` before the remap (Master League only).**\n  - For every club team in record order and each squad player, `PlayerDev_ComputeRecord` (the phase byte kept), then `FUN_141327EC0` (`PlayerDev_AssignTeamPhase`) for that team:\n    - phase 0x13 (Player.bin dword +0x3C bit 18, set by the loader) is kept;\n    - otherwise 0x12 when `FUN_14151C000` (`Player_IsClubIcon`) holds the (team id, player id) pair. The static table `Player_ClubIconPairs` (0x1429809E0) has 99 pairs;\n    - otherwise `PlayerDev_NextPhase` (0x141539380) with its third argument 1. It cannot return 0x12: phase 0x12's `PlayerDev_Phases` flag +0x26 is 1;\n    - then phase 1 when the player's +0x14C club is the team.\n  - For the user club it also marks up to three special players, phases 0x14, 0x15 and 0x16. The 0x16 pick is `Random_Xorshift128_Below` on the generator before the remap's reseed, a state that is not captured.\n  - It also writes the progress byte +0x155, the +0x140 bucket and two tables (EditData +0x181C1B0 and +0x1798AB0), and runs a second loop for players without a club.\n  - Data: phase 0x12 holds exactly for the 50 (team0, player) pairs in the table on probe 64 A. The squad meter uses the derived rule (`ml::creation_icon_phases`).\n- **Not ported: the rest of the phase pass.** It covers the remaining `dev.phase`, `dev.bucket` and `dev.progress` stand-ins. It needs `PlayerDev_ComputeRecord`, `PlayerDev_NextPhase` with `PlayerDev_PhaseCandidates` (0x141537340) and its per-phase check (0x141538040), the specials (`FUN_14153E150`) and the side tables. The user-club 0x16 pick also needs the generator state at the pass, which would take a VM capture.\n- **`Player::home_club` (+0x14C) is a World field.** It is lasting player state with readers beyond creation: the phase pass's phase-1 rule, and the user club's join handler, which runs in-season too.\n  - Built from Player.bin by `build_players` and loaded from dumps by `load_ml_world`. One representation: the handle word.\n  - Equal for every player: 17,289 of 17,289 on probe 52 through the files and through the dump loader; probes 58 and 60 no difference; probe 64 A by the field scan.\n  - `ml::meter_value` reads it.\n- **C2 state baseline replaced, state only (user approval 2026-11-25):**\n  - Why: the new field is serialised as its own component, `player_home_club`.\n  - C2 metrics and log byte-identical.\n  - `src/tools/analysis/state_without_component.py` (the new state TSV, `player_home_club`, the old TSV) removes that component and recomputes each stage's `all` hash. Result: 280 of 280 rows identical to the previous baseline. The component's hash is the same at all 20 stages, because nothing in-season writes the field.\n  - The previous file is kept as `private-reference/remediation/state5_c2_pre_home_club.tsv`.\n- ctest 87 of 87; C2 metrics, state and log byte-identical; check_names 976/976."
+    },
+    {
+      "date": "2026-11-25",
+      "title": "K8 calendar: the creation date and the event table built from the exe; the setup's \"option\" is the user league's calendar type (Track C)",
+      "body": "Production (uncommitted, awaiting the programme review): `ml/calendar_fill`; `ml::user_calendar_type` and `august_start` in `ml/career_contracts` (`creation_contract_setup` moved there from the platform); `MlTables::calendar_events`. The calendar fields are now constructed fields.\n\n- **`EditData +0x1795D20` is not a user setup option.** `Competition_MLSetup_BuildRankings` (0x1412695B0) writes it as `Regulation_GetCalendarType` of the user club's league regulation, and as 1 when that type is 5 or the game kind is not 8 to 10. **confirmed** (read). The remap's \"late dates\" test (types 0 and 3) is therefore a rule of the user's league. The K7 `cs.setting = 0` shortcut is replaced.\n- **The same function sets the season and the creation date:**\n  - +0x1789470 (the season's first month) is 7 for types 0 and 3, else 1;\n  - `Calendar_IsAugustStart`(type) decides between two branches:\n    - August start: the season start +0x178946C is 2020-08-01, +0x1795D25 is set to 1, and the calendar day +0x1642A1C is the day index of 1 July (181), with the date at +0x1642A24;\n    - otherwise: 2020-01-01, and the day the setup finds (0).\n  - The year +0x1642A1E is 2020.\n- **`Calendar_IsAugustStart` (0x141577A60) is not read.** Its body jumps to 0x144B22560 in `.impdata`. The classifier calls it ordinary, but the code is mutated (mixed constants, a return through `xchg [rsp]`). Untangling it would be devirtualising protector-transformed code, which the hard rules exclude.\n  - Its answers come from the captures for the types they cover: types 0 and 3 August (many careers; probe 60, club 139), type 1 January (probe 52 run 3, Vasco). **probable**.\n  - Types 2 and 4 are unreachable on vanilla data (P2). The vanilla league regulations have types 0 (26), 1 (11), 3 (1) and 5 (1, stored as 1); no league-type regulation lies in a zone-2 area, and the zone table (0x14298B9B0) has no zone 4. For those types the constructor reports an issue rather than guessing.\n- **`Calendar_FillEventSlots` (0x1412E8480), read:** the 365 day rows from today's to the last, then from the first to today's, the date one day later per row. Each row's first 9 events of `Calendar_EventsForDate` go into free slots, unless the (type, date) is already there.\n  - At creation the table holds no events, so `Calendar_PruneDaySlots` (0x1412E6E00: clears a slot more than 365 days from today) and the season-window fix of the 0xFFE1 entries (FUN_141576670, the season test from +0x1789470) have nothing to act on.\n- **`Calendar_EventsForDate` (0x141575A90), read:**\n  - Its rows come from the static table at 0x14298A9E0 (FUN_141575D40: 200 rows of 20 bytes): month, day, type, flags +8 and +9, value (the slot parameter and sort key), region class (4 = all).\n  - It keeps a date's rows of class 4 or the user's class. That class is the zone (`Competition_Country_Zone`) of the area of the first league-type regulation holding the user club (FUN_141543350, area 0x1D when none), with 1 by default and, for zone 5, 1 unless the user league is regulation 99.\n  - It drops type 0x1E without own fake slots (+0x1789466), and types 0x15 and 0x16 in May and June of years with low byte & 3 == 1.\n  - It sorts by value (FUN_1415752C0, MSVC `std::sort`).\n  - The +0x1787B58 = 0x56 branch is not taken on vanilla data (the recorded ICC P2 row).\n- **Verified, every field exact:** probe 52 run 1 (Arsenal, August): date, day, year, events 366 of 366, `event_first` 57 of 57. Probe 52 run 3 (Vasco, January; new check in `construct_world_test`): the same, all equal. Probes 58 and 60: no calendar input difference. Probe 64: contracts and loans still exact on the built window dates. `career_budgets` (empty base World) now has a real calendar and still equals probe 52 for both careers. **confirmed**.\n- Remaining calendar inputs: `calendar.day_matches` (K6, BuildSeason); +0x1789466 (own fake slots, 1 in every capture, writer not read; the existing shortcut, now one constant for the team slots and the calendar)."
+    },
+    {
+      "date": "2026-11-25",
+      "title": "K8 development-phase rules ported; the phase pass in a Club Team Lineup career draws nothing; captains are assigned before the pass (Track C)",
+      "body": "- **`ml/dev_phase`** (production, uncommitted) is a typed port of three functions, over the full `PlayerDev_Phases` rows (`DevTables::phase_rows`):\n  - `PlayerDev_NextPhase` (third argument 1) with `PlayerDev_PhaseCandidates` (its order rules, and std::vector inserts by `FUN_141540480`);\n  - the per-phase check `PlayerDev_PhaseCheck` (0x141538040), with category scores `FUN_1414DB8C0`;\n  - the bucket rule `FUN_141537D80`.\n- **Executable oracle** (`spec_dev_phase.py`, probe 64 A): next phase and bucket equal on all 17,289 records as captured, and on 3,000 random records (phase 0..22, pair scores -100..100, progress 0..255). **confirmed**.\n- **Status: verified functions, not an integrated pass.** The constructor does not call `ml/dev_phase` yet. `dev.phase`, `dev.bucket` and `dev.progress` stay stand-ins until `MLSetup_DevPhasePass` itself is ported (it also needs `PlayerDev_ComputeRecord`'s progress byte, `PlayerDev_AssignTeamPhase`, the captains and loop 2).\n- **The user club's special phases (0x14, 0x15) and the random 0x16 pick in `MLSetup_DevPhasePass` run only when EditData +0x17893F4 is 0, i.e. in Original Lineup (K9).**\n  - Executable evidence (disassembly of the pinned exe): `cmp byte [rdx+0x17893F4], 0` at 0x14132A71E skips the 0x14/0x15 `PlayerDev_SetSpecialPhase` call (0x14132A77D) when set; `cmp byte [r13+0x17893F4], 0` at 0x14132A8B4 skips the whole 0x16 loop, whose `Random_Xorshift128_Below` call is 0x14132A8E4 and setter call 0x14132A935. These are the pass's only generator calls. **confirmed** (read).\n  - Every Club Team Lineup capture has +0x17893F4 = 1: probes 52 runs 1 and 3, 58, 60, 64. **confirmed**.\n  - So in the standard constructor the pass draws nothing, and its generator needs no VM capture. The 0x16 pick moves to K9 (probe 62).\n  - What runs for the user club in a Club Team Lineup career: among the squad's players with a phase of the highest category from {3, 5, 6} (phase not 0), the one with the lowest progress gets `PlayerDev_SetSpecialPhase(record, his phase, 1, 1, 1)` (arguments read from the call site 0x14132AB82), plus side tables (+0x16ECBCC, +0x1798AB0, +0x181C1B0) that have no World reader.\n- **`PlayerDev_ComputeRecord` with its third argument 1** (the pass's call) adds the progress byte +0x155 to the existing `team::dev_record` bytes. The inputs are the fame range of all players and of the team, field 0x30, the skill flag of `FUN_1414C0260`(0x26), and the age. Single-precision floats; constants 192.0 (0x1429863B0), 0.5, 6.0 (0x14259BDEC), 0.9 (0x14258C260). Read, not yet ported.\n- **New dependency: the pass adds 10 to the progress of each team's captain** (the tactic record +0x251 roster index; `Lineup_FinaliseA`).\n  - The captains at the pass are not the load-time ones: probes 54 (load) and 61 (`MLSetup_Run` entry) equal probe 64 A in only 79 of 659 captain bytes.\n  - Byte stores to +0x251 (operand scan): `Pesdb_LoadTeams`, `Team_Squad_RemovePlayer`, and FUN_1415745E0 / FUN_141574690. The last two are called by `ML_UserMatch_Prepare` (0x1415251E0), which `Competition_MLSetup_BuildRankings` runs before `SetFame` and the pass.\n  - That step (captains and set-piece roles for every team) is the next read, before the pass can be ported.\n- Gates with the calendar and phase-rule work: ctest 87 of 87, C2 metrics, state and log byte-identical, check_names 979/979."
     }
   ]
 }
