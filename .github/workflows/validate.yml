@@ -1,0 +1,17 @@
+name: Validate research dashboard
+
+on:
+  pull_request:
+  push:
+    branches: [design/leonida-research-dashboard]
+
+permissions:
+  contents: read
+
+jobs:
+  validate:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Validate dashboard
+        run: node scripts/validate.mjs
