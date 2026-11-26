@@ -5547,6 +5547,54 @@
       "source": "db/seeds/k7a1.tsv"
     },
     {
+      "address": "0x1412e2f50",
+      "name": "MLSetup_InitGrowthAndTraining",
+      "confidence": "probable",
+      "reviewed": "no",
+      "evidence": "BuildRankings step after MLSetup_NormalizeLoanEnds: FUN_1412DBE20 and FUN_1415347D0 per record, then MLUser_Player_InitTraining for the user squad, the user's loaned-out players and the state-3 records (read 2026-11-26; probes 65/65b: 18,842 advances, reproduced)",
+      "source": "db/seeds/k7a1.tsv"
+    },
+    {
+      "address": "0x1412dbe20",
+      "name": "Player_CreationGrowthWord",
+      "confidence": "probable",
+      "reviewed": "no",
+      "evidence": "the growth word +0x1676324 + 4 x index: potential from the age curve, rating and class bounds; growth and decline factors; one Below(100) age-adjustment pick (read 2026-11-26)",
+      "source": "db/seeds/k7a1.tsv"
+    },
+    {
+      "address": "0x1415347d0",
+      "name": "Player_InitWord186A4",
+      "confidence": "guess",
+      "reviewed": "no",
+      "evidence": "per record: the 8-byte word at +0x1676324 + 0x186A4 + 8 x index from FUN_141532710 (14 entries of 0x142981280); no draw (read 2026-11-26)",
+      "source": "db/seeds/k7a1.tsv"
+    },
+    {
+      "address": "0x141530880",
+      "name": "MLUser_TrainingTable_Allocate",
+      "confidence": "probable",
+      "reviewed": "no",
+      "evidence": "0 when the ref already has one of the 82 training entries (+0x1676324 + 0x493EC, 0x170 each); else takes a free entry, or evicts one (rules read, not ported) (2026-11-26)",
+      "source": "db/seeds/k7a1.tsv"
+    },
+    {
+      "address": "0x141531c50",
+      "name": "MLUser_TrainingAbilityList",
+      "confidence": "probable",
+      "reviewed": "no",
+      "evidence": "the 25 ids of MLSeason_DevAbilityOrder, then with its flag the 3 of 0x1429829E0 (read 2026-11-26)",
+      "source": "db/seeds/k7a1.tsv"
+    },
+    {
+      "address": "0x140eea000",
+      "name": "Player_ListByKind",
+      "confidence": "guess",
+      "reviewed": "no",
+      "evidence": "(kind, out list, 0xFFFF, team): kind 10 gives the records in state 3 in record order (probe 65b: 32 of 32) (2026-11-26)",
+      "source": "db/seeds/k7a1.tsv"
+    },
+    {
       "address": "0x140a48a10",
       "name": "Match_World_GetPlayerData",
       "confidence": "probable",
@@ -9037,6 +9085,70 @@
       "source": "db/seeds/data/findings1.tsv"
     },
     {
+      "address": "0x141269d02",
+      "field1": "site",
+      "field2": "Competition_MLSetup_BuildRankings@kind10_block",
+      "field3": "confirmed",
+      "evidence": "no",
+      "source": "db/seeds/data/findings1.tsv"
+    },
+    {
+      "address": "0x141269d12",
+      "field1": "site",
+      "field2": "Competition_MLSetup_BuildRankings@kind10_block_end",
+      "field3": "confirmed",
+      "evidence": "no",
+      "source": "db/seeds/data/findings1.tsv"
+    },
+    {
+      "address": "0x1425306f0",
+      "field1": "global",
+      "field2": "IAT_rand",
+      "field3": "confirmed",
+      "evidence": "no",
+      "source": "db/seeds/data/findings1.tsv"
+    },
+    {
+      "address": "0x1436fccc8",
+      "field1": "global",
+      "field2": "Component_LoanReturns_Handle",
+      "field3": "probable",
+      "evidence": "no",
+      "source": "db/seeds/data/findings1.tsv"
+    },
+    {
+      "address": "0x1436fcd48",
+      "field1": "global",
+      "field2": "Component_Agent_Handle",
+      "field3": "probable",
+      "evidence": "no",
+      "source": "db/seeds/data/findings1.tsv"
+    },
+    {
+      "address": "0x1428c3530",
+      "field1": "table",
+      "field2": "MLSetup_GrowthAgeAdjust",
+      "field3": "confirmed",
+      "evidence": "no",
+      "source": "db/seeds/data/findings1.tsv"
+    },
+    {
+      "address": "0x1428c3560",
+      "field1": "table",
+      "field2": "MLSetup_GrowthAdjustWeights",
+      "field3": "confirmed",
+      "evidence": "no",
+      "source": "db/seeds/data/findings1.tsv"
+    },
+    {
+      "address": "0x1428c34d0",
+      "field1": "table",
+      "field2": "MLSetup_GrowthPotentialBounds",
+      "field3": "confirmed",
+      "evidence": "no",
+      "source": "db/seeds/data/findings1.tsv"
+    },
+    {
       "address": "0x1434d66f0",
       "field1": "table",
       "field2": "Pesdb_FileNameTable_Entry18",
@@ -10767,6 +10879,22 @@
       "source": "db/seeds/ports/competition.tsv"
     },
     {
+      "address": "0x1412dbe20",
+      "status": "reimplemented",
+      "fidelity": "exact",
+      "implementation": "src/game/ml/career_growth.cpp creation_growth_word",
+      "evidence": "every record's word equal on probe 52 (17,289) and probe 65b (17,289) (2026-11-26)",
+      "source": "db/seeds/ports/competition.tsv"
+    },
+    {
+      "address": "0x1412e2f50",
+      "status": "reimplemented",
+      "fidelity": "behavioural",
+      "implementation": "src/game/ml/career_growth.cpp creation_growth, creation_training_draws",
+      "evidence": "the draws exact (generator equal to probes 65 and 65b at the step's return); the training table's values are not kept and its eviction is not ported (2026-11-26)",
+      "source": "db/seeds/ports/competition.tsv"
+    },
+    {
       "address": "0x1414f6e20",
       "status": "reimplemented",
       "fidelity": "exact",
@@ -11607,6 +11735,16 @@
       "date": "2026-11-26",
       "title": "the in-season phase reset on moves and departures (S1b item, user-approved correction) (Track C)",
       "body": "- `roster_remove(World&)` now applies `ml::phase_after_move` (`MLTransfer_PhaseAfterMove`, FINDINGS above) to the removed player after a successful removal. Its in-season callers are the six transfer-manager paths: departures (`season_switch` step 6, `TransferManager_OnPlayerLeaves`), the winter leave (`winter_switch`, the same handler), deals (`player_moves`, `TransferManager_ExecuteDeal_*`), loan returns (`return_loans_with`, `MLTransfer_Player_Move`), contract expiry (`run_day`, `TransferManager_OnContractExpired`) and the retirees' removal (`erase_everywhere`, standing for the retirement departure through `OnPlayerLeaves`; for players the departure step already removed it finds nothing and resets nothing). No other roster operation calls it.\n- **Player-level check** (`private-reference/remediation/verify_reset.sh`, one binary, reset off and on, phase and bucket left out of the dev hash): the state is identical at every stage, so the change is phase and bucket only. The transitions in five seasons: phase 1 -> 0 (2,010, from buckets 1, 2 and 3) and 0x12 -> 0xD (47), each with bucket 0. **confirmed**.\n- **Why metrics, log and the generator stay identical:** the host's only in-season readers of the phase are the daily sample's category draws (categories 3 and 5) and its step. Phases 1, 2 and 0 are categories 1, 2 and 0; 0xD is category 6. So no reset player draws differently, and no reset changes a step. `PlayerDev_NextPhase`'s in-season path, which would read the corrected phases, is not ported (S1b). Measured: metrics and log byte-identical, generator state equal at every stage.\n- Unit tests: `squad_test` case 9 (every phase and bucket; the World removal; a failed removal).\n- C2 baseline (state only, user-approved 2026-11-26): the `dev` component changes from the first stage. Previous file kept as `private-reference/remediation/state5_c2_pre_phase_reset.tsv`.\n- Still S1b: the daily sample's mark-0x12 branch, regen handling of the pair bytes and the mark, the in-season `PlayerDev_NextPhase` logic."
+    },
+    {
+      "date": "2026-11-26",
+      "title": "probes 65 and 65b: the setup's generator advances by step, from MLSetup_Run entry to BuildSeason entry (Track C, K8)",
+      "body": "Probes 65 and 65b (`private-reference/probe65/`, user approval 2026-11-26): new Club Team Lineup careers, Arsenal, vanilla data, default settings. One-shot hardware breakpoints at step boundaries taken from the disassembly (`calls65.py`), each logging the generator pointer (0x1437066A8) and its four words; no per-draw breakpoint. Probe 65's chain stopped after `FUN_14131D610` (the kind-10 block of `Competition_MLSetup_BuildRankings`, call sites 0x141269D02-0x141269D12, is not executed in Master League: four consecutive boundaries, more than its three-slot lookahead); probe 65b used only the steps' own boundaries and reached every one. Note: probe 64 was Chelsea (user club 102), not Arsenal; earlier text that grouped it with the Arsenal probes is corrected here.\n\n- **One generator instance throughout:** the pointer is the same at every boundary, and the state at `MLSetup_Run` entry is already the seeded state (word 0 the clock seed, words 1-3 Marsaglia's constants: 0x00144609 in probe 65, 0x0003CE68 in 65b). Nothing before the remap draws: the national squad pick, the ranking, `ML_UserMatch_Prepare`, SetFame and the development-phase pass advance it 0 times. **confirmed**.\n- **Advances by step** (stepping the logged states; equal in both probes):\n  - `MLSetup_RemapContracts`: 25,683;\n  - `FUN_1412E2F50` (the first step after `MLSetup_NormalizeLoanEnds`): 18,842;\n  - every other step of BuildRankings, the message plumbing, `MLTransfer_LoanReturns_Run`, `FUN_140F0A230` and `FUN_140F1DEB0`: 0;\n  - `FUN_140F31E50` (the last pass of `MLSetup_TransferSteps_Run`): 550;\n  - between `MLSetup_Run`'s return and `Competition_Season_BuildSeason` entry (outside the setup; BuildSeason runs on another thread): 6.\n  - From the remap's end to S0: 18,842 + 550 + 6 = 19,398, the count recovered for probe 58 (Arsenal). **confirmed**.\n- **Generator calls versus advances** (disassembly): `Random_Xorshift128_Below(n)` returns 0 without advancing when n is 0, and advances once otherwise; `_Next` and `_Float` advance once; with a null generator pointer all three fall back to the CRT `rand` (IAT 0x1425306F0) instead. The counts above are advances.\n- **`FUN_1412E2F50`** (read): for every player record `FUN_1412DBE20` (the creation growth word at EditData +0x1676324 + 4 x index: one `Below(100)` age-adjustment pick per record with a valid ref and class at most 7, growth and decline factors, the cap) and `FUN_1415347D0` (an 8-byte word per record at +0x1676324 + 0x186A4, no draw); then in Master League `MLUser_Player_InitTraining(ref, 1)` for the user club's squad, its players out on loan and the players of `FUN_140EEA000(10)`'s list (up to 28 `Below(10000)` per player into the 82-entry training table at +0x1676324 + 0x493EC). So the two stand-ins `player.growth` and `player.age_adj` are written here. **probable** (read; the counts are not yet reproduced).\n- Captured for the next steps: EditData at `MLSetup_Run` entry, at `MLSetup_TransferSteps_Run` entry and at BuildSeason entry; the runtime block and system data and a full-memory minidump (3.7 GB) at TransferSteps entry (`ts65b.dmp`). The component globals 0x1436FCCC8, 0x1436FCD48, 0x1436FCD58 hold handles whose +8 is the component's name (\"Transfer\", \"Agent\", \"UserClub\"), not the object."
+    },
+    {
+      "date": "2026-11-26",
+      "title": "K8 growth words and training draws in the constructor: the generator reproduced through FUN_1412E2F50 on two careers (Track C)",
+      "body": "Production: `ml/career_growth` (`creation_growth_word`, `creation_growth`, `creation_training_draws`), `MlTables::growth` (`GrowthTables`, from 0x1428C3530, 0x1428C3560, 0x1428C34D0), `ConstructedWorld::rng`. The constructor runs it after `normalize_loan_ends` and before the loan returns, as the game does.\n\n- **`Player_CreationGrowthWord`** (FUN_1412DBE20), every record with a valid ref in record order: target = the age-curve coefficient (`Player_AgeCurveHelper` with 0x6C: the registered position's row of 0x142981FA0, column age minus the word's age adjustment, 0 for every record at this point) + the registered-position rating at condition 2; the potential is the target bounded by the class row (below 27 or from 27); the growth factor 1.0, or for players under 24 whose target was bounded 2.0, or (bounded potential - rating) / (target - rating) within 0.5..2.0; the decline factor 0.7, or for players over 29 1.0 - 0.05 x (age - 30) within 0.5..0.7; one Below(100) picks the age adjustment from the class's weight row. Word: growth x 100 (bits 0-8), decline x 100 (9-16), potential (17-23), adjustment (24-27). **confirmed**: `player.growth` and `player.age_adj` equal probe 52 on all 17,289 records and probe 65b's TransferSteps-entry dump on all 17,289; the two stand-ins are replaced.\n- **The training draws**: the 82-entry training table at +0x1676324 + 0x493EC after the step holds, in allocation order, the user squad (30, roster order), the user's players out on loan (4, record order) and every state-3 record (32, record order; `Player_ListByKind`(10), guess). Each new entry takes one Below(10000) per ability of `MLUser_TrainingAbilityList` (28), the five goalkeeper abilities only with field 0xD: 59 x 23 + 7 x 28 = 1,553. **confirmed** (probe 65b table).\n- **Generator:** the constructor's generator after the step equals the state probes 65 and 65b logged at its return, for their seeds (0x00144609, 0x0003CE68), so the remap, the 17,289 growth picks and the 1,553 training draws are reproduced in order. **confirmed** (`construct_world_test`).\n- **Open constructor obligations** (not reconstructed): the training table itself (the drawn values, the 10000 / 5000 marks, the entries' other fields), which the World does not hold; the table's eviction rule for more than 82 players (the constructor reports the case); `Player_InitWord186A4`'s per-record word at +0x1676324 + 0x186A4 (no draw; not in the World). Matching the draws does not establish the training state.\n- Remaining before BuildSeason's S0: `FUN_140F31E50` (550 advances; it runs `PlayerSearch_BuildLayers`, the player search's sampling and filters) and 6 advances between `MLSetup_Run`'s return and BuildSeason entry."
     }
   ]
 }
