@@ -4139,6 +4139,102 @@
       "source": "db/seeds/competition1.tsv"
     },
     {
+      "address": "0x1412f2ea0",
+      "name": "MLCreation_PostSetupJob",
+      "confidence": "probable",
+      "reviewed": "no",
+      "evidence": "the job after Competition_MLSetup_Run returns, on its own job thread (probe 65c tid 0x2D70): in game kind 9 MLCreation_ResetUserClub, then MLCreation_PickCoaches, then UI and mode steps; its draws are the only ones between MLSetup_Run's return and BuildSeason entry (6 in probe 65c)",
+      "source": "db/seeds/creation_job1.tsv"
+    },
+    {
+      "address": "0x1412f2fe0",
+      "name": "MLCreation_ResetUserClub",
+      "confidence": "probable",
+      "reviewed": "no",
+      "evidence": "the user team's formation entries of the team kind EditData_FindTeamByKind finds, then in game kind 9 Finance_ResetClubWithBudgets (Finance_InitClub with the budget reset: one Below(21))",
+      "source": "db/seeds/creation_job1.tsv"
+    },
+    {
+      "address": "0x140fa9350",
+      "name": "MLCreation_PickCoaches",
+      "confidence": "probable",
+      "reviewed": "no",
+      "evidence": "the coach component's records (0x1436FB9F8 +0x2E8, 0x17C each) without the user's coach (EditData +0x17B54D4) and SpecialPlayerList 8; when at least 3 (4 without a user coach) remain: oldest first (MLCreation_SortCoachesByAge), the front for slots 2 and 5 of two runtime tables (each second-table pick needs a remaining count, one less after each), MLCreation_ShuffleCoaches, the front for slot 6; probe 65c: 5 Next for 6 coaches",
+      "source": "db/seeds/creation_job1.tsv"
+    },
+    {
+      "address": "0x140fa91a0",
+      "name": "MLCreation_SortCoachesByAge",
+      "confidence": "probable",
+      "reviewed": "no",
+      "evidence": "MSVC std::sort (insertion at 32 or fewer, ideal = count) of 0x17C records by Player_GetField 0x2D, larger first",
+      "source": "db/seeds/creation_job1.tsv"
+    },
+    {
+      "address": "0x140fa8350",
+      "name": "MLCreation_SortCoaches_Insertion",
+      "confidence": "probable",
+      "reviewed": "no",
+      "evidence": "MSVC _Insertion_sort of the coach records, older (field 0x2D) moved forward",
+      "source": "db/seeds/creation_job1.tsv"
+    },
+    {
+      "address": "0x140fa8ea0",
+      "name": "MLCreation_ShuffleCoaches",
+      "confidence": "probable",
+      "reviewed": "no",
+      "evidence": "std::shuffle of 0x17C records with Random_Xorshift128_Next as a 32-bit engine: one Next per element after the first, Random_ShuffleMsvc's rejection rule",
+      "source": "db/seeds/creation_job1.tsv"
+    },
+    {
+      "address": "0x14158b390",
+      "name": "MLRuntime_CoachTableA_Set",
+      "confidence": "probable",
+      "reviewed": "no",
+      "evidence": "(kind, record): the first entry of the 4-entry table at runtime block +0x39A8F8 holding kind (or the first free, kind 7) takes {kind, ref +0x2C, fields 0x2E and 0x2F}, when FUN_1414E1BF0(kind) holds; meaning not established",
+      "source": "db/seeds/creation_job1.tsv"
+    },
+    {
+      "address": "0x14158b460",
+      "name": "MLRuntime_CoachTableB_Set",
+      "confidence": "probable",
+      "reviewed": "no",
+      "evidence": "the same on the table at runtime block +0x39A978",
+      "source": "db/seeds/creation_job1.tsv"
+    },
+    {
+      "address": "0x140eabad0",
+      "name": "MLCoachComponent_Get",
+      "confidence": "probable",
+      "reviewed": "no",
+      "evidence": "the component singleton at 0x1436FB9F8 (800 bytes, constructor FUN_140EAA7A0), created on first use",
+      "source": "db/seeds/creation_job1.tsv"
+    },
+    {
+      "address": "0x140b49540",
+      "name": "MLCoachComponent_CopyRecord",
+      "confidence": "probable",
+      "reviewed": "no",
+      "evidence": "copy of record i (0x17C bytes) of the component's list +0x2E8",
+      "source": "db/seeds/creation_job1.tsv"
+    },
+    {
+      "address": "0x140b8abd0",
+      "name": "ClubRanking_RankOf",
+      "confidence": "probable",
+      "reviewed": "no",
+      "evidence": "(table, &handle): the entry's +4 rank, -1 when the club has none (disassembly)",
+      "source": "db/seeds/creation_job1.tsv"
+    },
+    {
+      "address": "0x141b376d0",
+      "name": "Job_ThreadEntry",
+      "confidence": "guess",
+      "reviewed": "no",
+      "evidence": "job-thread trampoline: runs a job object's virtual call and releases it; MLSetup_Run returns to 0x141B3779C inside it (probe 65b, 65c)",
+      "source": "db/seeds/creation_job1.tsv"
+    },
+    {
       "address": "0x1414bc860",
       "name": "Competition_RegulationTable_Find",
       "confidence": "probable",
@@ -9573,6 +9669,14 @@
       "source": "db/seeds/data/scout1.tsv"
     },
     {
+      "address": "0x1436fb9f8",
+      "field1": "global",
+      "field2": "MLCoachComponent_Instance",
+      "field3": "probable",
+      "evidence": "no",
+      "source": "db/seeds/data/scout1.tsv"
+    },
+    {
       "address": "0x1427fd430",
       "field1": "table",
       "field2": "PlayerSearch_Tries_L1",
@@ -11199,6 +11303,22 @@
       "source": "db/seeds/ports/scout.tsv"
     },
     {
+      "address": "0x140fa9350",
+      "status": "reimplemented",
+      "fidelity": "exact",
+      "implementation": "src/game/ml/creation_job.cpp run_creation_job",
+      "evidence": "the draws: the constructor's S0 equals the logged S0 on probes 58, 60 and 65b; the picks are not compared with a capture",
+      "source": "db/seeds/ports/scout.tsv"
+    },
+    {
+      "address": "0x1415698f0",
+      "status": "reimplemented",
+      "fidelity": "exact",
+      "implementation": "src/game/ml/creation_job.cpp run_creation_job (finance.h season_a, season_b, season_vary)",
+      "evidence": "season_a and season_b equal probe 65b's BuildSeason-entry dump; the rest of Finance_InitClub (budgets, items, the player entries) is not ported here",
+      "source": "db/seeds/ports/scout.tsv"
+    },
+    {
       "address": "0x1415720d0",
       "status": "reimplemented",
       "fidelity": "exact",
@@ -11942,6 +12062,11 @@
       "date": "2026-11-26",
       "title": "the setup's scouting pass FUN_140F31E50 reconstructed: listing bits, squad mixes and the player search's layer shuffles, exact on probe 65b (Track C)",
       "body": "Research: `src/tools/oracle/spec_transfersteps.py` runs `MLSetup_TransferSteps_Run` (0x140F68300) under emulation from probe 65b's full-memory minidump at its entry (`ts65b.dmp`, generic reader `minidump.py`, now with the handle stream). Production: `src/game/scout` (`club_plan`, `squad_mix`, `search_layers`), `ml::Team::mix_*`, `MlTables::search`, `ConstructedWorld::rng` (after the pass) and `rng_growth` (after FUN_1412E2F50).\n\n- **The emulation reproduces the game.** The run returns, and the generator at the end equals the state probe 65b logged after `FUN_140F31E50` (9767AA4C 52074700 5A877F54 8C19BA6E). Passes: `LoanReturns_Run` 0 draws, `FUN_140F0A230` 0, `FUN_140F1DEB0` 0, `FUN_140F31E50` 550, all `Random_Xorshift128_Next` from `Random_ShuffleMsvc` (return 0x140F621E5). **confirmed**.\n- **Substitutions in the oracle** (each in the script with its evidence; their only check is the run's end state, not instruction by instruction): (1) relocated 0x144A59F40 (stub 0x1414D7080, 40 instructions) and (2) relocated 0x144A980A0 (stub 0x1414E1E70, 33 instructions), two small table updates modelled from their disassembly; (3) `Enter/Leave/TryEnterCriticalSection` uncontended; (4) semaphores used as locks: `SemaphoreLock_CallLocked` (0x14149B460) waits through 0x1423D90E0 and releases through 0x141B38A10 = `ReleaseSemaphore(h, 1, NULL)`; a wait on any other handle type (from the dump's handle list) or on a held semaphore stops the run; (5) the game allocator replaced by a bump allocator with exact-size reuse; (6) the section tails, the setup thread's TEB and `qsort` from the dump. Missing memory stops the run. The emulation is about 11 M instructions/s once no memory hooks are installed (13 min for the whole step).\n- **`FUN_140F31E50`** = `FUN_140F32470`, `FUN_140F31EF0`, `FUN_140F31E80`. EditData changed by it (emulated before/after diff): Player +0x148 bits 17 and 18 only (set, never cleared: bit 17 on 4,368 players, bit 18 on 3,236, 4,492 players) and team +0x64C..+0x657 (555 teams). Write sites 0x140F325A4/B3/C7 and 0x140F321A9..0x140F323AF. **confirmed** (emulation).\n- **Listing bits** (`MLSetup_Scouting_MarkListedPlayers` 0x140F32470): for every club with a squad that the user does not control, the club plan (`ComAgent_ClubPlan_Build`: squad entries with formation slot, rating at code 0xD, registered position, age; starters per position; the lowest starter rating per position; the starters' average or the tier fallback) gives each player flags (`ComAgent_ClubPlan_SetFlags` and `_PlaceEntry`: 2 above average + 5; 4 starter; against the weakest starter at his registered position, or when the formation has none there the best grade over the positions he can play: 8 within 5, 0x10 5 to 10 under, 0x80 more; 0x20 / 0x40 under 20); flags & 0xD0 set bit 17, & 0x50 or 0x20 with 0x08 set bit 18. **confirmed**: every player's +0x148 equal to the emulated game's (`scout_test`), and the constructor, from the files, gives 17,289 of 17,289 (`construct_world_test`). The host's older `ml::club_plan_tiers` (renewal) approximates the bench branch with the squad average and uses tier 0 for an unranked club where the game uses the ranking table's first entry; left unchanged (it moves the renewal results; separate decision).\n- **Squad mix** (`MLSetup_Scouting_BuildSquadMix` 0x140F31EF0): team +0x64C the three most common player regions (+0x144; the largest id among equal counts; 0xFFFF none), +0x652 their shares, +0x655 the shares under 24, 24 to 29, 30 or over, in percent truncated. **confirmed**: 555 of 555 teams, emulated and constructed. New `team_mix` state component.\n- **Player-search layers** (`PlayerSearch_Layer_BuildClubList` 0x140F9AB20, from `MLSetup_Scouting_BuildSearch` 0x140F31E80): layers 0..3 in order, each the agent clubs (not the user's: game kind 9 with +0x41D == 0) whose club-ranking byte lies in the band of `PlayerSearch_LayerRows` (0x1427FA4B8: [8,9], [6,7], [3,5], [0,2]), in team-record order, shuffled at once. Probe 65b: 29, 70, 180, 275 clubs, 28 + 69 + 179 + 274 = 550 draws, no rejection. A club missing from the ranking gets entry 0's byte (`ClubRanking_Find` returns the table). The four batches (`FUN_140F9C0A0`) draw nothing and write no EditData. **confirmed**: both lists of every layer and the end generator (`scout_test`); the constructor's generator after the pass equals probe 65b's log for its seed (`construct_world_test`). The lists are the agent's heap state; whether a save keeps them, and the batches' effect on that state (cursors), are not established.\n- The club-ranking table at TransferSteps entry is the setup's rebuilt one (it differs from the ML-entry dump, equals the BuildSeason-entry dump); the constructor's ranking is the ported `Competition_Ranking_Build` on the files.\n- Remaining before BuildSeason's S0: the 6 advances between `MLSetup_Run`'s return and BuildSeason entry."
+    },
+    {
+      "date": "2026-11-26",
+      "title": "the six post-setup draws (probe 65c), the creation job ported, S0 and BuildSeason from the constructor on three careers (Track C)",
+      "body": "Capture: probe 65c (`private-reference/probe65c/`, user approval 2026-11-26), a new Arsenal career, default settings. From `Competition_MLSetup_Run`'s return (on its own thread) to `Competition_Season_BuildSeason` entry: a hardware write watch on the generator's last word (every advance writes it exactly once; the three generator functions are leaves with the advance inlined, disassembly) and a breakpoint on `Random_Xorshift128_Below` entry, with thread, rip, caller, bound and stack per hit. Production: `ml/creation_job` (`run_creation_job`), `platform::career_coach_pool`, `construct_world(…, coach)` with `ConstructedWorld::rng_s0`, `s0`, `creation_job`, `build`.\n\n- **The six advances** (6 writes, 1 Below call, no Below(0), the same generator pointer at both ends, the end state equal to S0): all on one job thread (tid 0x2D70, neither the setup thread nor BuildSeason's), in `MLCreation_PostSetupJob` (0x1412F2EA0): 1 x Below(21) in `Finance_InitClub` (via `MLCreation_ResetUserClub` 0x1412F2FE0 and `Finance_ResetClubWithBudgets`), then 5 x Next in `MLCreation_ShuffleCoaches` (0x140FA8EA0) from `MLCreation_PickCoaches` (0x140FA9350). **confirmed** (capture).\n- **Finance_InitClub's draw**: season_a (+0x16ECC20) = `season_vary(season_a(rank), Below(21))`, season_b (+0x16ECC24) = `season_b(fans, rank)` unvaried; the rank is `ClubRanking_RankOf` (entry +4). The host's `ml::season_a`, `season_b`, `season_vary` (finance.h) are the same rules and are reused. **confirmed**: both equal probe 65b's BuildSeason-entry dump (864,000 and 399,760) from the constructed squad.\n- **The coach pick**: the pool is the coach component's records (`MLCoachComponent_Instance` 0x1436FB9F8, +0x2E8): in probe 65b's minidump SpecialPlayerList 8 (`ML_COACH_LEGEND`, 11) then list 7 (`ML_COACH`, 10), each in id order, with their Player.bin ages (equal for all 21). The pick leaves out the user's coach (EditData +0x17B54D4, a creation setting: player 136021 in probes 52, 58, 60, 65b) and every list-8 coach, sorts the rest oldest first (MSVC std::sort, `competition::msvc_sort`), takes the front for slots 2 and 5 of two runtime tables (+0x39A8F8, +0x39A978; a second-table pick needs at least 3 remaining, 4 without a user coach, one less after each), shuffles the rest (one Next per element after the first, `shuffle_msvc`'s rule) and takes the front for slot 6. Here 10 kept, 4 taken, 6 shuffled: 5 Next. **probable** (read; the count and the S0 below confirm the draws, not the picks). The component's order is observed, its writer not read; the tables' meaning is not established (coach-related, guess); the picks are not compared with a capture.\n- **S0 from the constructor**, from the files, the seed word and the coach: equal to the logged BuildSeason-entry S0 on probe 65b (seed 0x0003CE68), probe 58 (Arsenal, 0x049DA7B3) and probe 60 (club 139, 0x0693FE32). **confirmed** (`construct_world_test`, `creation_constructed_test`).\n- **K6 in the constructor**: with S0, `construct_world` runs `ml::run_creation_build` on 366 empty day rows and no match records. Probes 58 and 60: the build equals the BuildSeason return dumps (match records 6,345 of 6,345 in every field, day rows 0 to 364, regulation words and lists) and the generator ends at S1; probe 52 (creation boundary, seed 0x0005820F): every match field 6,345 of 6,345, regulation fields and lists equal. **confirmed**. `match.*` and `calendar.day_matches` are now constructed (Derived) when the coach is given; without it the constructor stops at TransferSteps' end, as before, and says so.\n- **Determinism across careers** (the job runs on another thread): its draws come after MLSetup_Run's return and before BuildSeason entry, and S0 is reproduced on three careers of two clubs, so the order did not vary there (**probable**: observed, the scheduling itself is not read). Its count depends on the data (the kept coaches minus the four taken, minus one), not on timing."
     }
   ]
 }
