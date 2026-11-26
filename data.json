@@ -4235,6 +4235,38 @@
       "source": "db/seeds/creation_job1.tsv"
     },
     {
+      "address": "0x14133cce0",
+      "name": "Finance_ClearClubBlock",
+      "confidence": "confirmed",
+      "reviewed": "no",
+      "evidence": "clears the user-club finance block (rcx = EditData +0x16ECBF4, disassembly of Finance_ResetClubWithBudgets): budgets, snapshot, headroom, season figures, items, expense, destinations, the 300 competition records free (reg 0xFFFF), the date words invalid; ends with a call to 0x1447E3190 (not read); probes 52, 58, 60 equal after the job",
+      "source": "db/seeds/creation_job1.tsv"
+    },
+    {
+      "address": "0x141569810",
+      "name": "Finance_SetDefaultDestinations",
+      "confidence": "confirmed",
+      "reviewed": "no",
+      "evidence": "EditData +0x16F072C..+0x16F0740 = 1, 1, 1, 1, 0, 0 and +0x16F0744 = 1; tail call of Finance_ResetClubWithBudgets",
+      "source": "db/seeds/creation_job1.tsv"
+    },
+    {
+      "address": "0x141569260",
+      "name": "Finance_ClearPlayerEntries",
+      "confidence": "probable",
+      "reviewed": "no",
+      "evidence": "the 40 entries of 0x34 bytes at finance block +0x1C60 (EditData +0x16EE854): ref invalid, sums 0, date invalid, used byte 1",
+      "source": "db/seeds/creation_job1.tsv"
+    },
+    {
+      "address": "0x141568770",
+      "name": "Finance_SquadWageSum",
+      "confidence": "probable",
+      "reviewed": "no",
+      "evidence": "(team, from_record, &count): the wage sum of the records whose team slot (or loan owner, +0x14A bit 0) is the team; Finance_Player_WageValue or the record's +0x15C",
+      "source": "db/seeds/creation_job1.tsv"
+    },
+    {
       "address": "0x1414bc860",
       "name": "Competition_RegulationTable_Find",
       "confidence": "probable",
@@ -11315,7 +11347,15 @@
       "status": "reimplemented",
       "fidelity": "exact",
       "implementation": "src/game/ml/creation_job.cpp run_creation_job (finance.h season_a, season_b, season_vary)",
-      "evidence": "season_a and season_b equal probe 65b's BuildSeason-entry dump; the rest of Finance_InitClub (budgets, items, the player entries) is not ported here",
+      "evidence": "season_a and season_b equal probe 65b's BuildSeason-entry dump; its block writes (date, items, budgets through Finance_InitBudgets) in reset_club_finance and career_budgets_from_files; the player entries at +0x16EE854 are not modelled (no World field)",
+      "source": "db/seeds/ports/scout.tsv"
+    },
+    {
+      "address": "0x14133df70",
+      "status": "reimplemented",
+      "fidelity": "exact",
+      "implementation": "src/game/ml/creation_job.cpp reset_club_finance",
+      "evidence": "every finance field of the World equal to the BuildSeason-entry dumps of probes 58 and 60 and probe 52's creation boundary (creation_constructed_test, construct_world_test); the call at the end of FUN_14133CCE0 (0x1447E3190) is not read",
       "source": "db/seeds/ports/scout.tsv"
     },
     {
@@ -12067,6 +12107,11 @@
       "date": "2026-11-26",
       "title": "the six post-setup draws (probe 65c), the creation job ported, S0 and BuildSeason from the constructor on three careers (Track C)",
       "body": "Capture: probe 65c (`private-reference/probe65c/`, user approval 2026-11-26), a new Arsenal career, default settings. From `Competition_MLSetup_Run`'s return (on its own thread) to `Competition_Season_BuildSeason` entry: a hardware write watch on the generator's last word (every advance writes it exactly once; the three generator functions are leaves with the advance inlined, disassembly) and a breakpoint on `Random_Xorshift128_Below` entry, with thread, rip, caller, bound and stack per hit. Production: `ml/creation_job` (`run_creation_job`), `platform::career_coach_pool`, `construct_world(…, coach)` with `ConstructedWorld::rng_s0`, `s0`, `creation_job`, `build`.\n\n- **The six advances** (6 writes, 1 Below call, no Below(0), the same generator pointer at both ends, the end state equal to S0): all on one job thread (tid 0x2D70, neither the setup thread nor BuildSeason's), in `MLCreation_PostSetupJob` (0x1412F2EA0): 1 x Below(21) in `Finance_InitClub` (via `MLCreation_ResetUserClub` 0x1412F2FE0 and `Finance_ResetClubWithBudgets`), then 5 x Next in `MLCreation_ShuffleCoaches` (0x140FA8EA0) from `MLCreation_PickCoaches` (0x140FA9350). **confirmed** (capture).\n- **Finance_InitClub's draw**: season_a (+0x16ECC20) = `season_vary(season_a(rank), Below(21))`, season_b (+0x16ECC24) = `season_b(fans, rank)` unvaried; the rank is `ClubRanking_RankOf` (entry +4). The host's `ml::season_a`, `season_b`, `season_vary` (finance.h) are the same rules and are reused. **confirmed**: both equal probe 65b's BuildSeason-entry dump (864,000 and 399,760) from the constructed squad.\n- **The coach pick**: the pool is the coach component's records (`MLCoachComponent_Instance` 0x1436FB9F8, +0x2E8): in probe 65b's minidump SpecialPlayerList 8 (`ML_COACH_LEGEND`, 11) then list 7 (`ML_COACH`, 10), each in id order, with their Player.bin ages (equal for all 21). The pick leaves out the user's coach (EditData +0x17B54D4, a creation setting: player 136021 in probes 52, 58, 60, 65b) and every list-8 coach, sorts the rest oldest first (MSVC std::sort, `competition::msvc_sort`), takes the front for slots 2 and 5 of two runtime tables (+0x39A8F8, +0x39A978; a second-table pick needs at least 3 remaining, 4 without a user coach, one less after each), shuffles the rest (one Next per element after the first, `shuffle_msvc`'s rule) and takes the front for slot 6. Here 10 kept, 4 taken, 6 shuffled: 5 Next. **probable** (read; the count and the S0 below confirm the draws, not the picks). The component's order is observed, its writer not read; the tables' meaning is not established (coach-related, guess); the picks are not compared with a capture.\n- **S0 from the constructor**, from the files, the seed word and the coach: equal to the logged BuildSeason-entry S0 on probe 65b (seed 0x0003CE68), probe 58 (Arsenal, 0x049DA7B3) and probe 60 (club 139, 0x0693FE32). **confirmed** (`construct_world_test`, `creation_constructed_test`).\n- **K6 in the constructor**: with S0, `construct_world` runs `ml::run_creation_build` on 366 empty day rows and no match records. Probes 58 and 60: the build equals the BuildSeason return dumps (match records 6,345 of 6,345 in every field, day rows 0 to 364, regulation words and lists) and the generator ends at S1; probe 52 (creation boundary, seed 0x0005820F): every match field 6,345 of 6,345, regulation fields and lists equal. **confirmed**. `match.*` and `calendar.day_matches` are now constructed (Derived) when the coach is given; without it the constructor stops at TransferSteps' end, as before, and says so.\n- **Determinism across careers** (the job runs on another thread): its draws come after MLSetup_Run's return and before BuildSeason entry, and S0 is reproduced on three careers of two clubs, so the order did not vary there (**probable**: observed, the scheduling itself is not read). Its count depends on the data (the kept coaches minus the four taken, minus one), not on timing.\n- **The creation-time finance fields from the constructor** (2026-11-27): `finance.fans`, `finance.rank` (the user club's club-ranking entry: present, byte +0xE, position) and, with the coach, `finance.season_a` and `finance.season_b` (the job's figures) are now built. Equal to the dumps on probes 65b, 52, 58 and 60. The fan count at BuildSeason entry is `Club_FanCount` over the user squad **before the loan returns** (the first pass of MLSetup_TransferSteps_Run): on probe 60 (club 139) the squad at entry gives 116,392, the dump holds 116,218, and the earlier squad gives 116,218; on the Arsenal careers both squads give the same value. **probable** (three careers, one discriminating); its writer in the setup is not read (`Finance_UserClubSetup` 0x140EF9580 sets it, read earlier, but its call point in the setup is not established). Finance_InitClub's season_b reads it; season_b is equal under either squad on all four careers, so that read is not discriminated."
+    },
+    {
+      "date": "2026-11-27",
+      "title": "the creation job's finance block and the fan-count writer (Track C, K8)",
+      "body": "- **Fan-count writer** (resolves the timing of 2026-11-27 above): `Competition_MLSetup_BuildRankings` (0x1412695B0) writes EditData +0x1798B80 = `Club_FanCount(user club)` right after `FUN_1412E2F50` (the growth and training-draw step), so over the squad before TransferSteps' loan returns. **confirmed** (read; Club_FanCount's static callers are this, `ML_DayStep_Outer`, `Finance_SeasonValue`, `Finance_UserClubSetup` and FUN_14154DA50), agreeing with probe 65b's dumps: 0 at MLSetup_Run entry, 154,392 at TransferSteps entry with the mirror +0x16ECC28 still 0 (so not `Finance_UserClubSetup`, which mirrors), the mirror set at BuildSeason entry (Finance_InitClub). `Finance_UserClubSetup` is not reached in this window.\n- **season_b's fan input**: `Finance_SeasonValue` (0x141567D00) calls `Club_FanCount` itself, on the squad at the job (after the returns), not the stored count. The constructor now passes that count. Not discriminated on the four careers: both counts are under its 150,000 floor or equal.\n- **The job's finance block** (`Finance_ResetClubWithBudgets` 0x14133DF70, rcx = EditData +0x16ECBF4 by disassembly): `Finance_ClearClubBlock` (0x14133CCE0) clears budgets, snapshot, headroom, season figures, the six items and their destinations, the expense and its destination, and frees the 300 competition records; `Finance_InitClub` (reset flag 1) stores the season figures, today's date at +0x16F0724, the mirror, clears the 40 player entries (`Finance_ClearPlayerEntries` 0x141569260) and calls `Finance_InitBudgets`; `Finance_SetDefaultDestinations` (0x141569810) sets the destinations (1, 1, 1, 1, 0, 0) and the expense's (1). **confirmed**: ported as `ml::reset_club_finance`; with the coach the constructed World's finance group equals the BuildSeason-entry dumps of probes 58 and 60 and probe 52's creation boundary in all 19 fields. The probe 65b dumps place these writes after TransferSteps' end (the emulated end state has destinations 0).\n- **Finance field status** (19 fields of `compare_worlds`; the inventory's earlier \"18\" was a miscount): built from files or derived, 16: `loaded`, `transfer`, `wage`, `transfer_snapshot`, `headroom`, `fans`, `rank` (one field: present, byte +0xE, position), `items`, `dest`, `expense` (with its destination), `entries`, `season_a`, `season_b`, `season_date`, and the host-model fields `step` and `attendance` (nothing booked at creation; `attendance` is not game memory). Still from the base: `level` (a creation setting, like the coach: an input to declare, not a value to rebuild), `objectives`, `objective_flags` (written in the setup between MLSetup_Run entry and TransferSteps entry, writer not read). Without the coach the block stays dump-sourced, as before.\n- Not modelled: the 40 player entries at +0x16EE854 and the mirror +0x16ECC28 (no World field); the call at the end of `Finance_ClearClubBlock` (0x1447E3190, relocated region, not read)."
     }
   ]
 }
