@@ -1,5 +1,5 @@
 {
-  "updated": "2026-11-25",
+  "updated": "2026-11-26",
   "headline": {
     "sim_percent": [
       70,
@@ -207,7 +207,7 @@
       "behavioural": 38,
       "free": 1
     },
-    "findings_entries": 232
+    "findings_entries": 233
   },
   "match_metrics": {
     "unique_signatures": {
