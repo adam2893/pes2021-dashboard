@@ -6459,6 +6459,134 @@
       "source": "db/seeds/s1a1.tsv"
     },
     {
+      "address": "0x140f31e50",
+      "name": "MLSetup_TransferSteps_Scouting",
+      "confidence": "probable",
+      "reviewed": "no",
+      "evidence": "MLSetup_TransferSteps_Run's fourth pass: FUN_140F32470 (listing bits), FUN_140F31EF0 (squad mix), FUN_140F31E80 (player-search layers); all 550 of probe 65b's draws in it are the layer shuffles (emulation, generator equal to the probe's log)",
+      "source": "db/seeds/scout1.tsv"
+    },
+    {
+      "address": "0x140f32470",
+      "name": "MLSetup_Scouting_MarkListedPlayers",
+      "confidence": "probable",
+      "reviewed": "no",
+      "evidence": "for each team record: valid handle, +0x420 & 0x1C000000 == 0, id not 0x136B or 0x1409, +0x424 bits 16..22 != 0 and +0x41D != 0: ComAgent_ClubPlan_RebuildOnChange, then each plan entry's flags (+0x1C): & 0xD0 sets Player +0x148 bit 17, & 0x50 or (0x20 and 0x08) bit 18; emulation: 4,492 players changed, scout_test exact",
+      "source": "db/seeds/scout1.tsv"
+    },
+    {
+      "address": "0x140f31ef0",
+      "name": "MLSetup_Scouting_BuildSquadMix",
+      "confidence": "probable",
+      "reviewed": "no",
+      "evidence": "for each agent club with a squad: counts players by +0x144 (u16) and by age (field 0x2D under 24, under 30, over); writes the three most common regions (the largest id among equal counts; 0xFFFF none) to team +0x64C, their shares (count * 100 / n) to +0x652, the age shares to +0x655; no draw; emulation 555 teams, scout_test exact",
+      "source": "db/seeds/scout1.tsv"
+    },
+    {
+      "address": "0x140f31e80",
+      "name": "MLSetup_Scouting_BuildSearch",
+      "confidence": "probable",
+      "reviewed": "no",
+      "evidence": "PlayerSearch_BuildLayers(agent + 0x268), FUN_140EDF970 (each process's vtable slot 1), FUN_140F9C0A0 for the four layers of agent + 0x230 (stride 0x30), FUN_140EDF760 (slot 3); the batches draw nothing and write no EditData (emulation)",
+      "source": "db/seeds/scout1.tsv"
+    },
+    {
+      "address": "0x140f9ab20",
+      "name": "PlayerSearch_Layer_BuildClubList",
+      "confidence": "probable",
+      "reviewed": "no",
+      "evidence": "a layer's club list: each team record with a valid handle, +0x420 & 0x1C000000 == 0, id not 0x136B or 0x1409, and in game kind 9 +0x41D != 0, whose club-ranking byte (+0xE via FUN_140DE2310) lies in PlayerSearch_LayerRows[layer] bytes 0..1; then Random_ShuffleMsvc and cursor +0x20 = 0; probe 65b: 29, 70, 180, 275 clubs, all four lists and shuffles exact",
+      "source": "db/seeds/scout1.tsv"
+    },
+    {
+      "address": "0x140de2310",
+      "name": "ClubRanking_Find",
+      "confidence": "probable",
+      "reviewed": "no",
+      "evidence": "(table, &handle): the 16-byte entry holding the handle among count (+0x2EE0); not found returns the table itself (entry 0) (disassembly read)",
+      "source": "db/seeds/scout1.tsv"
+    },
+    {
+      "address": "0x140f5dc00",
+      "name": "ComAgent_ClubPlan_Build",
+      "confidence": "probable",
+      "reviewed": "no",
+      "evidence": "reset (FUN_140F5D960), BuildSquad; when the squad is not empty: tier = club-ranking byte (+4), CountFormationPositions, FUN_140F5E120 (starters list), BuildRatings, FUN_140F5DF70 (flags) (read 2026-11-26; scout_test exact)",
+      "source": "db/seeds/scout1.tsv"
+    },
+    {
+      "address": "0x140f5d960",
+      "name": "ComAgent_ClubPlan_Reset",
+      "confidence": "probable",
+      "reviewed": "no",
+      "evidence": "clears the plan's vectors, starters per position (+0x188) to 0, lowest ratings (+0x195) to 0x6D, the average (+0x1A2) to 0",
+      "source": "db/seeds/scout1.tsv"
+    },
+    {
+      "address": "0x140f5e120",
+      "name": "ComAgent_ClubPlan_CollectStarters",
+      "confidence": "probable",
+      "reviewed": "no",
+      "evidence": "plan +0x20 = the entries with a formation slot under 11; in game kind 9, for the team EditData_FindTeamByKind returns, from Team_AutoSelectLineup instead (not taken by the setup's callers: scout_test exact without it)",
+      "source": "db/seeds/scout1.tsv"
+    },
+    {
+      "address": "0x140f5df70",
+      "name": "ComAgent_ClubPlan_SetFlags",
+      "confidence": "probable",
+      "reviewed": "no",
+      "evidence": "per entry: 2 when rating >= average + 5; FUN_140F5D030; under 20: 0x40 (rating <= 0x40) else 0x20; a flags word over 0x80 loses 0x80",
+      "source": "db/seeds/scout1.tsv"
+    },
+    {
+      "address": "0x140f5d030",
+      "name": "ComAgent_ClubPlan_PlaceEntry",
+      "confidence": "probable",
+      "reviewed": "no",
+      "evidence": "a starter gets 4; else at his registered position when the formation has a starter there: against that position's lowest starter rating: more than 10 under 0x80, 5 to 10 under 0x10, otherwise 8; else the best (lowest) such grade over the positions he can play that have a starter (4 when not under, 4 becomes 8)",
+      "source": "db/seeds/scout1.tsv"
+    },
+    {
+      "address": "0x14149b460",
+      "name": "SemaphoreLock_CallLocked",
+      "confidence": "guess",
+      "reviewed": "no",
+      "evidence": "waits on the semaphore wrapper at obj+0x58 (0x1423D90E0), calls FUN_14149FC50(obj+0x48, arg), releases (0x141B38A10)",
+      "source": "db/seeds/scout1.tsv"
+    },
+    {
+      "address": "0x1423d90e0",
+      "name": "SemaphoreLock_Acquire",
+      "confidence": "probable",
+      "reviewed": "no",
+      "evidence": "WaitForSingleObject([obj], INFINITE), again while WAIT_TIMEOUT (0x102); 0x18000003 when no handle (disassembly)",
+      "source": "db/seeds/scout1.tsv"
+    },
+    {
+      "address": "0x141b38a10",
+      "name": "SemaphoreLock_Release",
+      "confidence": "probable",
+      "reviewed": "no",
+      "evidence": "ReleaseSemaphore([obj], count, NULL) when count != 0 (disassembly)",
+      "source": "db/seeds/scout1.tsv"
+    },
+    {
+      "address": "0x1414d7080",
+      "name": "SquadValueTable_KeepMin",
+      "confidence": "probable",
+      "reviewed": "no",
+      "evidence": "stub of relocated 0x144A59F40 (40 instructions): (table, &ref, value) over 40 entries of {ref, i32} at table + 0x14: the entry holding the ref keeps the smaller value, else the first empty entry takes both (read; modelled in spec_transfersteps.py)",
+      "source": "db/seeds/scout1.tsv"
+    },
+    {
+      "address": "0x1414e1e70",
+      "name": "SquadValueTable_InsertFree",
+      "confidence": "probable",
+      "reviewed": "no",
+      "evidence": "stub of relocated 0x144A980A0 (33 instructions): (table, &ref, value) over 20 entries of {ref, i32}: the first entry with an empty ref and value 0 takes both (read; modelled in spec_transfersteps.py)",
+      "source": "db/seeds/scout1.tsv"
+    },
+    {
       "address": "0x1413b7b50",
       "name": "Competition_SlotPick_PickRows",
       "confidence": "probable",
@@ -9413,6 +9541,38 @@
       "source": "db/seeds/data/regtable1.tsv"
     },
     {
+      "address": "0x1427fa4b8",
+      "field1": "table",
+      "field2": "PlayerSearch_LayerRows",
+      "field3": "probable",
+      "evidence": "no",
+      "source": "db/seeds/data/scout1.tsv"
+    },
+    {
+      "address": "0x140f325a4",
+      "field1": "site",
+      "field2": "MLSetup_Scouting_MarkListedPlayers@set_bit17",
+      "field3": "confirmed",
+      "evidence": "no",
+      "source": "db/seeds/data/scout1.tsv"
+    },
+    {
+      "address": "0x140f321a9",
+      "field1": "site",
+      "field2": "MLSetup_Scouting_BuildSquadMix@region",
+      "field3": "confirmed",
+      "evidence": "no",
+      "source": "db/seeds/data/scout1.tsv"
+    },
+    {
+      "address": "0x140f323af",
+      "field1": "site",
+      "field2": "MLSetup_Scouting_BuildSquadMix@age_share",
+      "field3": "confirmed",
+      "evidence": "no",
+      "source": "db/seeds/data/scout1.tsv"
+    },
+    {
       "address": "0x1427fd430",
       "field1": "table",
       "field2": "PlayerSearch_Tries_L1",
@@ -11007,6 +11167,38 @@
       "source": "db/seeds/ports/referee.tsv"
     },
     {
+      "address": "0x140f32470",
+      "status": "reimplemented",
+      "fidelity": "exact",
+      "implementation": "src/game/scout/club_plan.cpp mark_listed_players",
+      "evidence": "probe 65b emulated: 4,492 of 4,492 changed players, every +0x148 equal (scout_test); constructed from the files: 17,289 of 17,289 (construct_world_test)",
+      "source": "db/seeds/ports/scout.tsv"
+    },
+    {
+      "address": "0x140f5dc00",
+      "status": "reimplemented",
+      "fidelity": "exact",
+      "implementation": "src/game/scout/club_plan.cpp build_club_plan",
+      "evidence": "through the listing bits of every CPU club (scout_test); the kind-9 special team's lineup path is not ported",
+      "source": "db/seeds/ports/scout.tsv"
+    },
+    {
+      "address": "0x140f31ef0",
+      "status": "reimplemented",
+      "fidelity": "exact",
+      "implementation": "src/game/scout/squad_mix.cpp build_squad_mixes",
+      "evidence": "555 of 555 teams (scout_test, construct_world_test)",
+      "source": "db/seeds/ports/scout.tsv"
+    },
+    {
+      "address": "0x140f9ab20",
+      "status": "reimplemented",
+      "fidelity": "exact",
+      "implementation": "src/game/scout/search_layers.cpp build_search_layers",
+      "evidence": "the four lists before and after the shuffle and the generator after them equal probe 65b (scout_test, construct_world_test)",
+      "source": "db/seeds/ports/scout.tsv"
+    },
+    {
       "address": "0x1415720d0",
       "status": "reimplemented",
       "fidelity": "exact",
@@ -11745,6 +11937,11 @@
       "date": "2026-11-26",
       "title": "K8 growth words and training draws in the constructor: the generator reproduced through FUN_1412E2F50 on two careers (Track C)",
       "body": "Production: `ml/career_growth` (`creation_growth_word`, `creation_growth`, `creation_training_draws`), `MlTables::growth` (`GrowthTables`, from 0x1428C3530, 0x1428C3560, 0x1428C34D0), `ConstructedWorld::rng`. The constructor runs it after `normalize_loan_ends` and before the loan returns, as the game does.\n\n- **`Player_CreationGrowthWord`** (FUN_1412DBE20), every record with a valid ref in record order: target = the age-curve coefficient (`Player_AgeCurveHelper` with 0x6C: the registered position's row of 0x142981FA0, column age minus the word's age adjustment, 0 for every record at this point) + the registered-position rating at condition 2; the potential is the target bounded by the class row (below 27 or from 27); the growth factor 1.0, or for players under 24 whose target was bounded 2.0, or (bounded potential - rating) / (target - rating) within 0.5..2.0; the decline factor 0.7, or for players over 29 1.0 - 0.05 x (age - 30) within 0.5..0.7; one Below(100) picks the age adjustment from the class's weight row. Word: growth x 100 (bits 0-8), decline x 100 (9-16), potential (17-23), adjustment (24-27). **confirmed**: `player.growth` and `player.age_adj` equal probe 52 on all 17,289 records and probe 65b's TransferSteps-entry dump on all 17,289; the two stand-ins are replaced.\n- **The training draws**: the 82-entry training table at +0x1676324 + 0x493EC after the step holds, in allocation order, the user squad (30, roster order), the user's players out on loan (4, record order) and every state-3 record (32, record order; `Player_ListByKind`(10), guess). Each new entry takes one Below(10000) per ability of `MLUser_TrainingAbilityList` (28), the five goalkeeper abilities only with field 0xD: 59 x 23 + 7 x 28 = 1,553. **confirmed** (probe 65b table).\n- **Generator:** the constructor's generator after the step equals the state probes 65 and 65b logged at its return, for their seeds (0x00144609, 0x0003CE68), so the remap, the 17,289 growth picks and the 1,553 training draws are reproduced in order. **confirmed** (`construct_world_test`).\n- **Open constructor obligations** (not reconstructed): the training table itself (the drawn values, the 10000 / 5000 marks, the entries' other fields), which the World does not hold; the table's eviction rule for more than 82 players (the constructor reports the case); `Player_InitWord186A4`'s per-record word at +0x1676324 + 0x186A4 (no draw; not in the World). Matching the draws does not establish the training state.\n- Remaining before BuildSeason's S0: `FUN_140F31E50` (550 advances; it runs `PlayerSearch_BuildLayers`, the player search's sampling and filters) and 6 advances between `MLSetup_Run`'s return and BuildSeason entry."
+    },
+    {
+      "date": "2026-11-26",
+      "title": "the setup's scouting pass FUN_140F31E50 reconstructed: listing bits, squad mixes and the player search's layer shuffles, exact on probe 65b (Track C)",
+      "body": "Research: `src/tools/oracle/spec_transfersteps.py` runs `MLSetup_TransferSteps_Run` (0x140F68300) under emulation from probe 65b's full-memory minidump at its entry (`ts65b.dmp`, generic reader `minidump.py`, now with the handle stream). Production: `src/game/scout` (`club_plan`, `squad_mix`, `search_layers`), `ml::Team::mix_*`, `MlTables::search`, `ConstructedWorld::rng` (after the pass) and `rng_growth` (after FUN_1412E2F50).\n\n- **The emulation reproduces the game.** The run returns, and the generator at the end equals the state probe 65b logged after `FUN_140F31E50` (9767AA4C 52074700 5A877F54 8C19BA6E). Passes: `LoanReturns_Run` 0 draws, `FUN_140F0A230` 0, `FUN_140F1DEB0` 0, `FUN_140F31E50` 550, all `Random_Xorshift128_Next` from `Random_ShuffleMsvc` (return 0x140F621E5). **confirmed**.\n- **Substitutions in the oracle** (each in the script with its evidence; their only check is the run's end state, not instruction by instruction): (1) relocated 0x144A59F40 (stub 0x1414D7080, 40 instructions) and (2) relocated 0x144A980A0 (stub 0x1414E1E70, 33 instructions), two small table updates modelled from their disassembly; (3) `Enter/Leave/TryEnterCriticalSection` uncontended; (4) semaphores used as locks: `SemaphoreLock_CallLocked` (0x14149B460) waits through 0x1423D90E0 and releases through 0x141B38A10 = `ReleaseSemaphore(h, 1, NULL)`; a wait on any other handle type (from the dump's handle list) or on a held semaphore stops the run; (5) the game allocator replaced by a bump allocator with exact-size reuse; (6) the section tails, the setup thread's TEB and `qsort` from the dump. Missing memory stops the run. The emulation is about 11 M instructions/s once no memory hooks are installed (13 min for the whole step).\n- **`FUN_140F31E50`** = `FUN_140F32470`, `FUN_140F31EF0`, `FUN_140F31E80`. EditData changed by it (emulated before/after diff): Player +0x148 bits 17 and 18 only (set, never cleared: bit 17 on 4,368 players, bit 18 on 3,236, 4,492 players) and team +0x64C..+0x657 (555 teams). Write sites 0x140F325A4/B3/C7 and 0x140F321A9..0x140F323AF. **confirmed** (emulation).\n- **Listing bits** (`MLSetup_Scouting_MarkListedPlayers` 0x140F32470): for every club with a squad that the user does not control, the club plan (`ComAgent_ClubPlan_Build`: squad entries with formation slot, rating at code 0xD, registered position, age; starters per position; the lowest starter rating per position; the starters' average or the tier fallback) gives each player flags (`ComAgent_ClubPlan_SetFlags` and `_PlaceEntry`: 2 above average + 5; 4 starter; against the weakest starter at his registered position, or when the formation has none there the best grade over the positions he can play: 8 within 5, 0x10 5 to 10 under, 0x80 more; 0x20 / 0x40 under 20); flags & 0xD0 set bit 17, & 0x50 or 0x20 with 0x08 set bit 18. **confirmed**: every player's +0x148 equal to the emulated game's (`scout_test`), and the constructor, from the files, gives 17,289 of 17,289 (`construct_world_test`). The host's older `ml::club_plan_tiers` (renewal) approximates the bench branch with the squad average and uses tier 0 for an unranked club where the game uses the ranking table's first entry; left unchanged (it moves the renewal results; separate decision).\n- **Squad mix** (`MLSetup_Scouting_BuildSquadMix` 0x140F31EF0): team +0x64C the three most common player regions (+0x144; the largest id among equal counts; 0xFFFF none), +0x652 their shares, +0x655 the shares under 24, 24 to 29, 30 or over, in percent truncated. **confirmed**: 555 of 555 teams, emulated and constructed. New `team_mix` state component.\n- **Player-search layers** (`PlayerSearch_Layer_BuildClubList` 0x140F9AB20, from `MLSetup_Scouting_BuildSearch` 0x140F31E80): layers 0..3 in order, each the agent clubs (not the user's: game kind 9 with +0x41D == 0) whose club-ranking byte lies in the band of `PlayerSearch_LayerRows` (0x1427FA4B8: [8,9], [6,7], [3,5], [0,2]), in team-record order, shuffled at once. Probe 65b: 29, 70, 180, 275 clubs, 28 + 69 + 179 + 274 = 550 draws, no rejection. A club missing from the ranking gets entry 0's byte (`ClubRanking_Find` returns the table). The four batches (`FUN_140F9C0A0`) draw nothing and write no EditData. **confirmed**: both lists of every layer and the end generator (`scout_test`); the constructor's generator after the pass equals probe 65b's log for its seed (`construct_world_test`). The lists are the agent's heap state; whether a save keeps them, and the batches' effect on that state (cursors), are not established.\n- The club-ranking table at TransferSteps entry is the setup's rebuilt one (it differs from the ML-entry dump, equals the BuildSeason-entry dump); the constructor's ranking is the ported `Competition_Ranking_Build` on the files.\n- Remaining before BuildSeason's S0: the 6 advances between `MLSetup_Run`'s return and BuildSeason entry."
     }
   ]
 }
