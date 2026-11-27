@@ -389,9 +389,9 @@
     {
       "address": "0x141264f70",
       "name": "Competition_MLSetup_CollectSpecialClubs",
-      "confidence": "guess",
+      "confidence": "confirmed",
       "reviewed": "no",
-      "evidence": "walks the edit+0xD0BD04 list 0x48 and files clubs 0x8C, 0x588, 0x9A5, 0xA88 into setup+0xC8/0x110/0xE0/0xF8",
+      "evidence": "the clubs of entry list 0x48 that are 0x8C, 0x588, 0x9A5 or 0xA88 fill setup +0xC8, +0x110, +0xE0, +0xF8 (FUN_14151F4D0 with the team record); others are skipped (read 2026-11-27)",
       "source": "db/seeds/competition1.tsv"
     },
     {
@@ -4077,9 +4077,9 @@
     {
       "address": "0x1412659c0",
       "name": "Competition_MLSetup_BuildExtraTeamList",
-      "confidence": "probable",
+      "confidence": "confirmed",
       "reviewed": "no",
-      "evidence": "fills setup +0x80 with the teams of the entry-table keys at 0x1428BFAB0 (setup +0x7C == 0x12) or 0x1428BFAE0 (+0x7C 0x13/0x14, user team skipped), plus keys 0x10/0x11 when EditData +0x1789466 is 0; duplicate team ids resolved through 0x1414BDA30 and the pair table 0x1428BFB30 (decompile read 2026-11-21)",
+      "evidence": "setup +0x80: +0x7C 0x12: the 11 keys of 0x1428BFAB0; 0x13/0x14 (Master League): the 16 keys of 0x1428BFAE0 skipping the EditData +0x1789468 id (0x3FFFF in Club Team Lineup); base-id dedupe (Team_IdFromHandle); +0x1789466 0 adds keys 0x10, 0x11; then the variant-rank dedupe (0x1428BFB30); ported ml::extra_team_list (read 2026-11-27)",
       "source": "db/seeds/competition1.tsv"
     },
     {
@@ -5751,7 +5751,7 @@
       "name": "MLUser_TrainingTable_Allocate",
       "confidence": "probable",
       "reviewed": "no",
-      "evidence": "0 when the ref already has one of the 82 training entries (+0x1676324 + 0x493EC, 0x170 each); else takes a free entry, or evicts one (rules read, not ported) (2026-11-26)",
+      "evidence": "0 when the ref already has one of the 82 entries (+0x1676324 + 0x493EC, 0x170 each); else the first free entry; else frees the first entry, in slot order, of a player outside the user team (team slot 0, +0x1798AB0) neither in state 3 nor loaned, else of a loaned player whose loan owner +0x160 is the user team, else of a loaned player at the user team, and returns 1; none: 0 (read 2026-11-27; ported in creation_training_draws, not exercised by a capture)",
       "source": "db/seeds/k7a1.tsv"
     },
     {
@@ -7480,7 +7480,7 @@
       "address": "0x1428bfb30",
       "field1": "table",
       "field2": "MLSetup_TeamVariantRank",
-      "field3": "probable",
+      "field3": "confirmed",
       "evidence": "no",
       "source": "db/seeds/data/competition1.tsv"
     },
@@ -12305,6 +12305,11 @@
       "date": "2026-11-27",
       "title": "the last stand-ins: morale, f14a/f148, dev.user_club (Track C, K8)",
       "body": "- **Morale**: 0 on every record at `Competition_MLSetup_Run` entry, set in the setup by `MLSetup_InitMorale` (0x141321E30), the step of `Competition_MLSetup_BuildRankings` after SetFame and the phase pass, before the remap (found by the bitfield masks 0x01FC0000 / 0xFE03FFFF). Per valid record: 80 in development phase 0x12, else 60 when the team slot 0 club is the home club (+0x14C, by id), else 55 when +0x14A bit 0 is clear, else 40. **confirmed**: ported as `ml::creation_morale`, 17,289 of 17,289 on probes 58 and 60 (BuildSeason entry) and 52 (creation boundary). The old placeholder (55 for all) is gone. `ML_Morale_AddToTeamPlayers` (0x141320F70) is the day loop's delta (not part of creation).\n- **f14a / f148**: the +0x14A byte has three sources at creation: bit 3 from the file (`Pesdb_LoadPlayerRecord` copies Player.bin dword +0x3C bit 28 to +0x148 bit 19, the youth intake's exclusion bit; 2,248 records at Run entry), bit 0 the loan flag (+0x148 bit 16, the complement of `post_draw`), bits 1 and 2 the listing bits (`scout::mark_listed_players`). The constructor set only the last; the loan steps now set all three views through `ml::set_loan_flag`, and `PlayerFile::youth_excluded` carries the file bit. **confirmed**: 17,289 of 17,289 on probes 52, 58 and 60. The fourth byte of +0x148 is 0 on every record.\n- **dev.user_club**: the loader's view (players of the first user team's roster); the constructor never set it. Now derived from the final user roster: 17,289 of 17,289.\n- **Result**: the standard constructor has no stand-in and no dump-sourced field. Without the coach (stopping at BuildSeason entry) every constructed field equals the BuildSeason-entry dumps of probes 58 and 60; with it, the built match, day and finance groups equal probes 52, 58 and 60 (earlier entries). The dump-free run equals the base-built World in all 106 fields."
+    },
+    {
+      "date": "2026-11-27",
+      "title": "the constructor's fixed assumptions (Track C, K3/K8)",
+      "body": "- **Creation settings** (`platform::CareerSettings`): the coach (+0x17B54D4), the budget level (+0x1789487) and +0x1789466 (\"own fake slots\") are inputs. +0x1789466: all 12 sites in the exe only read it (CMP; the team slots, `Competition_ML_SkipRegulation`, the extra-team list, `Calendar_EventsForDate` and others); no ported code writes it, it is 1 in every capture, the menu meaning is not established. The constructor passes it to the team build, the calendar fill and now the population.\n- **Formation +0x257**: 0 on every team at `Competition_MLSetup_Run` entry and through creation in probes 52, 57, 58 and 60; the team loader (FUN_1414F5120) does not write it. So the creation value is the zeroed record's (observed, **probable**); the \"shortcut\" note is replaced. Later changes (user lineup settings) are not modelled.\n- **The extra-team list** (`Competition_MLSetup_BuildExtraTeamList` 0x1412659C0) now follows the Master League branch (setup +0x7C 0x13): the 16 keys of 0x1428BFAE0 (11 club keys, the nation keys 0-4), the +0x1789468 skip (0x3FFFF, none, in Club Team Lineup: an Original Lineup value, K9), base-id dedupe, keys 0x10/0x11 when +0x1789466 is 0, then the variant-rank pass (0x1428BFB30), which finds no rival after the listing's own base-id dedupe. Ported as `ml::extra_team_list` (unit test); the population is unchanged (17,289 of 17,289): the nation keys add no player, their rosters being club players already held. **confirmed** (read).\n- **Special clubs** (`Competition_MLSetup_CollectSpecialClubs` 0x141264F70): a club fills its slot only when entry list 0x48 holds it (0x8C, 0x9A5, 0xA88 for the three slots 0x141267790 reads; 0x588 fills +0x110). The constructor tests the list instead of writing the three ids. Unchanged on vanilla data. **confirmed** (read).\n- **Training-table eviction** (`MLUser_TrainingTable_Allocate` 0x141530880): with the 82 entries taken, the first entry in slot order of a player outside the user team neither in state 3 nor loaned is freed, else of a loaned player owned by the user team, else of a loaned player at the user team; the new player takes the slot and draws; with none it draws nothing. Ported in `creation_training_draws` (synthetic unit test); no capture has more than 66 entries, so it is **probable** (read, not exercised).\n- **Still declared**: PlayerDeleteList.bin as the deleted set (the system save's seen-player list matters on an older or edited install); Club Team Lineup only (Original Lineup, K9)."
     }
   ]
 }
