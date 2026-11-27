@@ -5843,6 +5843,70 @@
       "source": "db/seeds/national1.tsv"
     },
     {
+      "address": "0x14132dc10",
+      "name": "MLObjectives_DayStep",
+      "confidence": "probable",
+      "reviewed": "no",
+      "evidence": "from ML_DayStep_Outer: MLObjectives_EvaluateActive, then each state-0 record with flag 0 activated to state 1 when FUN_140EC35A0 holds (date gate FUN_141576950 kind 1, EditData +0x178947C, the id list FUN_140EC2F00), news 0x54; finished records older than 30 days cleared",
+      "source": "db/seeds/national1.tsv"
+    },
+    {
+      "address": "0x14132d180",
+      "name": "MLObjectives_EvaluateActive",
+      "confidence": "probable",
+      "reviewed": "no",
+      "evidence": "every state-1 objective record: FUN_140EC34B0 -> state 2 (news 0x56) or 3 (news 0x57), date, +0x28 bit 0",
+      "source": "db/seeds/national1.tsv"
+    },
+    {
+      "address": "0x14132d4f0",
+      "name": "MLObjectives_EvaluateFlagged",
+      "confidence": "probable",
+      "reviewed": "no",
+      "evidence": "from FUN_14132DFB0 (calendar event 0x19): re-evaluates the flagged state-1 records (excluding ids in mask 0x7FFFF8044 below 0x23)",
+      "source": "db/seeds/national1.tsv"
+    },
+    {
+      "address": "0x14132dfb0",
+      "name": "MLObjectives_Event19",
+      "confidence": "probable",
+      "reviewed": "no",
+      "evidence": "from ML_DayDriver on calendar event 0x19: clears finished records (states 2, 3, 5) and those without an evaluator, then MLObjectives_EvaluateFlagged",
+      "source": "db/seeds/national1.tsv"
+    },
+    {
+      "address": "0x140fb5c80",
+      "name": "OwnerObjective_ResetRecord",
+      "confidence": "probable",
+      "reviewed": "no",
+      "evidence": "a record not in state 4: state 0, dates invalid, team invalid, bit fields cleared",
+      "source": "db/seeds/national1.tsv"
+    },
+    {
+      "address": "0x140ec34b0",
+      "name": "OwnerObjective_Evaluate",
+      "confidence": "probable",
+      "reviewed": "no",
+      "evidence": "(this, id, &result, &value): the definition +0x18 condition object virtual calls +0x18, +0x10, +0x8; result bytes from the object +8..+0xB",
+      "source": "db/seeds/national1.tsv"
+    },
+    {
+      "address": "0x140ec35a0",
+      "name": "OwnerObjective_CanActivate",
+      "confidence": "probable",
+      "reviewed": "no",
+      "evidence": "(this, id, &out): FUN_140EC27A0 on the definition +0x0, then the +0x10 condition object; out from the object +8..+0x20",
+      "source": "db/seeds/national1.tsv"
+    },
+    {
+      "address": "0x140ec2860",
+      "name": "OwnerObjective_HasEvaluator",
+      "confidence": "confirmed",
+      "reviewed": "no",
+      "evidence": "the definition +0x18 pointer is not null",
+      "source": "db/seeds/national1.tsv"
+    },
+    {
       "address": "0x140a48a10",
       "name": "Match_World_GetPlayerData",
       "confidence": "probable",
@@ -12310,6 +12374,11 @@
       "date": "2026-11-27",
       "title": "the constructor's fixed assumptions (Track C, K3/K8)",
       "body": "- **Creation settings** (`platform::CareerSettings`): the coach (+0x17B54D4), the budget level (+0x1789487) and +0x1789466 (\"own fake slots\") are inputs. +0x1789466: all 12 sites in the exe only read it (CMP; the team slots, `Competition_ML_SkipRegulation`, the extra-team list, `Calendar_EventsForDate` and others); no ported code writes it, it is 1 in every capture, the menu meaning is not established. The constructor passes it to the team build, the calendar fill and now the population.\n- **Formation +0x257**: 0 on every team at `Competition_MLSetup_Run` entry and through creation in probes 52, 57, 58 and 60; the team loader (FUN_1414F5120) does not write it. So the creation value is the zeroed record's (observed, **probable**); the \"shortcut\" note is replaced. Later changes (user lineup settings) are not modelled.\n- **The extra-team list** (`Competition_MLSetup_BuildExtraTeamList` 0x1412659C0) now follows the Master League branch (setup +0x7C 0x13): the 16 keys of 0x1428BFAE0 (11 club keys, the nation keys 0-4), the +0x1789468 skip (0x3FFFF, none, in Club Team Lineup: an Original Lineup value, K9), base-id dedupe, keys 0x10/0x11 when +0x1789466 is 0, then the variant-rank pass (0x1428BFB30), which finds no rival after the listing's own base-id dedupe. Ported as `ml::extra_team_list` (unit test); the population is unchanged (17,289 of 17,289): the nation keys add no player, their rosters being club players already held. **confirmed** (read).\n- **Special clubs** (`Competition_MLSetup_CollectSpecialClubs` 0x141264F70): a club fills its slot only when entry list 0x48 holds it (0x8C, 0x9A5, 0xA88 for the three slots 0x141267790 reads; 0x588 fills +0x110). The constructor tests the list instead of writing the three ids. Unchanged on vanilla data. **confirmed** (read).\n- **Training-table eviction** (`MLUser_TrainingTable_Allocate` 0x141530880): with the 82 entries taken, the first entry in slot order of a player outside the user team neither in state 3 nor loaned is freed, else of a loaned player owned by the user team, else of a loaned player at the user team; the new player takes the slot and draws; with none it draws nothing. Ported in `creation_training_draws` (synthetic unit test); no capture has more than 66 entries, so it is **probable** (read, not exercised).\n- **Still declared**: PlayerDeleteList.bin as the deleted set (the system save's seen-player list matters on an older or edited install); Club Team Lineup only (Original Lineup, K9)."
+    },
+    {
+      "date": "2026-11-27",
+      "title": "owner objectives in the day loop: scope (Track C, K8; read, not ported)",
+      "body": "The host reads objective states (owner reward, `user_finance`) but never changes them; a constructed career starts with every state 0 (equal to the game at the creation boundary), so its owner reward never pays. The game's objective cycle, read today:\n- **Daily** (`ML_DayStep_Outer` -> `MLObjectives_DayStep` 0x14132DC10): first `MLObjectives_EvaluateActive` (0x14132D180): every record in state 1 is evaluated (`FUN_140EC34B0`) to 2 (achieved, news 0x56) or 3 (failed, news 0x57), with the date and the +0x28 bit 0. Then each record in state 0 with flag 0 (so ids 55..88, the owner-reward ids) is activated to state 1 when its activation condition holds (`FUN_140EC35A0`), gated by a calendar date check (`FUN_141576950` kind 1) and EditData +0x178947C and the objective-id list (`FUN_140EC2F00`, the tier's list the owner reward also reads); news 0x54. Finished records (2, 3, 5) older than 30 days are cleared (`FUN_140FB5C80`).\n- **Calendar event 0x19** (`FUN_14132DFB0`, from ML_DayDriver): finished records and records without an evaluator are cleared, then `MLObjectives_EvaluateFlagged` (0x14132D4F0) re-evaluates the flagged ones.\n- **The evaluators**: each of the 89 ids has two runtime condition objects (definition table 0x1434C4650 entries +0x10 activation, +0x18 evaluation: pointers filled at startup next to the flag word), called through their vtables (+0x8, +0x10, +0x18). Their classes are not enumerated; each condition (league position, cup progress, player or finance goals, guess) is its own port.\n- **Scope**: a new day-loop subsystem: the cycle above (~2 KB read) plus up to 89 x 2 condition classes, checked against a capture spanning an objective's activation and result (probe 40 holds states 2 at the 27 June reward; no capture holds an activation day). Not started; it needs a decision and probably a capture."
     }
   ]
 }
