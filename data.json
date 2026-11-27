@@ -1,5 +1,5 @@
 {
-  "updated": "2026-11-26",
+  "updated": "2026-11-27",
   "description": "Community research metadata, not game source or assets. Confidence labels are provisional.",
   "functions": [
     {
@@ -4264,6 +4264,54 @@
       "confidence": "probable",
       "reviewed": "no",
       "evidence": "(team, from_record, &count): the wage sum of the records whose team slot (or loan owner, +0x14A bit 0) is the team; Finance_Player_WageValue or the record's +0x15C",
+      "source": "db/seeds/creation_job1.tsv"
+    },
+    {
+      "address": "0x14132e0d0",
+      "name": "MLSetup_ResetOwnerObjectives",
+      "confidence": "confirmed",
+      "reviewed": "no",
+      "evidence": "from Competition_MLSetup_BuildRankings (game kind 9, after the fan count): the user team into the first free slot of the 10-entry table at EditData +0x17B578C (with +0x178946C), +0x181953C = +0x178946C, then objective records 0..88 (EditData +0x1818404, 0x2C each) cleared (FUN_14132DA50) and, for ids 1..88, flag byte +0x24 = definition +0x10 and bit fields from the definition (FUN_140EC2640); probes 52, 58 and 60 equal (states 0, flags 1 for 1..40, 2 for 41..54)",
+      "source": "db/seeds/creation_job1.tsv"
+    },
+    {
+      "address": "0x14132da50",
+      "name": "OwnerObjective_ClearRecord",
+      "confidence": "confirmed",
+      "reviewed": "no",
+      "evidence": "one 0x2C record: state 0, two dates invalid, +0xC 0xFFFF, team handle invalid, +0x14 SquadRef_Invalid, bit fields at +0x1C/+0x20/+0x28 cleared, flag word +0x24 0",
+      "source": "db/seeds/creation_job1.tsv"
+    },
+    {
+      "address": "0x140ec2640",
+      "name": "OwnerObjective_Definition",
+      "confidence": "confirmed",
+      "reviewed": "no",
+      "evidence": "(this, id) -> 0x1434C4650 + id * 0x38 (disassembly)",
+      "source": "db/seeds/creation_job1.tsv"
+    },
+    {
+      "address": "0x140ec2660",
+      "name": "OwnerObjective_State",
+      "confidence": "probable",
+      "reviewed": "no",
+      "evidence": "(this, id) -> the record state (EditData +0x1818404 + id * 0x2C; ids >= 100 the spare record +0x1819508), 0 when none",
+      "source": "db/seeds/creation_job1.tsv"
+    },
+    {
+      "address": "0x1401d9720",
+      "name": "OwnerObjective_DefinitionTable_Init",
+      "confidence": "confirmed",
+      "reviewed": "no",
+      "evidence": "static initializer of the 89 definitions at 0x1434C4650 (constant stores; straight-line, simulated from the disassembly 2026-11-27): +0x10 is 1 for ids 0..40, 2 for 41..54, 0 for 55..88",
+      "source": "db/seeds/creation_job1.tsv"
+    },
+    {
+      "address": "0x14132dbb0",
+      "name": "MLSetup_OwnerObjectivesObject_New",
+      "confidence": "guess",
+      "reviewed": "no",
+      "evidence": "allocates the 0x10-byte object Competition_MLSetup_BuildRankings passes to MLSetup_ResetOwnerObjectives (freed after it); not read",
       "source": "db/seeds/creation_job1.tsv"
     },
     {
@@ -9581,6 +9629,14 @@
       "source": "db/seeds/data/k6b1.tsv"
     },
     {
+      "address": "0x1434c4650",
+      "field1": "table",
+      "field2": "OwnerObjective_Definitions",
+      "field3": "confirmed",
+      "evidence": "no",
+      "source": "db/seeds/data/k6b1.tsv"
+    },
+    {
       "address": "0x14297d290",
       "field1": "table",
       "field2": "Competition_Regulation_PotKeyTable",
@@ -11359,6 +11415,14 @@
       "source": "db/seeds/ports/scout.tsv"
     },
     {
+      "address": "0x14132e0d0",
+      "status": "reimplemented",
+      "fidelity": "exact",
+      "implementation": "src/game/ml/creation_job.cpp reset_owner_objectives",
+      "evidence": "objective states and flags of the World equal probe 52's creation boundary and the BuildSeason-entry dumps of probes 58 and 60 (construct_world_test, creation_constructed_test); the 10-entry table at +0x17B578C, +0x181953C and the records' other words have no World field",
+      "source": "db/seeds/ports/scout.tsv"
+    },
+    {
       "address": "0x1415720d0",
       "status": "reimplemented",
       "fidelity": "exact",
@@ -12112,6 +12176,11 @@
       "date": "2026-11-27",
       "title": "the creation job's finance block and the fan-count writer (Track C, K8)",
       "body": "- **Fan-count writer** (resolves the timing of 2026-11-27 above): `Competition_MLSetup_BuildRankings` (0x1412695B0) writes EditData +0x1798B80 = `Club_FanCount(user club)` right after `FUN_1412E2F50` (the growth and training-draw step), so over the squad before TransferSteps' loan returns. **confirmed** (read; Club_FanCount's static callers are this, `ML_DayStep_Outer`, `Finance_SeasonValue`, `Finance_UserClubSetup` and FUN_14154DA50), agreeing with probe 65b's dumps: 0 at MLSetup_Run entry, 154,392 at TransferSteps entry with the mirror +0x16ECC28 still 0 (so not `Finance_UserClubSetup`, which mirrors), the mirror set at BuildSeason entry (Finance_InitClub). `Finance_UserClubSetup` is not reached in this window.\n- **season_b's fan input**: `Finance_SeasonValue` (0x141567D00) calls `Club_FanCount` itself, on the squad at the job (after the returns), not the stored count. The constructor now passes that count. Not discriminated on the four careers: both counts are under its 150,000 floor or equal.\n- **The job's finance block** (`Finance_ResetClubWithBudgets` 0x14133DF70, rcx = EditData +0x16ECBF4 by disassembly): `Finance_ClearClubBlock` (0x14133CCE0) clears budgets, snapshot, headroom, season figures, the six items and their destinations, the expense and its destination, and frees the 300 competition records; `Finance_InitClub` (reset flag 1) stores the season figures, today's date at +0x16F0724, the mirror, clears the 40 player entries (`Finance_ClearPlayerEntries` 0x141569260) and calls `Finance_InitBudgets`; `Finance_SetDefaultDestinations` (0x141569810) sets the destinations (1, 1, 1, 1, 0, 0) and the expense's (1). **confirmed**: ported as `ml::reset_club_finance`; with the coach the constructed World's finance group equals the BuildSeason-entry dumps of probes 58 and 60 and probe 52's creation boundary in all 19 fields. The probe 65b dumps place these writes after TransferSteps' end (the emulated end state has destinations 0).\n- **Finance field status** (19 fields of `compare_worlds`; the inventory's earlier \"18\" was a miscount): built from files or derived, 16: `loaded`, `transfer`, `wage`, `transfer_snapshot`, `headroom`, `fans`, `rank` (one field: present, byte +0xE, position), `items`, `dest`, `expense` (with its destination), `entries`, `season_a`, `season_b`, `season_date`, and the host-model fields `step` and `attendance` (nothing booked at creation; `attendance` is not game memory). Still from the base: `level` (a creation setting, like the coach: an input to declare, not a value to rebuild), `objectives`, `objective_flags` (written in the setup between MLSetup_Run entry and TransferSteps entry, writer not read). Without the coach the block stays dump-sourced, as before.\n- Not modelled: the 40 player entries at +0x16EE854 and the mirror +0x16ECC28 (no World field); the call at the end of `Finance_ClearClubBlock` (0x1447E3190, relocated region, not read)."
+    },
+    {
+      "date": "2026-11-27",
+      "title": "the owner objectives' setup writer, the budget level as an input, user_history from the build (Track C, K8)",
+      "body": "- **Writer**: `MLSetup_ResetOwnerObjectives` (0x14132E0D0), called from `Competition_MLSetup_BuildRankings` in game kind 9 after the fan count and the season-step object (with the object from 0x14132DBB0). It puts the user team into the first free slot of a 10-entry table at EditData +0x17B578C (with the word +0x178946C), stores +0x178946C at +0x181953C, then for objective records 0..88 (EditData +0x1818404, 0x2C each): `OwnerObjective_ClearRecord` (0x14132DA50: state 0, dates invalid, team invalid, bit fields and flag word 0), the id in +0x1C bits 2..8, and for ids 1..88 the flag byte +0x24 and four bit fields from the definition `OwnerObjective_Definition(id)` (0x140EC2640: 0x1434C4650 + id x 0x38). Records 89..99 are not written. **confirmed** (read, disassembly for the arguments).\n- **The definition table** (0x1434C4650, 89 x 0x38) is zero on disk and filled at startup by `OwnerObjective_DefinitionTable_Init` (0x1401D9720), straight-line constant stores. Simulated from its disassembly (`private-reference/oracle/scratch/obj_table_sim.py`): entry +0x10 is 1 for ids 0..40, 2 for 41..54, 0 for 55..88. So at creation the flags are 0 (id 0), 1 (1..40), 2 (41..54), 0 (55..88) and every state 0: equal to probes 58 and 60 at BuildSeason entry and probe 52's creation boundary. **confirmed**. Ported as `ml::reset_owner_objectives` (the rule embedded as two id ranges; the table is code-built, so there is no exe data to read). The owner reward (`ML_Finance_DailyGameMode9`) reads ids 0x37..0x58, whose flags are 0.\n- **Budget level**: `construct_world` takes it as an input (`budget_level`, EditData byte +0x1789487, a creation setting like the club and the coach; -1 = take the base's). The tests pass the dump's byte. `Finance_InitBudgets` reads it through `career_budgets_from_files`.\n- **user_history**: the match table's recorded records (+4 bit 30) with the user club on a side. No record has bit 30 in probes 52, 58 and 60 (6,345, 0 and 6,345 records), and the built records hold no result, so with BuildSeason run the constructor sets it empty (Derived) and reports an issue if a built match were recorded.\n- **Dump-sourced fields left in the standard constructor with coach and level given: `ranking.nation` only** (K4 national squads). The finance group is complete (19 of 19 built). Not modelled: the 10-entry table at +0x17B578C, +0x181953C and the objective records' other words (no World field); records 89..99 keep the base's values (zero in the dumps, no consumer)."
     }
   ]
 }

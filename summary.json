@@ -1,5 +1,5 @@
 {
-  "updated": "2026-11-26",
+  "updated": "2026-11-27",
   "headline": {
     "sim_percent": [
       70,
@@ -193,21 +193,21 @@
     }
   ],
   "counts": {
-    "named_addresses": 1244,
+    "named_addresses": 1251,
     "tests": 88,
-    "port_rows_total": 174,
+    "port_rows_total": 175,
     "port_rows_by_status": {
-      "reimplemented": 163,
+      "reimplemented": 164,
       "in host": 11,
       "verified": 0,
       "named": 0
     },
     "port_rows_by_fidelity": {
-      "exact": 134,
+      "exact": 135,
       "behavioural": 39,
       "free": 1
     },
-    "findings_entries": 238
+    "findings_entries": 239
   },
   "match_metrics": {
     "unique_signatures": {
