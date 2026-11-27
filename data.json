@@ -5771,6 +5771,54 @@
       "source": "db/seeds/k7a1.tsv"
     },
     {
+      "address": "0x141268ee0",
+      "name": "MLSetup_AssignState10Players",
+      "confidence": "confirmed",
+      "reviewed": "no",
+      "evidence": "after Edit_Tables_RecountSlots, every valid record in state 10: flag set (Original Lineup, from RebuildFromList) -> Team_SquadNumberFor, Team_Squad_AddPlayer(team, tactic, ref, number, 0), team slot 0 = the team, state 0; flag clear -> state 2, team slot 0 invalid",
+      "source": "db/seeds/k9a1.tsv"
+    },
+    {
+      "address": "0x14135d3c0",
+      "name": "Competition_SuperCup_FillFromRanked",
+      "confidence": "probable",
+      "reviewed": "no",
+      "evidence": "from Competition_SuperCup_FixUpA/B: fills the two super cup places from club-rank-sorted entrants, skipping the user club (+0x41D != 0xFF) when EditData +0x17893F4 is 0",
+      "source": "db/seeds/k9a1.tsv"
+    },
+    {
+      "address": "0x1413281d0",
+      "name": "MLDev_SideTable_EntryFor",
+      "confidence": "probable",
+      "reviewed": "no",
+      "evidence": "(EditData +0x1798AB0, ref): the 0x18-byte entry of the 40-entry table at +0x181C1B0 with that ref, else the first empty one",
+      "source": "db/seeds/k9a1.tsv"
+    },
+    {
+      "address": "0x1412ecab0",
+      "name": "MLMenu_ValidateSetupTeam",
+      "confidence": "probable",
+      "reviewed": "no",
+      "evidence": "no static callers (UI step): the team picked at EditData +0x1787A48, its slots (FUN_1414CAC20); writes +0x1789400 (league regulation) and +0x1789468 (the team id when several slots match, else 0x3FFFF)",
+      "source": "db/seeds/k9a1.tsv"
+    },
+    {
+      "address": "0x140adf1d0",
+      "name": "MLMenu_BuildStartPage",
+      "confidence": "guess",
+      "reviewed": "no",
+      "evidence": "UI: builds the 0x10D009D page entry (FUN_140C98520 with flag set, FUN_140C9A4A0 otherwise) by EditData +0x17893F4",
+      "source": "db/seeds/k9a1.tsv"
+    },
+    {
+      "address": "0x140c9a3e0",
+      "name": "MLMenu_StartPage_Construct",
+      "confidence": "guess",
+      "reviewed": "no",
+      "evidence": "UI page constructor: child +0x16C = 1 when EditData +0x17893F4 is 0",
+      "source": "db/seeds/k9a1.tsv"
+    },
+    {
       "address": "0x1413179a0",
       "name": "NationalSquad_SelectSlots",
       "confidence": "confirmed",
@@ -12379,6 +12427,11 @@
       "date": "2026-11-27",
       "title": "owner objectives in the day loop: scope (Track C, K8; read, not ported)",
       "body": "The host reads objective states (owner reward, `user_finance`) but never changes them; a constructed career starts with every state 0 (equal to the game at the creation boundary), so its owner reward never pays. The game's objective cycle, read today:\n- **Daily** (`ML_DayStep_Outer` -> `MLObjectives_DayStep` 0x14132DC10): first `MLObjectives_EvaluateActive` (0x14132D180): every record in state 1 is evaluated (`FUN_140EC34B0`) to 2 (achieved, news 0x56) or 3 (failed, news 0x57), with the date and the +0x28 bit 0. Then each record in state 0 with flag 0 (so ids 55..88, the owner-reward ids) is activated to state 1 when its activation condition holds (`FUN_140EC35A0`), gated by a calendar date check (`FUN_141576950` kind 1) and EditData +0x178947C and the objective-id list (`FUN_140EC2F00`, the tier's list the owner reward also reads); news 0x54. Finished records (2, 3, 5) older than 30 days are cleared (`FUN_140FB5C80`).\n- **Calendar event 0x19** (`FUN_14132DFB0`, from ML_DayDriver): finished records and records without an evaluator are cleared, then `MLObjectives_EvaluateFlagged` (0x14132D4F0) re-evaluates the flagged ones.\n- **The evaluators**: each of the 89 ids has two runtime condition objects (definition table 0x1434C4650 entries +0x10 activation, +0x18 evaluation: pointers filled at startup next to the flag word), called through their vtables (+0x8, +0x10, +0x18). Their classes are not enumerated; each condition (league position, cup progress, player or finance goals, guess) is its own port.\n- **Scope**: a new day-loop subsystem: the cycle above (~2 KB read) plus up to 89 x 2 condition classes, checked against a capture spanning an objective's activation and result (probe 40 holds states 2 at the 27 June reward; no capture holds an activation day). Not started; it needs a decision and probably a capture."
+    },
+    {
+      "date": "2026-11-27",
+      "title": "K9 Original Lineup: the branch map (Track C, read; probe 62 running)",
+      "body": "Method: every exe site reading the start type EditData +0x17893F4 (15) or the setup team +0x1789468 (5) by immediate scan; their 15 functions and 105 callees decompiled in one serial batch (`private-reference/oracle/k9/`); three read-only agents read the squads, the divisions and the development pass (reports in `private-reference/k9/`); the main session read the squad refill and checked the reports' key claims. Labels below are the reports' unless marked (main).\n- **Start type**: written only by `MenuModeStartType_ApplyChoice` (0x140B88380). **+0x1789468** is not the Original Lineup squad: `MLMenu_ValidateSetupTeam` (0x1412ECAB0, a UI step) stores a picked team id when several slots match, else 0x3FFFF (every capture). **probable**.\n- **Squad** (RebuildFromList 0x14126F7E0, flag 0, setup kind != 10): the user club's squad is stripped (Team_Squad_RemovePlayer; each player state 1, team slot 0 invalid: released, not deleted), then `MLSetup_AssignState10Players` (0x141268EE0, main: confirmed) appends every state-10 record in record order with `Team_SquadNumberFor`, team slot 0 = the club, state 0. With flag 1 the state-10 records get state 2 and no team (the Club Team Lineup rule). State 10 is the special club `Competition_MLSetup_AddSpecialClubPlayers` marks by the user league's region (`special_club_states`' \"2\" entry, where the game writes 10): the Original Lineup squad is that club's players (**probable**). Then `MLSetup_CapState3Players` on both paths.\n- **Division** (`Competition_MLSetup_SwapUserClubDivision` 0x141262300, run only when +0x1789468 is 0x3FFFF): with flag 0, mode 9, a league with a division below (+0x304 & 0xC0000000 == 0x40000000, +0x7E set) and a club kind outside {0x45, 0x46, 0x49, 0x4B}, the lower division's teams are sorted (`Competition_TeamList_CopySortedByValue`, key 0x141519780(team, 6), not read), the first (highest) swaps regulation slots with the user club (`Competition_Regulation_SetTeamAt` on both) and the club-slot bits of +0x41C are exchanged; the user's comes from 0x144ACACE0 (relocated, not read). No draw. **probable** (branch read; sort key and the relocated helper not).\n- **Team record** (`FUN_141269EF0`, flag 0): the user club's +0x658, +0x65C, +0x660, +0x678..+0x68C set invalid, +0x664..+0x668 0xFFFF, +0x66C..+0x674 a default, +0x640 bit 1 cleared and bit 0 set, +0x63C = (old & 0xA8000000) | 0x28000000, +0x644..+0x64B zeroed (field meanings guess).\n- **Loans** (`MLSetup_LoadLoans`, flag 0): every loan owned by the user club is dropped (+0x148 bit 16, +0x160, +0x16C); then the usual squad-size fixes. No draw.\n- **Lineup** (MLSetup_Run, (kind 9 and flag 0) or kind 10): the user tactic's six role bytes +0x248..+0x24D = 0xFF, then `Team_AutoSelectLineup` mode 3 on the new squad (no draw: probe 35/36 log).\n- **Development pass** (flag 0, the user team only): `cand14`, the first squad player under 22 (field 0x2D) with the strictly highest rating at 0xD, gets phase 0x14; `cand15`, the first with the highest field 0x24 + 0x22, gets 0x15 (`PlayerDev_SetSpecialPhase` level 0, no mark-1, no re-pick, bucket 0); then the 0x16 pick: L = the user players still in phase 0, `idx = Below(|L|)` until L[idx] is 22 or older (at most |L| draws), phase 0x16 and a side-table entry (`MLDev_SideTable_EntryFor`). **The only added draws**: 1 to |L| before the contract remap, so S0 and every later Club Team Lineup draw shift.\n- **Season build**: the user club (+0x41D != 0xFF) cannot take a super cup place (`StoreSuperCupsFromKeys`, `Competition_SuperCup_FillFromRanked`) or a reg 7 place (`StoreHoldersFromKey` key 25), and `Helper54510` is true for it (the existing `creation_entrants` skips).\n- **Finance**: no finance function reads either flag; differences come through the inputs (the new squad's values and wages, the division). **probable**.\n- **Not read**: the sort key 0x141519780 and 0x144ACACE0; `FUN_141269400`; `Team_SquadNumberFor`; the contracts the remap gives the new squad. Probe 62 (staged and running: Original Lineup, Arsenal; generator at 21 boundaries to BuildSeason return, six EditData dumps) settles the order, the draw count and S0.\n- **Probe 62 captured** (2026-11-27, `private-reference/probe62/out/`): Original Lineup (start type 0 logged at MLSetup_Run entry), Arsenal, default settings. Generator: seed word 0x071E6851 at MLSetup_Run entry; unchanged through RebuildFromList, FUN_141269EF0, LoadLoans, FUN_141269400, the user lineup and BuildRankings' first steps; **MLSetup_DevPhasePass advances it exactly once** (one Below: the first 0x16 candidate accepted); then the remap, FUN_1412E2F50 and the transfer steps draw; S0 at BuildSeason entry 0x09B1CB76 0x7A3123DA 0x147B2129 0x25EB8D46, S1 at its return 0x8159AC56 0xE81B5B26 0x9478616B 0x3F1591AD. EditData dumps: MLSetup_Run entry, after RebuildFromList, after the user lineup, TransferSteps entry, BuildSeason entry and return. **confirmed** (capture). The BuildSeason-entry script failed once on a `;` in a comment and was rerun by hand at the same break (`b62_fix.txt`), so S0 and the entry dump are at the entry."
     }
   ]
 }
