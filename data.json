@@ -5827,6 +5827,22 @@
       "source": "db/seeds/national1.tsv"
     },
     {
+      "address": "0x141321e30",
+      "name": "MLSetup_InitMorale",
+      "confidence": "confirmed",
+      "reviewed": "no",
+      "evidence": "from Competition_MLSetup_BuildRankings after SetFame and the phase pass: every valid record +0x13C bits 18..24 = 80 (phase +0x150 0x12), else 60 (team slot 0 club = home club +0x14C by id), else 55 (+0x14A bit 0 clear), else 40; ported ml::creation_morale, 17,289 of 17,289 on probes 52, 58, 60",
+      "source": "db/seeds/national1.tsv"
+    },
+    {
+      "address": "0x141320f70",
+      "name": "ML_Morale_AddToTeamPlayers",
+      "confidence": "probable",
+      "reviewed": "no",
+      "evidence": "from ML_PostMatch_MoralePass: every record with state nibble 0, +0x14A bit 0 clear and a valid team slot 0 gets morale + delta, clamped to 0..100",
+      "source": "db/seeds/national1.tsv"
+    },
+    {
       "address": "0x140a48a10",
       "name": "Match_World_GetPlayerData",
       "confidence": "probable",
@@ -11423,6 +11439,14 @@
       "source": "db/seeds/ports/national.tsv"
     },
     {
+      "address": "0x141321e30",
+      "status": "reimplemented",
+      "fidelity": "exact",
+      "implementation": "src/game/ml/dev_pass.cpp creation_morale",
+      "evidence": "player.morale 17,289 of 17,289 at BuildSeason entry (probes 58, 60) and the creation boundary (probe 52)",
+      "source": "db/seeds/ports/national.tsv"
+    },
+    {
       "address": "0x1405b6800",
       "status": "reimplemented",
       "fidelity": "exact",
@@ -12276,6 +12300,11 @@
       "date": "2026-11-27",
       "title": "club slot tables 555 of 555 (Track C, K4)",
       "body": "- **Classification** (probes 58 and 60, BuildSeason entry, by `FormationReport::last_step`): every one of the 97 differing club slot tables was a club no setup step rewrites (load only: 97 of 98); the kind rebuild (117), the loan-removal repair (137), the add-rebuild (202) and the user team (1) were already exact. So the removal repair was not the gap: it already runs `match::repair_lineup_slots` (read 2026-11-23, probe 63 oracle) through `ml::remove_and_repair`; the \"provisional\" note in career_formations.h was stale.\n- **Cause**: the load writes slot s = s for all 40 slots, also past the roster count (as FINDINGS recorded for Run entry, probe 54: all 669 teams); the constructor stopped at the roster count and left the tail 0xFF. **confirmed**: with the 40-slot fill, 555 of 555 club slot tables and captains equal at BuildSeason entry on probes 58 and 60, and `team.slots` 659 of 659 on probe 52; the rebuild and repair results are unchanged (they write or read only entries below the count, or the whole table). No constructed input field of the standard constructor differs from the entry dumps now; the stand-ins remain (`player.morale`, `player.f14a`, `player.f148`, `dev.user_club`).\n- Downstream: the tail entries name roster indices that do not exist; a later Team_Squad_AddPlayer appends at the count, so the stale tail entry for that index is already the new player's (why the game leaves it, guess)."
+    },
+    {
+      "date": "2026-11-27",
+      "title": "the last stand-ins: morale, f14a/f148, dev.user_club (Track C, K8)",
+      "body": "- **Morale**: 0 on every record at `Competition_MLSetup_Run` entry, set in the setup by `MLSetup_InitMorale` (0x141321E30), the step of `Competition_MLSetup_BuildRankings` after SetFame and the phase pass, before the remap (found by the bitfield masks 0x01FC0000 / 0xFE03FFFF). Per valid record: 80 in development phase 0x12, else 60 when the team slot 0 club is the home club (+0x14C, by id), else 55 when +0x14A bit 0 is clear, else 40. **confirmed**: ported as `ml::creation_morale`, 17,289 of 17,289 on probes 58 and 60 (BuildSeason entry) and 52 (creation boundary). The old placeholder (55 for all) is gone. `ML_Morale_AddToTeamPlayers` (0x141320F70) is the day loop's delta (not part of creation).\n- **f14a / f148**: the +0x14A byte has three sources at creation: bit 3 from the file (`Pesdb_LoadPlayerRecord` copies Player.bin dword +0x3C bit 28 to +0x148 bit 19, the youth intake's exclusion bit; 2,248 records at Run entry), bit 0 the loan flag (+0x148 bit 16, the complement of `post_draw`), bits 1 and 2 the listing bits (`scout::mark_listed_players`). The constructor set only the last; the loan steps now set all three views through `ml::set_loan_flag`, and `PlayerFile::youth_excluded` carries the file bit. **confirmed**: 17,289 of 17,289 on probes 52, 58 and 60. The fourth byte of +0x148 is 0 on every record.\n- **dev.user_club**: the loader's view (players of the first user team's roster); the constructor never set it. Now derived from the final user roster: 17,289 of 17,289.\n- **Result**: the standard constructor has no stand-in and no dump-sourced field. Without the coach (stopping at BuildSeason entry) every constructed field equals the BuildSeason-entry dumps of probes 58 and 60; with it, the built match, day and finance groups equal probes 52, 58 and 60 (earlier entries). The dump-free run equals the base-built World in all 106 fields."
     }
   ]
 }
