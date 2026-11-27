@@ -1,14 +1,39 @@
 {
-  "updated": "2026-11-27",
+  "updated": "2026-11-27 22:46 UTC",
   "headline": {
     "sim_percent": [
-      70,
-      75
+      80,
+      85
     ],
-    "mode_percent": 30,
-    "note": "Both figures are our own estimates, not measurements. The simulation is the rules engine behind Master League (matches, condition, money, calendar, contracts, transfers). It now runs 20 seasons on its own; what keeps it below 100 is the computer clubs' real transfer search, scouting, the user's transfer rules, a few international tournaments and some approximate parts. The whole mode also needs menus, transfer negotiation, news and saving, which are not started."
+    "mode_percent": 35,
+    "note": "Editorial estimates as of 28 November 2026, not measured coverage. Standard career creation is complete for the tested scope; Original Lineup has passed its first reference comparison. Daily simulation corrections, transfer search, objectives, news, persistence and original menus remain."
   },
   "areas": [
+    {
+      "name": "Standard career creation",
+      "status": "exact",
+      "text": "Constructed from original files without captured-state dependencies; verification is scoped to tested careers."
+    },
+    {
+      "name": "Original Lineup career creation",
+      "status": "mixed",
+      "text": "Implemented and matched on the first reference career; independent regional verification remains."
+    },
+    {
+      "name": "Initial development and scouting",
+      "status": "mixed",
+      "text": "Initial growth, development phases, listing decisions and scouting setup match reference checks. In-season development and recruitment remain incomplete."
+    },
+    {
+      "name": "National squads and captains",
+      "status": "exact",
+      "text": "Initial national squad selection and captain selection match tested reference careers."
+    },
+    {
+      "name": "Original menu runtime",
+      "status": "mixed",
+      "text": "Resource inventory and preliminary format research completed; decoding, rendering and navigation are not implemented."
+    },
     {
       "name": "Match results for computer teams",
       "status": "exact",
@@ -25,16 +50,6 @@
       "text": "Leagues, domestic cups, promotion playoffs (including Chile's), Champions League, Europa League, Libertadores, AFC Champions League, Club World Cup, the World Cup and its qualifiers are built and scheduled as the game does. Draws for the next season's continental lists are exact. The game's calendar has no 29 February, and neither does the model."
     },
     {
-      "name": "Finances",
-      "status": "exact",
-      "text": "Monthly income, prize money, match bonuses, gate receipts, the owner's reward and the fan count are modelled. Several of these match the game to the cent on the checked months."
-    },
-    {
-      "name": "Player events",
-      "status": "exact",
-      "text": "The daily roll that decides which players get a special event is exact, provided the model is told the state the game tracks. Rebuilding that state from scratch is still being checked."
-    },
-    {
       "name": "Contracts, development and the season switch",
       "status": "mixed",
       "text": "Loan returns, contract renewals, youth intake, the season-switch development and the replacement of retired players by new young players follow the game. Players also develop a second time on 1 January; the model matches the game's observed results there. Which players choose to retire is our own approximation."
@@ -43,6 +58,16 @@
       "name": "Computer-club transfers",
       "status": "approximate",
       "text": "A behaviour model reproduces what computer clubs do in the summer and January windows: the numbers of transfers, loans and free signings and the squad shapes match the game's first two seasons. A moved player's new wage follows the game's rule. It is not the game's own search. The game's computer clubs pay no transfer fees and have no budgets, so by default the model has none either."
+    },
+    {
+      "name": "Finances",
+      "status": "mixed",
+      "text": "Initial finance fields match tested careers. Daily owner-objective activation and evaluation remain unimplemented."
+    },
+    {
+      "name": "Player events",
+      "status": "mixed",
+      "text": "Initial development state is reconstructed; daily event rolls match reference checks given the required state. Further lifecycle work remains."
     }
   ],
   "checks": {
@@ -92,31 +117,27 @@
   },
   "left": [
     {
-      "group": "Needs the Windows VM",
+      "group": "Independent verification",
       "items": [
-        "Verifying the Champions League and Europa League group-draw values.",
-        "What the game does when the user never renews a contract.",
-        "A long run of the real game, to compare the ages of players many seasons ahead.",
-        "Scouting and the computer clubs' real transfer search."
+        "Original Lineup second reference career covering another region and league structure.",
+        "Remaining constructor verification obligations and unmodelled persistent fields."
       ]
     },
     {
-      "group": "Offline work that remains",
+      "group": "Daily simulation and compatibility",
       "items": [
-        "Keeping each club's starting line-up in step with squad changes.",
-        "Filling every continental competition place the way the game does.",
-        "The European Championship and the other international tournaments.",
-        "The game's own rule for which players retire, and morale."
+        "Owner-objective activation, evaluation and rewards.",
+        "In-season development, recruitment, transfers and discipline.",
+        "Remaining compatibility shortcuts and architecture audit."
       ]
     },
     {
-      "group": "Not started",
+      "group": "Playable mode and beyond",
       "items": [
-        "Menus and screens for Master League.",
-        "The transfer negotiation flow for the user.",
-        "News and messages.",
-        "Saving and loading a career.",
-        "A real search for CPU transfers (replacing the rough model)."
+        "Original menu resource decoding, rendering and navigation.",
+        "User transfer negotiation, news and messages.",
+        "Career persistence and mod compatibility.",
+        "Match engine reconstruction."
       ]
     }
   ],
@@ -190,6 +211,36 @@
       "date": "2026-11-18",
       "title": "Player ratings and money",
       "text": "The second yearly development step stops ratings drifting down. Computer clubs turn out to have no money in the game, so the model's fees are switched off by default."
+    },
+    {
+      "date": "2026-11-25",
+      "title": "Contracts and squad construction",
+      "text": "Contract remapping, loan normalisation and squad meter verified against reference careers."
+    },
+    {
+      "date": "2026-11-26",
+      "title": "Development and scouting setup",
+      "text": "Initial development fields, growth and scouting setup reconstructed with reference comparisons."
+    },
+    {
+      "date": "2026-11-27",
+      "title": "Standard constructor completed",
+      "text": "Career creation no longer depends on captured state."
+    },
+    {
+      "date": "2026-11-27",
+      "title": "National squads and initial finances",
+      "text": "National squads, captains, finances and season generation integrated into career creation."
+    },
+    {
+      "date": "2026-11-28",
+      "title": "Original Lineup implemented",
+      "text": "Shared constructor matches the first reference career; independent verification remains."
+    },
+    {
+      "date": "2026-11-28",
+      "title": "Original menu research",
+      "text": "Resource inventory completed; runtime decoding and rendering remain outstanding."
     }
   ],
   "counts": {
@@ -231,5 +282,6 @@
       "scope": "A narrow version check, not total byte coverage or AOT output equivalence.",
       "as_of": "2026-11-02"
     }
-  }
+  },
+  "source_commit": "fac6f05"
 }
