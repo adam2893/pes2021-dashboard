@@ -1677,9 +1677,9 @@
     {
       "address": "0x1412fd200",
       "name": "Team_ClearRoster",
-      "confidence": "guess",
+      "confidence": "confirmed",
       "reviewed": "no",
-      "evidence": "sets the 40 roster refs (+0x14C) to the invalid handle, clears +0x29A shirt numbers, +0x5C8, +0x5CC, +0x5D1 and the count at +0x424 bits 16..22 (read 2026-11-07)",
+      "evidence": "clears the 40 refs (+0x14C) and numbers (+0x29A), +0x5C8, +0x5CC, the count bits +0x424 16..22, +0x5D1",
       "source": "db/seeds/competition1.tsv"
     },
     {
@@ -4685,9 +4685,9 @@
     {
       "address": "0x1414c61d0",
       "name": "TacticBlock_GetSlotPosition",
-      "confidence": "guess",
+      "confidence": "confirmed",
       "reviewed": "no",
-      "evidence": "(block, slot, kind) -> position code; the reader the formation fix-up and the club plan use (not read)",
+      "evidence": "(block, slot, kind): byte block[slot] (kind 0), +0x21 (kind 1), +0x42 (kind 2) for slot < 11, else 0xD",
       "source": "db/seeds/formation1.tsv"
     },
     {
@@ -4741,9 +4741,9 @@
     {
       "address": "0x141318d20",
       "name": "MLSetup_PickNationalSquads",
-      "confidence": "probable",
+      "confidence": "confirmed",
       "reviewed": "no",
-      "evidence": "for every team of class 0x4000000 calls NationalSquad_Pick 0x1413162E0 (ctx, handle, &0, &1), then 0x1415234E0 on every player record (decompile read 2026-11-21; probe 55: the first 102 Team_AutoSelectLineup calls of the creation)",
+      "evidence": "for every team of class 0x4000000 in record order: NationalSquad_Pick (ctx, handle, &0 user-squad flag, &1 numbering flag), then Player_UpdateDerivedState on every record; first step of Competition_MLSetup_BuildRankings (kinds 9, 10); ported ml::pick_national_squads, probes 52, 57, 58, 60: all 102 rosters, numbers, slots, captains equal (read 2026-11-27)",
       "source": "db/seeds/formation1.tsv"
     },
     {
@@ -4781,9 +4781,9 @@
     {
       "address": "0x1413162e0",
       "name": "NationalSquad_Pick",
-      "confidence": "probable",
+      "confidence": "confirmed",
       "reviewed": "no",
-      "evidence": "one nation's squad: Team_ClearRoster, picks appended with Team_Squad_Append, Player_SetTeamSlot, Team_AutoSelectLineup; uses Date_Today, Date_DaysBetween, the game-mode manager and eight indirect calls (function report 2026-11-21; not read)",
+      "evidence": "candidates in record order (valid, state nibble not 5/6, +0x144 = team +0x418); 23 slots (formation positions twice, then 0); NationalSquad_SelectSlots mode 2, mode 3 if a slot is empty; old members slot 1 cleared, Team_ClearRoster, appended with number slot+1, slot 1 = team; tactic +0x248..+0x24D 0xFF; Team_AutoSelectLineup mode 3 cap 0x17; user-player branches (EditData +0x1819540) inactive in ML (read 2026-11-27)",
       "source": "db/seeds/formation1.tsv"
     },
     {
@@ -5769,6 +5769,62 @@
       "reviewed": "no",
       "evidence": "(kind, out list, 0xFFFF, team): kind 10 gives the records in state 3 in record order (probe 65b: 32 of 32) (2026-11-26)",
       "source": "db/seeds/k7a1.tsv"
+    },
+    {
+      "address": "0x1413179a0",
+      "name": "NationalSquad_SelectSlots",
+      "confidence": "confirmed",
+      "reviewed": "no",
+      "evidence": "(picker, slots, candidates, &mode): per slot in order the best unused candidate by Player_GetPositionRatingByRef(slot position, 2), strict, first on a tie; mode <= 2 needs state nibble != 4, +0x13C bit 26 clear, +0x148 0, Player_ClassCapped != 0; mode < 3 the playable flag; mode < 2 the registered position; the slot word low 7 bits = the rating at 0xD",
+      "source": "db/seeds/national1.tsv"
+    },
+    {
+      "address": "0x14158a740",
+      "name": "Player_Discipline_AddCompetitions",
+      "confidence": "probable",
+      "reviewed": "no",
+      "evidence": "for each id of the list not in the player 15 entries at +0xF0: the first free entry (id 0xFFFF) takes it, then FUN_14158A810 (not read)",
+      "source": "db/seeds/national1.tsv"
+    },
+    {
+      "address": "0x1415183f0",
+      "name": "Team_FindNationalByCountry",
+      "confidence": "confirmed",
+      "reviewed": "no",
+      "evidence": "the first team of class 0x4000000 with +0x418 = the given country, else Team_InvalidHandle",
+      "source": "db/seeds/national1.tsv"
+    },
+    {
+      "address": "0x14151c710",
+      "name": "NationalSquad_UserPlayerUnavailable",
+      "confidence": "guess",
+      "reviewed": "no",
+      "evidence": "one of NationalSquad_Pick checks applied only to the user player (EditData +0x1819540): Competition_Team_IccEligible, the game kind and the player team slot; not read",
+      "source": "db/seeds/national1.tsv"
+    },
+    {
+      "address": "0x141527dc0",
+      "name": "Team_SquadNumberFor",
+      "confidence": "guess",
+      "reviewed": "no",
+      "evidence": "the squad number NationalSquad_Pick gives when its numbering flag is 0 (FUN_141527490 on the team record); not reached in Master League (flag 1)",
+      "source": "db/seeds/national1.tsv"
+    },
+    {
+      "address": "0x140f1aaf0",
+      "name": "LineupContext_Construct",
+      "confidence": "probable",
+      "reviewed": "no",
+      "evidence": "clears the 0x7A0-byte lineup context arrays and calls Lineup_Context_Init",
+      "source": "db/seeds/national1.tsv"
+    },
+    {
+      "address": "0x1414bc9a0",
+      "name": "Player_RecordForRef",
+      "confidence": "guess",
+      "reviewed": "no",
+      "evidence": "ref -> player record (FUN_1414B80F0 over the record table); NationalSquad_Pick uses it for the team-slot writes",
+      "source": "db/seeds/national1.tsv"
     },
     {
       "address": "0x140a48a10",
@@ -6957,9 +7013,9 @@
     {
       "address": "0x141318c30",
       "name": "NationalSquadPicker_Create",
-      "confidence": "guess",
+      "confidence": "confirmed",
       "reviewed": "no",
-      "evidence": "makes the object Competition_MLSetup_BuildRankings passes to MLSetup_PickNationalSquads (2026-11-21); not read",
+      "evidence": "allocates the 4-byte picker, int 0 (the selection bonus for the user player)",
       "source": "db/seeds/tooling1.tsv"
     },
     {
@@ -6973,9 +7029,9 @@
     {
       "address": "0x1415234e0",
       "name": "Player_UpdateDerivedState",
-      "confidence": "guess",
+      "confidence": "probable",
       "reviewed": "no",
-      "evidence": "run on every player by MLSetup_PickNationalSquads and also from Player_LoadDerivedFields and Competition_Season_BuildSeason (2026-11-21); not read",
+      "evidence": "the 15 competition discipline entries (+0xF0, 4 bytes): by the confederation of the nationality national team (Team_FindNationalByCountry, Competition_Team_Confederation) frees some competition ids (entry = 0x0000FFFF) and adds others (Player_Discipline_AddCompetitions); writes nothing else (read 2026-11-27)",
       "source": "db/seeds/tooling1.tsv"
     },
     {
@@ -11315,7 +11371,7 @@
       "status": "reimplemented",
       "fidelity": "exact",
       "implementation": "src/game/ml/regulation_setup.cpp build_nation_ranking",
-      "evidence": "probe 57: 102 of 102 ranks from the dump's stored strengths; strengths need the national squads (K4), so the World's ranking stays dump-sourced",
+      "evidence": "probe 57: 102 of 102 ranks from the dump's stored strengths; since 2026-11-27 from the constructed national squads too (ml::national_strengths, Team_ComputeStrength over the picked rosters): the national ranking equals probe 57 BuildSeason entry",
       "source": "db/seeds/ports/loadtables1.tsv"
     },
     {
@@ -11341,6 +11397,30 @@
       "implementation": "src/game/ml/regulation_table.cpp regulation_ball; src/platform/pc/exe_tables.cpp read_regulation_rules",
       "evidence": "the owner +0x50 word +0x3FCCE only (regulation w300 bits 0-15): 0x16 from vanilla BallCondition.bin, equal to every dump (probe 61 included; ctest regulation_table compares w300 of 214 records); the ball tables are not built; the no-0x1A fallback takes the file record 0 (sort not read)",
       "source": "db/seeds/ports/loadtables1.tsv"
+    },
+    {
+      "address": "0x141318d20",
+      "status": "reimplemented",
+      "fidelity": "exact",
+      "implementation": "src/game/ml/national_squads.cpp pick_national_squads",
+      "evidence": "all 102 national rosters (order), squad numbers, 40 slots and captains equal probe 57 BuildSeason entry (construct_world_test) and probes 58 and 60 (creation_constructed_test), probe 52 creation boundary (team.roster, team.captain 659 of 659); Player_UpdateDerivedState not ported (+0xF0 discipline entries, no World field)",
+      "source": "db/seeds/ports/national.tsv"
+    },
+    {
+      "address": "0x1413162e0",
+      "status": "reimplemented",
+      "fidelity": "exact",
+      "implementation": "src/game/ml/national_squads.cpp pick_national_squads",
+      "evidence": "as MLSetup_PickNationalSquads; the user-player branches, the kind-10 branch and the user national squad (flag 0) are not taken in Master League and not ported; team slot 1 (+0x130), numbers in the World and tactic +0x248..+0x24D not modelled",
+      "source": "db/seeds/ports/national.tsv"
+    },
+    {
+      "address": "0x1413179a0",
+      "status": "reimplemented",
+      "fidelity": "exact",
+      "implementation": "src/game/ml/national_squads.cpp select",
+      "evidence": "modes 2 and 3 (21 of 102 teams need mode 3 on probe 57); mode 1 (registered position) not reached",
+      "source": "db/seeds/ports/national.tsv"
     },
     {
       "address": "0x1405b6800",
@@ -12181,6 +12261,11 @@
       "date": "2026-11-27",
       "title": "the owner objectives' setup writer, the budget level as an input, user_history from the build (Track C, K8)",
       "body": "- **Writer**: `MLSetup_ResetOwnerObjectives` (0x14132E0D0), called from `Competition_MLSetup_BuildRankings` in game kind 9 after the fan count and the season-step object (with the object from 0x14132DBB0). It puts the user team into the first free slot of a 10-entry table at EditData +0x17B578C (with the word +0x178946C), stores +0x178946C at +0x181953C, then for objective records 0..88 (EditData +0x1818404, 0x2C each): `OwnerObjective_ClearRecord` (0x14132DA50: state 0, dates invalid, team invalid, bit fields and flag word 0), the id in +0x1C bits 2..8, and for ids 1..88 the flag byte +0x24 and four bit fields from the definition `OwnerObjective_Definition(id)` (0x140EC2640: 0x1434C4650 + id x 0x38). Records 89..99 are not written. **confirmed** (read, disassembly for the arguments).\n- **The definition table** (0x1434C4650, 89 x 0x38) is zero on disk and filled at startup by `OwnerObjective_DefinitionTable_Init` (0x1401D9720), straight-line constant stores. Simulated from its disassembly (`private-reference/oracle/scratch/obj_table_sim.py`): entry +0x10 is 1 for ids 0..40, 2 for 41..54, 0 for 55..88. So at creation the flags are 0 (id 0), 1 (1..40), 2 (41..54), 0 (55..88) and every state 0: equal to probes 58 and 60 at BuildSeason entry and probe 52's creation boundary. **confirmed**. Ported as `ml::reset_owner_objectives` (the rule embedded as two id ranges; the table is code-built, so there is no exe data to read). The owner reward (`ML_Finance_DailyGameMode9`) reads ids 0x37..0x58, whose flags are 0.\n- **Budget level**: `construct_world` takes it as an input (`budget_level`, EditData byte +0x1789487, a creation setting like the club and the coach; -1 = take the base's). The tests pass the dump's byte. `Finance_InitBudgets` reads it through `career_budgets_from_files`.\n- **user_history**: the match table's recorded records (+4 bit 30) with the user club on a side. No record has bit 30 in probes 52, 58 and 60 (6,345, 0 and 6,345 records), and the built records hold no result, so with BuildSeason run the constructor sets it empty (Derived) and reports an issue if a built match were recorded.\n- **Dump-sourced fields left in the standard constructor with coach and level given: `ranking.nation` only** (K4 national squads). The finance group is complete (19 of 19 built). Not modelled: the 10-entry table at +0x17B578C, +0x181953C and the objective records' other words (no World field); records 89..99 keep the base's values (zero in the dumps, no consumer)."
+    },
+    {
+      "date": "2026-11-27",
+      "title": "K4 national squads: MLSetup_PickNationalSquads ported, the national ranking from the files (Track C)",
+      "body": "Reference: probe 57's dumps bracket the pick. At `Competition_MLSetup_Run` entry the national rosters are the load's, all 102 differ from BuildSeason entry; at BuildSeason entry they equal the creation boundary and are identical across probes 57, 58, 60 and 52 (three Arsenal careers and club 139: order, members and squad numbers). The pick is the first step of `Competition_MLSetup_BuildRankings` (kinds 9, 10), before `Competition_Ranking_Build`, the calendar, SetFame, the phase pass and the contract remap; it draws nothing (FINDINGS 2026-11-26: 0 advances before the remap).\n\n- **MLSetup_PickNationalSquads** (0x141318D20): every team of class 0x4000000 in record order, `NationalSquad_Pick` (0x1413162E0) with the user-squad flag 0 and the numbering flag 1, then `Player_UpdateDerivedState` on every record. **confirmed** (read).\n- **NationalSquad_Pick**: candidates are the player records in record order with a valid ref, state nibble (+0x13C & 0xF) not 5 or 6 and nationality (+0x144) equal to the team's (+0x418). Its other checks (days since +0x178946C, +0x13C bit 26 and bits 4-5, `FUN_14151C710`, +0x1789504) apply only to the user player EditData +0x1819540, which is invalid (0xFFFF) in probes 57, 58 and 60. 23 slots: the formation's 11 positions (`TacticBlock_GetSlotPosition` kind 0), again, then position 0. `NationalSquad_SelectSlots` (0x1413179A0) mode 2: per slot in order, of the unused candidates with state nibble != 4, bit 26 clear, +0x148 (days out) 0, `Player_ClassCapped` != 0 and a playable flag at the position, the highest `Player_GetPositionRatingByRef(position, 2)` (strict, first on a tie). If a slot stays empty, mode 3 repeats the pass with no checks over every slot. Then the old members' team slot 1 (+0x130) is cleared, `Team_ClearRoster`, the filled slots appended in slot order with number slot + 1, team slot 1 set, tactic +0x248..+0x24D = 0xFF, and `Team_AutoSelectLineup` mode 3 (cap 0x17) with `Lineup_FinaliseA`. **confirmed** (read; equal below).\n- **The captain input**: Lineup_FinaliseA starts from formation +0x251 as the load left it: the flagged PlayerAssignment row's position among the team's rows in squad order, counting rows whose player has no record (102 of 102; 86 when those rows are skipped). **confirmed** by the result. Not explained: at `Competition_MLSetup_Run` entry every national team holds index 5; the pick reads the records after `RebuildFromList` copies them (0x141269090), whose source is not read. **probable**.\n- **Player_UpdateDerivedState** (0x1415234E0): writes only the 15 competition discipline entries at +0xF0, from the confederation of the nationality's national team (`Team_FindNationalByCountry` 0x1415183F0): frees some competition ids, adds others (`Player_Discipline_AddCompetitions` 0x14158A740). It reads nothing the pick writes; no World field holds +0xF0 (ML suspensions are not modelled, match_day.h), so no existing state is recomputed. **probable** (read; `FUN_14158A810` not read).\n- **Port**: `ml::pick_national_squads` (src/game/ml/national_squads.h), reusing `team::position_rating`/`position_flag`, `match::auto_lineup_slots` and `match::lineup_captain`. `construct_world` runs it after the regulations, before the calendar; the national ranking is `build_nation_ranking(ml::national_strengths)` (`Team_ComputeStrength` over the picked rosters). Platform: `career_assignments` (every team's PlayerAssignment rows). **confirmed**: probe 57 BuildSeason entry, all 102 national teams: roster order, squad numbers, 40 slots and captain equal, national ranking equal (21 teams need mode 3, none short); probes 58 and 60: rosters, slots and captains 102 of 102; probe 52: `team.roster` and `team.captain` 659 of 659. S0 is unchanged on 52, 58, 60 and 65b (no draw). `team.slots` still differs only on clubs (458 of 555 at BuildSeason entry, the K4 club-lineup gap).\n- **Constructor**: `ranking.nation` is built from the files; no field of the standard constructor (coach and budget level given) is dump-sourced now. Not modelled: squad numbers in the World (kept in `ConstructedWorld::national`), team slot 1 (+0x130), the six tactic bytes, +0xF0; not taken in Master League and not ported: the user-player branches, the kind-10 branch (+0x1798AB4), the user national squad (+0x1798AC8), `Team_SquadNumberFor` (numbering flag 0)."
     }
   ]
 }
