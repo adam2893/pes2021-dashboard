@@ -1,5 +1,5 @@
 {
-  "updated": "2026-11-28 14:05 UTC",
+  "updated": "2026-11-28 15:07 UTC",
   "headline": {
     "sim_percent": [
       80,
@@ -268,7 +268,7 @@
       "behavioural": 43,
       "free": 1
     },
-    "findings_entries": 261
+    "findings_entries": 263
   },
   "match_metrics": {
     "unique_signatures": {
@@ -293,5 +293,5 @@
       "as_of": "2026-11-02"
     }
   },
-  "source_commit": "edb177f"
+  "source_commit": "da0d68a"
 }
