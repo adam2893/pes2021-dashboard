@@ -1,12 +1,12 @@
 {
-  "updated": "2026-11-28 12:04 UTC",
+  "updated": "2026-11-28 12:38 UTC",
   "headline": {
     "sim_percent": [
       80,
       85
     ],
     "mode_percent": 35,
-    "note": "Editorial estimates as of 28 November 2026, not measured coverage. Standard career creation is complete for the tested scope; Original Lineup has passed its first reference comparison. Daily simulation corrections, transfer search, objectives, news, persistence and original menus remain."
+    "note": "Editorial estimates as of 28 November 2026, not measured coverage. Career creation (both start types) is complete for the tested scope. Daily and seasonal simulation corrections have started; transfer search, objectives, news, persistence and original menus remain."
   },
   "areas": [
     {
@@ -16,8 +16,13 @@
     },
     {
       "name": "Original Lineup career creation",
+      "status": "exact",
+      "text": "Both start types are constructed from original files and creation settings and match eleven reference careers across regions, start months and league structures; a few rare branches are tracked as open obligations."
+    },
+    {
+      "name": "Daily and seasonal simulation (S1b)",
       "status": "mixed",
-      "text": "Implemented and matched on the first reference career; independent regional verification remains."
+      "text": "Started: a prioritised inventory of known daily and seasonal differences is in place; work begins with the random-number chain on user-match and scouting days."
     },
     {
       "name": "Initial development and scouting",
@@ -117,10 +122,10 @@
   },
   "left": [
     {
-      "group": "Independent verification",
+      "group": "Career creation follow-ups",
       "items": [
-        "Original Lineup second reference career covering another region and league structure.",
-        "Remaining constructor verification obligations and unmodelled persistent fields."
+        "Rare creation-day transfer branches involving the user club, tracked as open obligations.",
+        "One fitted continental qualification rule to be replaced by the original rule."
       ]
     },
     {
@@ -239,6 +244,11 @@
     },
     {
       "date": "2026-11-28",
+      "title": "Career creation complete for tested scope",
+      "text": "Eleven reference careers of both start types reproduced exactly; daily and seasonal simulation work begins."
+    },
+    {
+      "date": "2026-11-28",
       "title": "Original menu research",
       "text": "Resource inventory completed; runtime decoding and rendering remain outstanding."
     }
@@ -283,5 +293,5 @@
       "as_of": "2026-11-02"
     }
   },
-  "source_commit": "84688b9"
+  "source_commit": "0339173"
 }
