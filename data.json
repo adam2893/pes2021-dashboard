@@ -6819,6 +6819,518 @@
       "source": "db/seeds/s1a1.tsv"
     },
     {
+      "address": "0x140a6a000",
+      "name": "Object_GetU32At10",
+      "confidence": "probable",
+      "reviewed": "no",
+      "evidence": "MOV EAX,[RCX+0x10]; RET; 199 callers; next-match round index",
+      "source": "db/seeds/s1b2.tsv"
+    },
+    {
+      "address": "0x140b361d0",
+      "name": "Team_GetLastUsedEntry",
+      "confidence": "guess",
+      "reviewed": "no",
+      "evidence": "TeamRecord +0x2b8 + (idx*10+i)*20, idx 0..2, last non-invalid handle",
+      "source": "db/seeds/s1b2.tsv"
+    },
+    {
+      "address": "0x140ebe370",
+      "name": "OwnerObjective_Cond_GetMatchContext",
+      "confidence": "probable",
+      "reviewed": "yes",
+      "evidence": "RCX out (returned): +0 the team of EditData_FindTeamByKind(kind byte 0x1427d8a01), +4 its rating(6) byte, +8 1 if it is slot 0 of the object at owner+0x50+0x35960, +0xc / +0x10 the other slot's rating(6) and handle (slot from the +8 flag: probable); +8/+0xc 0 and +0x10 invalid when its u16@8 is 0xffff (pes-skeptic 2026-11-28)",
+      "source": "db/seeds/s1b2.tsv"
+    },
+    {
+      "address": "0x140ed6540",
+      "name": "OwnerObjective_Cond_AlwaysTrueScan",
+      "confidence": "guess",
+      "reviewed": "yes",
+      "evidence": "word zeroed, then 1 on both paths of a 200 x 0x38 scan at edit+0x1819548 for dword 0x2d (pes-skeptic: always 1)",
+      "source": "db/seeds/s1b2.tsv"
+    },
+    {
+      "address": "0x140ed6630",
+      "name": "OwnerObjective_Cond_MonthGateIcc6Else12",
+      "confidence": "guess",
+      "reviewed": "yes",
+      "evidence": "Date_Today, gate 0x141576950(0x20, date) else 0; byte date+2 == 6 if Competition_Team_IccEligible(ctx[0]) else == 12 (month byte unverified) (pes-skeptic)",
+      "source": "db/seeds/s1b2.tsv"
+    },
+    {
+      "address": "0x140ed66a0",
+      "name": "Competition_Country_FindRegulationByPeriod23",
+      "confidence": "probable",
+      "reviewed": "no",
+      "evidence": "CountryIndex(reg) list, first id with period 23 else 0xffff",
+      "source": "db/seeds/s1b2.tsv"
+    },
+    {
+      "address": "0x140ed67c0",
+      "name": "OwnerObjective_NextMatch_GetDerbyRelation",
+      "confidence": "probable",
+      "reviewed": "no",
+      "evidence": "Team_FindDerby(slot1, slot0, 0, default 4)",
+      "source": "db/seeds/s1b2.tsv"
+    },
+    {
+      "address": "0x140ed6860",
+      "name": "Object_GetU16At0",
+      "confidence": "probable",
+      "reviewed": "no",
+      "evidence": "MOVZX [RCX]",
+      "source": "db/seeds/s1b2.tsv"
+    },
+    {
+      "address": "0x140ed6870",
+      "name": "Competition_Standings_GetTeamPosition",
+      "confidence": "probable",
+      "reviewed": "no",
+      "evidence": "standings entries stride 0x14 count +0x3c0; entry+4 for team else 0",
+      "source": "db/seeds/s1b2.tsv"
+    },
+    {
+      "address": "0x140ed6960",
+      "name": "OwnerObjective_Cond_GetOwnerRatingRank",
+      "confidence": "probable",
+      "reviewed": "yes",
+      "evidence": "(team, rating6) pairs sorted by 0x140ed63d0 (direction unread), competition ranking 1,2,2,4 (ties share the group's first position), 0 when absent or empty (pes-skeptic)",
+      "source": "db/seeds/s1b2.tsv"
+    },
+    {
+      "address": "0x140ed6ce0",
+      "name": "OwnerObjective_NextMatch_GetRegulationKind",
+      "confidence": "probable",
+      "reviewed": "yes",
+      "evidence": "0xffff if u16@8 of obj+0x35960 is 0xffff, else Regulation_KindOf(u16@0xa) (pes-skeptic)",
+      "source": "db/seeds/s1b2.tsv"
+    },
+    {
+      "address": "0x140ed6d50",
+      "name": "OwnerObjective_Cond_GetTeamRecord",
+      "confidence": "probable",
+      "reviewed": "no",
+      "evidence": "EditData_GetTeamRecord(owner+0x48, *team)",
+      "source": "db/seeds/s1b2.tsv"
+    },
+    {
+      "address": "0x140ed6d80",
+      "name": "OwnerObjective_Cond_OwnerInCategory2Or3",
+      "confidence": "guess",
+      "reviewed": "no",
+      "evidence": "FUN_14151d440 categories 2 or 3 on ctx owner",
+      "source": "db/seeds/s1b2.tsv"
+    },
+    {
+      "address": "0x140ed6dd0",
+      "name": "Competition_Country_HasPeriod23Regulation",
+      "confidence": "probable",
+      "reviewed": "no",
+      "evidence": "country scan, period 23, bool",
+      "source": "db/seeds/s1b2.tsv"
+    },
+    {
+      "address": "0x140ed6ec0",
+      "name": "Competition_Regulation_IsCompleteChecked",
+      "confidence": "probable",
+      "reviewed": "no",
+      "evidence": "*reg != -1 and Competition_Regulation_IsComplete",
+      "source": "db/seeds/s1b2.tsv"
+    },
+    {
+      "address": "0x140ed6fa0",
+      "name": "Competition_Regulation_IsPeriod7",
+      "confidence": "probable",
+      "reviewed": "no",
+      "evidence": "+0x308 & 0x1f800000 == 0x3800000",
+      "source": "db/seeds/s1b2.tsv"
+    },
+    {
+      "address": "0x140ed6ff0",
+      "name": "Competition_Regulation_IsPeriod9",
+      "confidence": "probable",
+      "reviewed": "no",
+      "evidence": "== 0x4800000",
+      "source": "db/seeds/s1b2.tsv"
+    },
+    {
+      "address": "0x140ed7040",
+      "name": "Competition_Regulation_Get304b8",
+      "confidence": "probable",
+      "reviewed": "no",
+      "evidence": "table scan, +0x304 bit 8; 0xff00 if id -1",
+      "source": "db/seeds/s1b2.tsv"
+    },
+    {
+      "address": "0x140ed7060",
+      "name": "Competition_Regulation_IsPeriod32",
+      "confidence": "probable",
+      "reviewed": "no",
+      "evidence": "period == 32",
+      "source": "db/seeds/s1b2.tsv"
+    },
+    {
+      "address": "0x140ed7080",
+      "name": "Competition_Team_CheckRegulation_147490",
+      "confidence": "guess",
+      "reviewed": "no",
+      "evidence": "reg != -1 and team valid -> FUN_141547490(team)",
+      "source": "db/seeds/s1b2.tsv"
+    },
+    {
+      "address": "0x140ed70c0",
+      "name": "Competition_Regulation_IsLeagueTypeAt",
+      "confidence": "probable",
+      "reviewed": "no",
+      "evidence": "wrapper of Competition_Regulation_IsLeagueType(*arg2)",
+      "source": "db/seeds/s1b2.tsv"
+    },
+    {
+      "address": "0x140ed70e0",
+      "name": "OwnerObjective_Cond_IsDerbyOrRival",
+      "confidence": "probable",
+      "reviewed": "no",
+      "evidence": "derby relation == 1 or Team_IsRival(owner, opponent)",
+      "source": "db/seeds/s1b2.tsv"
+    },
+    {
+      "address": "0x140ed7120",
+      "name": "Competition_Regulation_IsPeriod6To10",
+      "confidence": "probable",
+      "reviewed": "no",
+      "evidence": "(period-6) < 5",
+      "source": "db/seeds/s1b2.tsv"
+    },
+    {
+      "address": "0x140ed7170",
+      "name": "Competition_Country_HasPeriod9Regulation",
+      "confidence": "probable",
+      "reviewed": "no",
+      "evidence": "country scan, period 9",
+      "source": "db/seeds/s1b2.tsv"
+    },
+    {
+      "address": "0x140ed7260",
+      "name": "Competition_Country_HasPeriod10Regulation",
+      "confidence": "probable",
+      "reviewed": "no",
+      "evidence": "country scan, period 10",
+      "source": "db/seeds/s1b2.tsv"
+    },
+    {
+      "address": "0x140ed7350",
+      "name": "Competition_Regulation_IsPeriod8",
+      "confidence": "probable",
+      "reviewed": "no",
+      "evidence": "== 0x4000000",
+      "source": "db/seeds/s1b2.tsv"
+    },
+    {
+      "address": "0x140ed73a0",
+      "name": "Competition_Regulation_IsPeriod10",
+      "confidence": "probable",
+      "reviewed": "no",
+      "evidence": "== 0x5000000",
+      "source": "db/seeds/s1b2.tsv"
+    },
+    {
+      "address": "0x140ed73f0",
+      "name": "Competition_Regulation_IsPeriod11",
+      "confidence": "probable",
+      "reviewed": "no",
+      "evidence": "== 0x5800000",
+      "source": "db/seeds/s1b2.tsv"
+    },
+    {
+      "address": "0x140ed7440",
+      "name": "Competition_Regulation_IsPeriod12",
+      "confidence": "probable",
+      "reviewed": "no",
+      "evidence": "== 0x6000000",
+      "source": "db/seeds/s1b2.tsv"
+    },
+    {
+      "address": "0x140ed7490",
+      "name": "Competition_Regulation_IsPeriod14Or15",
+      "confidence": "probable",
+      "reviewed": "no",
+      "evidence": "*reg != -1 and (period-14) < 2",
+      "source": "db/seeds/s1b2.tsv"
+    },
+    {
+      "address": "0x140ed74f0",
+      "name": "Competition_Regulation_IsPeriod13",
+      "confidence": "probable",
+      "reviewed": "no",
+      "evidence": "*reg != -1 and period == 13",
+      "source": "db/seeds/s1b2.tsv"
+    },
+    {
+      "address": "0x140ed7560",
+      "name": "Competition_Team_CheckRegulation_14dd70",
+      "confidence": "guess",
+      "reviewed": "no",
+      "evidence": "reg != -1 and team valid -> FUN_14151dd70(reg, team)",
+      "source": "db/seeds/s1b2.tsv"
+    },
+    {
+      "address": "0x140ed75a0",
+      "name": "OwnerObjective_Cond_NextMatchNotBonusExcluded",
+      "confidence": "guess",
+      "reviewed": "no",
+      "evidence": "Finance_BonusExclusionD(u16@8, *team) == 0",
+      "source": "db/seeds/s1b2.tsv"
+    },
+    {
+      "address": "0x140ed75e0",
+      "name": "OwnerObjective_Cond_FocusRefInTeamSquad",
+      "confidence": "guess",
+      "reviewed": "no",
+      "evidence": "ref at edit+0x1824480 searched in the owner squad",
+      "source": "db/seeds/s1b2.tsv"
+    },
+    {
+      "address": "0x140ed7690",
+      "name": "OwnerObjective_Cond_IsTeamCompetitionLeader",
+      "confidence": "probable",
+      "reviewed": "no",
+      "evidence": "FUN_14151b3e0(reg) team == *team",
+      "source": "db/seeds/s1b2.tsv"
+    },
+    {
+      "address": "0x140ed7700",
+      "name": "OwnerObjective_Cond_GetRoundsRemaining",
+      "confidence": "probable",
+      "reviewed": "yes",
+      "evidence": "((reg+0x300 >> 19) & 0x3f) - obj[+0x10]; 0 when the id is 0xffff; when (reg+0x308 & 0x1f800000) == 0x6000000 a result of 0 or 1 becomes 2 (unsigned compare; an underflow is not clamped) (pes-skeptic)",
+      "source": "db/seeds/s1b2.tsv"
+    },
+    {
+      "address": "0x140ed77c0",
+      "name": "OwnerObjective_NextMatch_IsKindInSet",
+      "confidence": "probable",
+      "reviewed": "yes",
+      "evidence": "0 unless u16@8 != 0xffff; kind <= 0x10 and bit set in 0x18678: kinds 3, 4, 5, 6, 9, 10, 15, 16 (pes-skeptic)",
+      "source": "db/seeds/s1b2.tsv"
+    },
+    {
+      "address": "0x140ed7810",
+      "name": "Competition_Country_FindRegulationByPeriod9",
+      "confidence": "probable",
+      "reviewed": "no",
+      "evidence": "first country regulation with period 9 else 0xffff",
+      "source": "db/seeds/s1b2.tsv"
+    },
+    {
+      "address": "0x140ed7930",
+      "name": "Competition_Country_FindRegulationByPeriod10",
+      "confidence": "probable",
+      "reviewed": "no",
+      "evidence": "same, period 10",
+      "source": "db/seeds/s1b2.tsv"
+    },
+    {
+      "address": "0x140ed7a50",
+      "name": "Competition_Country_FindRegulationByPeriod13",
+      "confidence": "probable",
+      "reviewed": "no",
+      "evidence": "same, period 13",
+      "source": "db/seeds/s1b2.tsv"
+    },
+    {
+      "address": "0x140ed7bb0",
+      "name": "OwnerObjective_Cond_NextMatchBonusExclusion",
+      "confidence": "guess",
+      "reviewed": "no",
+      "evidence": "tail-jumps Finance_BonusExclusionD(u16@8, *team)",
+      "source": "db/seeds/s1b2.tsv"
+    },
+    {
+      "address": "0x140ed7ca0",
+      "name": "OwnerObjective_Cond_OwnerInCategory2_3_5_8",
+      "confidence": "guess",
+      "reviewed": "no",
+      "evidence": "FUN_14151d440 categories 2, 3, 5, 8 on ctx owner",
+      "source": "db/seeds/s1b2.tsv"
+    },
+    {
+      "address": "0x140edb130",
+      "name": "OwnerObjective_Cond_OwnerLeaguePeriod13Entry",
+      "confidence": "guess",
+      "reviewed": "no",
+      "evidence": "owner league, period-13 sibling, 304b8 flag + team check",
+      "source": "db/seeds/s1b2.tsv"
+    },
+    {
+      "address": "0x140edb320",
+      "name": "OwnerObjective_Cond_OwnerIsKnockoutWinner",
+      "confidence": "probable",
+      "reviewed": "no",
+      "evidence": "kind in set, complete, knockout winner == owner",
+      "source": "db/seeds/s1b2.tsv"
+    },
+    {
+      "address": "0x140edb6c0",
+      "name": "OwnerObjective_Cond_OwnerInTopTwoOfGroup",
+      "confidence": "probable",
+      "reviewed": "no",
+      "evidence": "group regulation of owner, standings position < 3",
+      "source": "db/seeds/s1b2.tsv"
+    },
+    {
+      "address": "0x140edb930",
+      "name": "OwnerObjective_Cond_Round0x33Flagged",
+      "confidence": "guess",
+      "reviewed": "no",
+      "evidence": "round == 0x33, u32@0xc nonzero, not bonus-excluded",
+      "source": "db/seeds/s1b2.tsv"
+    },
+    {
+      "address": "0x140edbc60",
+      "name": "OwnerObjective_Cond_Round0x34Flagged",
+      "confidence": "guess",
+      "reviewed": "no",
+      "evidence": "same with round 0x34",
+      "source": "db/seeds/s1b2.tsv"
+    },
+    {
+      "address": "0x140eddb40",
+      "name": "OwnerObjective_Cond_TeamTag2Or3InWindow",
+      "confidence": "guess",
+      "reviewed": "no",
+      "evidence": "season-end gate, 4 shorts at team +0x428 value 2 or 3",
+      "source": "db/seeds/s1b2.tsv"
+    },
+    {
+      "address": "0x140ede010",
+      "name": "OwnerObjective_Cond_TeamTag2_3Or5InWindow",
+      "confidence": "guess",
+      "reviewed": "no",
+      "evidence": "twin of eddb40 also accepting 5",
+      "source": "db/seeds/s1b2.tsv"
+    },
+    {
+      "address": "0x1414c0b40",
+      "name": "Object_GetU16At10",
+      "confidence": "probable",
+      "reviewed": "no",
+      "evidence": "MOVZX [RCX+10]; RET; 166 callers; next-match regulation id",
+      "source": "db/seeds/s1b2.tsv"
+    },
+    {
+      "address": "0x1414c1180",
+      "name": "Match_GetTeamHandleAt",
+      "confidence": "probable",
+      "reviewed": "no",
+      "evidence": "handle at match+0x138+idx*0x690; slot 0 home; 86 callers",
+      "source": "db/seeds/s1b2.tsv"
+    },
+    {
+      "address": "0x14151b2e0",
+      "name": "Competition_Regulation_GetKnockoutWinnerTeam",
+      "confidence": "probable",
+      "reviewed": "yes",
+      "evidence": "competition by id (table +0xc12e9c, stride 0x314); +0x84 == 3, record 0x35 via 0x141579bd0 with (+0x204 & 0xfc000000) == 0xd4000000, then 0x14151b230; else invalid (\"knockout\" for +0x84 == 3 inferred) (pes-skeptic)",
+      "source": "db/seeds/s1b2.tsv"
+    },
+    {
+      "address": "0x14151b3e0",
+      "name": "Competition_Regulation_GetLeaderOrWinnerTeam",
+      "confidence": "probable",
+      "reviewed": "yes",
+      "evidence": "+0x84 == 3: as 0x14151b2e0; else the first standings entry (stride 0x14) whose position +4 is 1 (pes-skeptic)",
+      "source": "db/seeds/s1b2.tsv"
+    },
+    {
+      "address": "0x14151cab0",
+      "name": "OwnerObjective_NextMatch_IsHalfSeasonRound",
+      "confidence": "guess",
+      "reviewed": "no",
+      "evidence": "league kind, half of round count == next-match round",
+      "source": "db/seeds/s1b2.tsv"
+    },
+    {
+      "address": "0x14151d440",
+      "name": "Competition_Team_IsInCategory",
+      "confidence": "guess",
+      "reviewed": "no",
+      "evidence": "FUN_14150b860(cat) list, FUN_14151d340(reg, team) per regulation",
+      "source": "db/seeds/s1b2.tsv"
+    },
+    {
+      "address": "0x14151d840",
+      "name": "EditData_ClubRecord_ContainsU16At234",
+      "confidence": "guess",
+      "reviewed": "no",
+      "evidence": "record idx*0x2c4 + edit+0x16038a8, 18 entries at +0x234",
+      "source": "db/seeds/s1b2.tsv"
+    },
+    {
+      "address": "0x14151ebb0",
+      "name": "Competition_Round_IsTeamInFixtures",
+      "confidence": "probable",
+      "reviewed": "no",
+      "evidence": "(reg, round, team) scan of round fixtures",
+      "source": "db/seeds/s1b2.tsv"
+    },
+    {
+      "address": "0x1415437a0",
+      "name": "Competition_Regulation_FindPeerBy30Cb7",
+      "confidence": "guess",
+      "reviewed": "no",
+      "evidence": "FUN_1414cd070 list, +0x30c bits 7-12 match",
+      "source": "db/seeds/s1b2.tsv"
+    },
+    {
+      "address": "0x141546f40",
+      "name": "Competition_Standings_IsTeamInBottomN",
+      "confidence": "guess",
+      "reviewed": "yes",
+      "evidence": "(competition id, team): +0x7e != 0xffff, 0x141546c70 true, team among the last N standings entries, N = FUN_1414ccbd0(competition) (meaning of N unread) (pes-skeptic)",
+      "source": "db/seeds/s1b2.tsv"
+    },
+    {
+      "address": "0x1415470f0",
+      "name": "Competition_Regulation_IsCup",
+      "confidence": "probable",
+      "reviewed": "no",
+      "evidence": "membership in Competition_CupRegulationList",
+      "source": "db/seeds/s1b2.tsv"
+    },
+    {
+      "address": "0x141547390",
+      "name": "Competition_Regulation_IsInList1414cd070",
+      "confidence": "guess",
+      "reviewed": "no",
+      "evidence": "membership in FUN_1414cd070 list",
+      "source": "db/seeds/s1b2.tsv"
+    },
+    {
+      "address": "0x141547410",
+      "name": "Competition_Regulation_IsSuperCup",
+      "confidence": "probable",
+      "reviewed": "no",
+      "evidence": "membership in Competition_SuperCupRegulationList",
+      "source": "db/seeds/s1b2.tsv"
+    },
+    {
+      "address": "0x141547b60",
+      "name": "Competition_Standings_IsTeamPromoted",
+      "confidence": "guess",
+      "reviewed": "no",
+      "evidence": "standings minus peer winner, non-reserve teams up to FUN_1414ce140(reg)",
+      "source": "db/seeds/s1b2.tsv"
+    },
+    {
+      "address": "0x141f8ce70",
+      "name": "Object_GetU32AtC",
+      "confidence": "probable",
+      "reviewed": "no",
+      "evidence": "MOV EAX,[RCX+0xc]; RET; 71 callers",
+      "source": "db/seeds/s1b2.tsv"
+    },
+    {
       "address": "0x140f31e50",
       "name": "MLSetup_TransferSteps_Scouting",
       "confidence": "probable",
