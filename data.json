@@ -7155,6 +7155,70 @@
       "source": "db/seeds/s1a1.tsv"
     },
     {
+      "address": "0x141551080",
+      "name": "MLUserMatch_ShufflePassIds",
+      "confidence": "probable",
+      "reviewed": "no",
+      "evidence": "(&match id) list of 5-id groups G0..G6 (ids 1-35) chosen by the match regulation's +0x80 code (FUN_141544f50, 0x2D-0x2F rules), shuffled by 0x141270E30 (game kinds 7-10) or 0x1412722D0 (others: 5 groups); first five ids to the presentation block owner+0x50 +0x35960 (FUN_1414C1F00); Next count exact vs port on 20,522 match records of probes 38/40",
+      "source": "db/seeds/s1b1.tsv"
+    },
+    {
+      "address": "0x141544f50",
+      "name": "Competition_Code_LeagueCodeOfArea",
+      "confidence": "probable",
+      "reviewed": "no",
+      "evidence": "(&out, code) first non-zero area (+0x30C bits 7-12) among regulations of +0x80 code (FUN_1415428A0), then the +0x80 code of the first league-type regulation (Competition_LeagueRegulationList) of that area; sentinel DAT_14351AE28 when none",
+      "source": "db/seeds/s1b1.tsv"
+    },
+    {
+      "address": "0x1415428a0",
+      "name": "Competition_RegulationTable_IdsWithCode",
+      "confidence": "probable",
+      "reviewed": "no",
+      "evidence": "(code, &vector u16) ids of the regulation rows (edit+0xC12E9C, stride 0x314, count +0xD0BCF4) whose +0x80 equals code, table order",
+      "source": "db/seeds/s1b1.tsv"
+    },
+    {
+      "address": "0x1414c1f00",
+      "name": "MatchSetup_SetPassId",
+      "confidence": "guess",
+      "reviewed": "no",
+      "evidence": "(block, id, index) stores one of FUN_141551080's shuffled ids in the presentation block (not read further)",
+      "source": "db/seeds/s1b1.tsv"
+    },
+    {
+      "address": "0x1412722d0",
+      "name": "Random_ShuffleMsvcU32",
+      "confidence": "probable",
+      "reviewed": "no",
+      "evidence": "stub of the relocated ordinary body 0x14475D910: MSVC std::shuffle of u32 with _Rng_from_urng (bits and mask in the third argument) over Random_Xorshift128_Next; equals competition::shuffle_msvc",
+      "source": "db/seeds/s1b1.tsv"
+    },
+    {
+      "address": "0x141270e30",
+      "name": "Random_ShuffleMsvcU32_Xor",
+      "confidence": "probable",
+      "reviewed": "no",
+      "evidence": "stub of the relocated ordinary body 0x14475A050: Random_ShuffleMsvcU32 with the adapter's 64 and 0xFFFFFFFF stored XOR-encoded (0x1482B3D84 ^ 0x31B1030D, 0x1482B3D88 ^ 0xB7F84149)",
+      "source": "db/seeds/s1b1.tsv"
+    },
+    {
+      "address": "0x14154edf0",
+      "name": "MLUserMatch_PickSettingBelow3",
+      "confidence": "probable",
+      "reviewed": "no",
+      "evidence": "stub of the relocated ordinary body 0x144AEB2C0: game kinds 9-10 draw Below(3) and return entry n of the 3-word table 0x142987B10, else 0; passed to FUN_141064540 (match setting)",
+      "source": "db/seeds/s1b1.tsv"
+    },
+    {
+      "address": "0x141589a80",
+      "name": "MLUserMatch_Kind10Threshold",
+      "confidence": "probable",
+      "reviewed": "no",
+      "evidence": "stub of the relocated ordinary body 0x144B2DDC0: 0 unless game kind 10; else a weighted sum of EditData +0x17B546C/+0x17B5474.. words over three steps, divided by 10 (the per-player Below(100) threshold of ML_UserMatch_Prepare, kind 10 only)",
+      "source": "db/seeds/s1b1.tsv"
+    },
+    {
       "address": "0x140a6a000",
       "name": "Object_GetU32At10",
       "confidence": "probable",
@@ -13655,6 +13719,26 @@
       "date": "2026-11-28",
       "title": "audit of findings and shortcuts that depend on relocated code; what is now reconstructable (Track C, offline)",
       "body": "- **Method:**\n  - Every `.impdata` address cited in `src/game`, `src/platform` or this file next to \"not read\", \"shortcut\", \"protected\", \"not ported\", \"fit\" or \"approx\" was looked up against the classifier (`relocated_body` in db/functions.sqlite, `db/relocated_ordinary.tsv`; ranges lo..hi).\n  - The user-match and scout draws found earlier were added to the list.\n  - **confirmed** for the lookup. The priorities are judgement.\n- **Out of scope (fail closed, unchanged):**\n  - 0x144B22560 (`Calendar_IsAugustStart`'s body: `jump_out_of_window`, mutated code);\n  - 0x1447E9530 (behind 0x1413623F0: `odd:int3`).\n- **Reconstructable now (ordinary bodies), in priority order:**\n  1. **The Next-draw shuffle around 0x14475D985.** It makes 4 to 9 draws in `ML_UserMatch_Prepare` and about 300 in `ScoutComponent_Step`. It blocks the S1b day loop's draw chain on user-match days and on scout days. Read it, then replay it in pesemu against probes 38 and 40.\n  2. **The user-match draw at 0x144AEB2F5 and the threshold helper 0x144B2DDC0** (the per-player `Below(100)` in `ML_UserMatch_Prepare`). Same S1b path.\n  3. **0x144AF18E0** (ProgressionSwitch cases 10 and 0x10). It creates the next year's regs 8, 9 and 15, and appends the Club World Cup holder to reg 1. Needed for season 2 and later.\n  4. **0x144ADC450** (`MatchSim_ExtraTime`'s leg-1 special case, marked a shortcut in match_sim.h). Small; it affects knockout results.\n  5. **0x1447E3190** (the tail call of `Finance_ClearClubBlock`). The finance block is exact on eleven careers, so it is low.\n  6. **0x144ACACE0** (the user club-slot bits in `SwapUserClubDivision`, **probable**). Exact on eleven careers; confirm only.\n  7. **0x144B39840** (the runtime-object test at creation). Read; confirm the creation case.\n- **Already resolved:** 0x144ADF700 (`SortRelatedByValue`) reads the club ranking (2026-11-04 correction). So the porter's club-rank sort in creation_continental agrees with the read rule. 0x1447E9090 was read 2026-11-08.\n- **Fidelity:** no fidelity level changed. Each item above moves only after its own capture or oracle check."
+    },
+    {
+      "date": "2026-11-29",
+      "title": "K9-R6 closed: the AFC cup row is the tier key's base-id match, not a cup rule (Track C, oracle plus static read)",
+      "body": "- **Rule (read):**\n  - `Competition_NextList_Helper57470` (0x141357470) passes the league's slot-row count for qual type 7 to `TieredByRank` (0x141352830) with tier key 30. That count includes the cup rows.\n  - The tier list comes from `Competition_Entries_CollectHandles` (0x141519300) in mode 2. Mode 2 pushes each entry's id and also its base id (`Team_IdFromHandle`, id & 0x23FFF).\n  - Key 30 holds the AFC variants (base | 0x10000) of the J1 and K League clubs, so those clubs fill tier 0.\n  - At creation the cup rows have no rule of their own. The earlier fit (the cup's two-club key + 1) covered a port bug: `in_key` compared raw ids only.\n- **Evidence:**\n  - FUN_1413636C0 was emulated (pesemu) on probe 62e's BuildSeason-entry dump, with the season object rebuilt from the probe's logged StoreEntrants calls. The reg 15 set equals the logged 32 of 32.\n  - Stated stand-in: IsComplete and Flag90750 are taken as 0 at creation, because the runtime block was not captured.\n  - The port (`in_key` matches the id or its base id) is exact on 8 of 8 January-test probes and on `creation_continental` (62e, g, i, j, k, l). Full ctest 98/98; gates identical to C2.\n  - **confirmed** (emulation on one probe plus port tests on eight).\n- **Open:** the same `in_key` change also applies to group 1 (Libertadores, keys 26 and 28). The tests pass, but no Libertadores list was inspected for new tier matches."
+    },
+    {
+      "date": "2026-11-29",
+      "title": "S1b P0-a, the ML user-match pass after the weather roll (Track C, static read plus oracle)",
+      "body": "- **Rule (read, `ML_UserMatch_Prepare` 0x1415251E0, game kind 9):**\n  - After `ML_UserMatch_WeatherRoll`'s Below(100), `MLUserMatch_ShufflePassIds` (0x141551080) builds a list of 5-id groups G0..G6 (ids 1-35).\n  - In kinds 7-10 it shuffles the list with `Random_ShuffleMsvcU32_Xor` (0x141270E30, body 0x14475A050) over `Random_ShuffleMsvcU32` (0x1412722D0, body 0x14475D910). That is MSVC `std::shuffle` with `_Rng_from_urng`, 32 bits, mask 0xFFFFFFFF; the adapter constants are XOR-encoded and decode to 64 and 0xFFFFFFFF. It equals `competition::shuffle_msvc`: length - 1 Next, plus rejection retries.\n  - The groups come from the match regulation's +0x80 code, mapped by `Competition_Code_LeagueCodeOfArea` (0x141544F50):\n    - The first non-zero area among the regulations of that code selects the first league-type regulation of the area, and that regulation's code is used.\n    - If no such league exists, codes 0x2E/0x2F take the home side's league code, and 0x2D the home side's confederation group.\n    - A switch then maps the code to its groups (the table is in `detail::user_match_pass_ids`).\n    - A match with no regulation gets all 7 groups.\n  - The ids go to the presentation block owner+0x50 +0x35960, not EditData.\n  - Then `MLUserMatch_PickSettingBelow3` (0x14154EDF0, body 0x144AEB2C0) draws one Below(3) in kinds 9-10.\n  - The per-player Below(100) with `MLUserMatch_Kind10Threshold` (0x141589A80, body 0x144B2DDC0) runs in game kind 10 only, so it is not on the Master League path (inventory U2 closed as unreachable in ML).\n  - **probable** (read), **confirmed** at function level by the oracle.\n- **Oracle (`spec_user_match_draws.py`):** FUN_141551080 was run on every match record of probe 38 (`edit38_1`) and probe 40 (`edit40_1`), and its Next draws were counted. The port gives the same count on 10,209 of 10,209 and 10,313 of 10,313 records (`ml_day_replay_test`, pass-list check).\n- **Chain:** `run_day`'s `Block::UserMatchRoll` now draws Below(100), then the shuffle, then Below(3). The replay classifies sites 0x14475D985 (right after a user-match draw) and 0x144AEB2F5 into that block. The user-match pass is exact on probe 38 span 3 (11 draws) and probe 40 spans 15 and 17 (6 draws each). Chained-day totals are unchanged (probe 38: 2 of 3; probe 40: 15 of 19). Their first breaks are the scout step's 14-day draw (0x140F1EABA) and user-club match simulation, not this pass.\n- **Not changed:** the EditData +0x1789498 branch (fixed weather: no WeatherRoll, or one under the +0x17894A0 conditions) is not modelled. The existing unconditional Below(100) fits every logged user match.\n- **Gates:** not run cleanly. Another change (creation_continental.cpp) was in the working tree. The extra draws on user-match days are expected to move the five-season audit; that baseline change needs approval.\n- **Status:** the port is kept off master until the gate change is approved. Its patch is `private-reference/s1b/um/um_final.patch`, and branch `s1b-pending-um` holds it as one commit."
+    },
+    {
+      "date": "2026-11-29",
+      "title": "S1b T1, the scout step's draws (Track C, static read; not ported)",
+      "body": "- `ScoutComponent_Step` (0x140F1E410) chooses k from the candidate list size n:\n  - n >= 10: k = 1;\n  - 5 <= n < 10: one Below(2) at 0x140F1EABA, then k = 2 - (draw != 0);\n  - n < 5: k = 3.\n- For position class 0xD, a code list ({0xC,0xB,0xA,9}, {8,5,4,7,6}, ...) is shuffled through 0x14475A050 and the first k codes are taken.\n- Then every player record that passes the filter has its k-code list shuffled again. The filter checks +0x13C bit 26, the state, the user club, the scout's club, +0x14A bit 0, FUN_140F1C880's list, the phase (not 0x12 or 1), `ComAgent_ClubPlan_TierOf` < 4 and +0x13C & 0x30. That gives k - 1 Next per eligible player: the roughly 300-draw block on scout days.\n- The candidates go to the scout component's runtime lists, not EditData. **probable** (read). Notes: `private-reference/s1b/t1_scout_notes.md`."
+    },
+    {
+      "date": "2026-11-29",
+      "title": "original menus: AFP animation fields and the WFNT font format (Track A/C, offline research)",
+      "body": "- **0x7f command:**\n  - bit 1 places a character; bit 0 modifies; word A is the depth; word B is the exclusive end frame;\n  - bit 5 carries a name (**confirmed**, 21,447 of 21,447);\n  - bit 2 opens the matrix block: bit 8 is scale and bit 9 rotate/skew, both Q10 (/1024; the earlier /1000 is corrected), and bit 10 is the position in tenths of a pixel;\n  - bit 3 opens the colour block: bit 13 is multiply RGBA and bit 14 is add RGB;\n  - bits 18 and 19 are the Q15 compact forms of bits 8 and 9 and never appear alongside them (**confirmed**, 57,510 commands; ratio 32768/1024 on 7,843 transitions);\n  - bit 21 is a place-only layout or mask marker.\n  The others are **probable**.\n- **Frames:** a child clip starts at its own frame 0 when placed. The frame-table first u16 is 16 times the number of children (**confirmed**). Clip table 1 holds (frame, offset) pairs into a bytecode area, whose goto and stop opcodes are not decoded.\n- **External textures:** the start-type screen's `image` instance is an alpha-0 100x100 slot. The `modeStartType*_tex` plate fits it to 0.2%. The C++ code chooses the package (**probable**).\n- **Text:** the packages hold no text or font binding. Text fields are named alpha-0 rects with colour role 66666600 (**probable**).\n- **WFNT** (**confirmed**, every glyph of every font):\n  - glyph records hold a UTF-8 code packed big-endian, the metrics and an offset;\n  - pixels are 4-bit, high nibble first, and alpha = index x 17.\n  - Port: `src/engine/formats/wfnt` reads 23 fonts and 82,596 glyphs in bounds (`wfnt_golden`). The 32-bit ext font's byte order is not decoded.\n- Reports: `private-reference/ui/night_2026-11-28/report.md` and `night2_2026-11-28/report.md`. **Open:** the stage's vertical overflow on the start-type screen (a C++ scroll or viewport; a screenshot would settle it)."
     }
   ]
 }
