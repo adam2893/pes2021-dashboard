@@ -1,5 +1,5 @@
 {
-  "updated": "2026-11-28 15:07 UTC",
+  "updated": "2026-11-28 16:19 UTC",
   "headline": {
     "sim_percent": [
       80,
@@ -254,7 +254,7 @@
     }
   ],
   "counts": {
-    "named_addresses": 1398,
+    "named_addresses": 1402,
     "tests": 98,
     "port_rows_total": 209,
     "port_rows_by_status": {
@@ -268,7 +268,7 @@
       "behavioural": 43,
       "free": 1
     },
-    "findings_entries": 263
+    "findings_entries": 264
   },
   "match_metrics": {
     "unique_signatures": {
@@ -293,5 +293,5 @@
       "as_of": "2026-11-02"
     }
   },
-  "source_commit": "da0d68a"
+  "source_commit": "1f01aa4"
 }

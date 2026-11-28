@@ -7219,6 +7219,22 @@
       "source": "db/seeds/s1b1.tsv"
     },
     {
+      "address": "0x14153cc90",
+      "name": "PlayerDev_PhaseBucketFlag",
+      "confidence": "confirmed",
+      "reviewed": "no",
+      "evidence": "(phase) byte +0x27 of the PlayerDev_Phases row (0x142984907 + phase*0x30) for phase < 0x17, else 0; read 2026-11-29 (s1b/dev/dec/0x14153cc90.c); = ml::phase_bucket_flag",
+      "source": "db/seeds/s1b1.tsv"
+    },
+    {
+      "address": "0x14153d290",
+      "name": "PlayerDev_SpecialPhaseGate",
+      "confidence": "probable",
+      "reviewed": "no",
+      "evidence": "(record, phase, team flag) false for 0 or > 0x16, true for a phase whose row +0x26 is 0; else per phase: 1/2 and 13-17, 20, 21 need the team flag (false with 0), 0x12 (FUN_14153D0A0 rule: mark 0x12, slot-0 team == +0x164, age >= 30, or the +0x181C1B0 table) and 0x13 (calendar scan, mark 0x13, age >= 30, or the jump table 0x14153DD50); read 2026-11-29",
+      "source": "db/seeds/s1b1.tsv"
+    },
+    {
       "address": "0x140a6a000",
       "name": "Object_GetU32At10",
       "confidence": "probable",
@@ -10901,6 +10917,22 @@
       "source": "db/seeds/data/s1b1.tsv"
     },
     {
+      "address": "0x14132899b",
+      "field1": "site",
+      "field2": "ML_PlayerDevelopment_DailySample@StepStoreRecord",
+      "field3": "confirmed",
+      "evidence": "no",
+      "source": "db/seeds/data/s1b1.tsv"
+    },
+    {
+      "address": "0x141328a40",
+      "field1": "site",
+      "field2": "ML_PlayerDevelopment_DailySample@StepPhaseEnd",
+      "field3": "confirmed",
+      "evidence": "no",
+      "source": "db/seeds/data/s1b1.tsv"
+    },
+    {
       "address": "0x1427fa4b8",
       "field1": "table",
       "field2": "PlayerSearch_LayerRows",
@@ -13749,6 +13781,11 @@
       "date": "2026-11-29",
       "title": "S1b D1 and D3: the daily sample's mark branch and the youth reset's development bytes (Track C, static read plus dumps)",
       "body": "- **D1 (read, `ML_PlayerDevelopment_DailySample` 0x141328230; disassembly checked):**\n  - The scan over every record runs after `r = Below(count / 500)`. A record qualifies when it:\n    - is in use;\n    - is not on the user team (`Player_GetTeamSlot` 0x1414C0430 slot 0 against the kind-3 team);\n    - has a state that is not 3 or 5;\n    - has a phase other than 0x12 or 0x13.\n  - The record then takes its mark (+0x140 & 0x7F) as its phase when:\n    - the mark is 0x12, the age (`Player_GetField` 0x2D, from EDX = 0x12 + 0x1B) is 30 or more, and the slot-0 team equals +0x164; or\n    - the mark is 0x13 and the age is 30 or more.\n  - The phase is written to +0x150, with +0x155 = `PlayerDev_PhaseProgressMark`(phase, 0) = 0xFF and the bucket cleared (+0x140 &= 0x3FFFFFFF). The record leaves the sample. The mark itself is kept.\n  - The branch makes no draws. Phases 0x12 and 0x13 are category 6/7, which the sample skips without drawing, so the port applies the marks just before the sample (`ml::apply_sample_marks`, called from run_day's DevSample block) and keeps the game's draws.\n  - **confirmed** for the rule (read). Probes 40, 44 and 48 (45 dumps): 1,891 of 1,891 qualifying records already carry the marked phase, progress 0xFF and bucket 0 (`dev_marks_probe`).\n- **D3 (read, `Player_ResetToYouth` 0x141534CC0):** the reset writes u32 +0x150 = 0 and u16 +0x154 = 0, and clears the bucket.\n  - The port now also zeroes the four pair scores at both regen sites in season_switch.cpp, and the bucket at the second site.\n  - Over the same dumps, 15,221 of 15,235 records with age 16, phase 0 and progress 0 hold zero pairs. The other 14 are not identified (probably youth-list entries, not resets). **probable**.\n- **Not in this change:**\n  - D2a: the sample's NextPhase/Bucket update after a step (0x141328230 lines after the progress write), which writes phase and bucket on a hit.\n  - D2b: the user-team pass FUN_141328ED0.\n- Tests: `dev_marks_unit` (synthetic: both marks, team test, age, state, user team, mark bits, existing phase) and `dev_marks_probe` (the dump counts above).\n\n- **Status (2026-11-29): pending approval.** The port moves the C2 gates: the first difference is the S2021 season build's dev_bytes, then 203 of 361 state rows and 4,394 of 5,194 metric rows; February 2022 rostered 16040 -> 16025, free pool 1219 -> 1234; winter new loans 202 -> 192 (private-reference/s1b/d13/gate_diff.md). The dumps show that the game marks these veterans and C2 does not. Branch `s1b-pending-d13` holds the change; it is not merged."
+    },
+    {
+      "date": "2026-11-29",
+      "title": "S1b D2a, the phase and bucket update after a daily development step (Track C, static read plus oracle)",
+      "body": "- **Rule (read, disassembly 0x14132899B-0x141328A40 of `ML_PlayerDevelopment_DailySample` 0x141328230):**\n  - On a step the game stores the new pairs and progress + 3. It then calls `PlayerDev_NextPhase(record, 0, 0)` (0x141539380, EDX = R8D = 0). The call makes no draws.\n  - A result in 1..0x16 becomes the phase, with bucket `FUN_141537D80`.\n  - Otherwise, a current phase in 1..0x16 whose bucket flag (`PlayerDev_PhaseBucketFlag` 0x14153CC90, row +0x27) is set takes `FUN_141537D80` when it differs.\n- **Gates (read, `PlayerDev_SpecialPhaseGate` 0x14153D290):** with team flag 0 the special phases 1, 2, 13-17, 20 and 21 fail. Phases 0x12 and 0x13 are category 7, whose check needs progress 0xFF. A step needs progress < 0xFC and adds 3, so it cannot reach 0xFF. So NextPhase(p, 0, 0) on a stepped record equals `ml::next_phase` (its third-argument-1 port).\n- **Port:** `ml::phase_after_step` (dev_pass), called by `run_day`'s Block::DevSample on each step. The port previously wrote only the pairs and progress.\n- **Evidence:**\n  - Oracle (`spec_dev_step.py`, NextPhase and FUN_141537D80 emulated, the branch applied as disassembled): 17,289 of 17,289 probe 64 records (progress capped at 0xFE) and 3,000 of 3,000 random records equal `oracle_prod devstep`. 450 of the random records change phase. **confirmed** (function level).\n  - Chain (`ml_day_replay`): records whose phase or bucket moves over a span, compared with dump n+1. Probe 38: 19 of 19. Probe 40: 105 of 105 CPU records. Without the port: 0 of 19 and 0 of 106. **confirmed** (two probes).\n  - The one user-club record that moves (probe 40 span 1, bucket 2 to 3) is the user team's pass `FUN_141328ED0` (D2b, not ported), so it is not compared.\n- **Draw chain:** chained-day totals are unchanged (probe 38: 2 of 3; probe 40: 15 of 19), because each span starts from its own dump. Over several days the new phases change the sample's Below(4)/Below(3) draws, which the gates measure.\n\n- **Status (2026-11-29): pending approval.** Branch `s1b-pending-d2a` (36b5ce0), stacked on `s1b-pending-d13`. The gates move from S2020.end on: draw share 0.234 -> 0.230; at the 2021 switch, renewals 3497 -> 3515 and regens 485 -> 495 (private-reference/s1b/d2a/gate_diff.md). Not merged."
     }
   ]
 }
