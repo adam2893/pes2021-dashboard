@@ -6091,6 +6091,70 @@
       "source": "db/seeds/k9b1.tsv"
     },
     {
+      "address": "0x141577450",
+      "name": "Competition_Regulation_Reg106ZoneEligible",
+      "confidence": "probable",
+      "reviewed": "no",
+      "evidence": "stub of the relocated ordinary body 0x144B20F40: false when EditData +0x1787B58 == 0x56; else the regulation's country index (not 0, not 0x1D) through Competition_Country_Zone (reg 99 -> 0) is zone 1 or 2",
+      "source": "db/seeds/k9c1.tsv"
+    },
+    {
+      "address": "0x141509c00",
+      "name": "Competition_Regulation_EntryKeyOr7",
+      "confidence": "probable",
+      "reviewed": "no",
+      "evidence": "stub of the relocated ordinary body 0x144ACACE0: Competition_Regulation_EntryKey(reg), 7 when it is 0x7B or more",
+      "source": "db/seeds/k9c1.tsv"
+    },
+    {
+      "address": "0x141354020",
+      "name": "Competition_Season_UseResultsFor",
+      "confidence": "probable",
+      "reviewed": "no",
+      "evidence": "stub of the relocated ordinary body 0x1447E9090: 1 when the step has a finished season (+0x32), Competition_Regulation_Flag90750(reg), or the reg's +0x304 bit 8; else 0",
+      "source": "db/seeds/k9c1.tsv"
+    },
+    {
+      "address": "0x141590730",
+      "name": "Competition_Regulation_HasRuntimeObject",
+      "confidence": "probable",
+      "reviewed": "no",
+      "evidence": "stub of the relocated ordinary body 0x144B39840: thunk 0x144B395D0(...) != 0 (the regulation's runtime competition object; none at creation)",
+      "source": "db/seeds/k9c1.tsv"
+    },
+    {
+      "address": "0x1413636c0",
+      "name": "Competition_Afc_BuildCreationList",
+      "confidence": "probable",
+      "reviewed": "no",
+      "evidence": "key 4 with no results to use: reg 15 from the confederation-2 leagues (Helper57470), Helper54590 halves, pool kind 0x46, cut to 32, DrawByRegulation, StoreEntrants mode 1 (ported: ml/creation_continental.cpp)",
+      "source": "db/seeds/k9c1.tsv"
+    },
+    {
+      "address": "0x14135a480",
+      "name": "Competition_Reg106_BuildCreationList",
+      "confidence": "probable",
+      "reviewed": "no",
+      "evidence": "(step, out, n): pool = Competition_Regulation_EntryKeyOr7(106) as handles; the user club first when eligible and in it; Random_ShuffleTeams; then eligible first-team-records of the pool ids up to n",
+      "source": "db/seeds/k9c1.tsv"
+    },
+    {
+      "address": "0x1415774c0",
+      "name": "Competition_Team_Reg106Eligible",
+      "confidence": "probable",
+      "reviewed": "no",
+      "evidence": "(team): Competition_Regulation_Reg106ZoneEligible(FUN_141543510(team))",
+      "source": "db/seeds/k9c1.tsv"
+    },
+    {
+      "address": "0x141543510",
+      "name": "Competition_Team_FirstLeagueReg",
+      "confidence": "probable",
+      "reviewed": "no",
+      "evidence": "(team): the first regulation of Competition_LeagueRegulationList with period 1, 6 or 11 whose list holds the team; 0xFFFF none",
+      "source": "db/seeds/k9c1.tsv"
+    },
+    {
       "address": "0x1413179a0",
       "name": "NationalSquad_SelectSlots",
       "confidence": "confirmed",
@@ -10645,6 +10709,14 @@
       "source": "db/seeds/data/k9b1.tsv"
     },
     {
+      "address": "0x14135bde9",
+      "field1": "site",
+      "field2": "Competition_Season_StoreEntrants@SplitOnlyWithMode",
+      "field3": "probable",
+      "evidence": "no",
+      "source": "db/seeds/data/k9b1.tsv"
+    },
+    {
       "address": "0x14297d290",
       "field1": "table",
       "field2": "Competition_Regulation_PotKeyTable",
@@ -13568,6 +13640,16 @@
       "date": "2026-11-28",
       "title": "K9 creation-day club pass ported whole: offers, checks, fee and deal execution; probe 62b exact at BuildSeason entry (Track C, offline)",
       "body": "- **What changed**: `src/game/scout/club_pass.{h,cpp}` runs the creation day's club pass after the search (`run_creation_club_pass`): the window status, `ComAgent_PlanTransfer` per found player, its two offers and their checks, the fee, and the deals executed in queue order. The constructor runs it, with the same day step's end for the user club (`ml::step_end_finance`, Finance_AccrueStepIncome's item 1), between the creation job and BuildSeason, and keeps the World at BuildSeason entry (`world_s0`). The team fields the pass reads come from Team.bin (`platform::career_team_pass_fields`).\n- **Results**:\n  - probe 62b (`OL_PROBE=62b OL_CLUB=4095 original_lineup_test`): every field at BuildSeason entry equal (it was 13 fields: wages, contracts, slot-0 teams, loan owners, the listing and loan bits, development state and phase, 9 rosters and slot maps), S0 equal, the finance block equal. Six planned, six deals. **confirmed** (capture).\n  - probe 62c (`clubpass_search`, from the MLSetup_Run-return dump): the generator after the pass equals the logged S0, and every player, development and team field equals the BuildSeason-entry dump. Six planned, five deals (record 17147, state 4, refused). **confirmed** (capture).\n  - probe 62 (Arsenal, 1 July): unchanged, every check exact.\n- **The rules, read** (decompiles and disassembly; each **probable** until a capture covers its branch):\n  - `ComAgent_PlanTransfer` (0x140F29A50): the seller is `ComAgent_OfferSeller` (0x140F2BFD0; a loaned player's owner, a free agent's none). Below(100) against `ComAgent_SaleProbability`; below it, `ComAgent_PickWindow` draws a loan end. A transfer offer is made when the state nibble is not 2 or 4 (**correction**: the earlier entry read \"2 or 5\"), a contract offer when no loan end was picked. Both are made before either is checked; one refusal cancels both.\n  - `ComAgent_SaleProbability`: the tier is the **buyer's** (+0x63C bits 5-8; the earlier ledger said the seller's). The 100 rule tests the seller's +0x63C and the player's +0x148 bit 18. The 50 and 30 rules test events 6 and 3 through `Calendar_TransferWindowOpen` (0x141571AE0) and `Calendar_EventPassedThisSeason` (0x141576A20).\n  - The offer check (FUN_140F2C750) for a CPU buyer: `ComAgent_Offer_SquadBlocked` (0x140F2CFA0: squad limits 11 and 40 through `Team_SquadChangeAllowed` 0x140EE8380 and `Team_SquadCountWithLoans` 0x140EE2AA0, then `ComAgent_Player_Unsignable` 0x140F2D520: +0x13C bit 26, age 45 or more, state 4) refuses. A free agent is accepted. Otherwise the seller's best-11 average without the player below `ComAgent_SellerMinStrength` (0x1427F5A80) refuses, and so does a seller squad under 20. A transfer then goes to `ComAgent_Offer_FeeRefused` (0x140F2D1D0: related clubs at team +0x684, a fee above 3,200,000, or above the buyer's limit, team +0x648 x 1.1 or `ComAgent_FeeLimitByRank` 0x1427ED588).\n  - The fee (`Transfer_OfferFee` 0x140EEC060): Finance_Player_Value x `Transfer_LeagueFeeFactor` x `Transfer_FeeMultiplier` (rank-byte difference, the seller's plan flags, the contract's last year). It is 0 under `Transfer_FeeWaived` (0x141574E90), x0.3 for a loan, and clamped to team +0x598.\n  - `ComAgent_ContractLength` (0x140F2BB30): the event 5 date, or the event 8 date when the user club's and the buyer's ICC eligibility differ, in the season's year (`Calendar_SeasonStartOf` 0x141576360). One more year if that date has passed. Then plus min + Below(max - min + 1) from `ComAgent_ContractYearsByAge` (0x1427ED580: {1,3}, {3,5}, {1,2} for ages up to 23, 24 to 29, 30 and over).\n  - The deal (`TransferManager_ExecuteDeal_Mode0`, through FUN_140F30BF0 and `ComAgent_PostDealMessage` 0x140F94340): a move record from the seller (`MoveRecord_From` +0x10) to the buyer (`MoveRecord_To` +0xC). `MLTransfer_Player_RemoveFromTeam` removes the player (Team_Squad_RemovePlayer, the mode 1 repair), writes +0x160 = the seller, clears +0x148 bits 17-18 and slot 0. `MLTransfer_Player_AddToTeam` appends him (the mode 3 rebuild for a CPU club), sets state 0, the contract's wage and end, slot 0, and +0x13C bits 4-5. Then the phase rule; a loan also sets the loan flag and end (`TransferManager_ApplyLoanTerms` 0x140F178D0).\n- **When the day step runs**: on probes 62b and 62c, the creation date is the season start (1 January) and the step runs before BuildSeason. On probe 62, created 1 July for a 1 August start, it does not: S0 holds without Finance_AccrueStepIncome's Below(21) pair on a day-3 event, and item 1 stays 0. **probable** (two careers; the step's scheduling is not read). The window status (`creation_window_status`) ports the creation day's cases of FUN_14150D990. FUN_14151CC70 finds no match before BuildSeason. Cases that need unread calls are reported as issues.\n- **Team.bin fields** (mapped against probe 62c's MLSetup_Run-entry and -return dumps, 669 of 669 teams each; the loader's setters are not read, **probable**):\n  - +0x63C from record bits 571-574, 640-644, 646-650, 659-662 and 667-668;\n  - +0x648 from dword +0x38 (low 23 bits);\n  - +0x664 from three 9-bit fields at bits 544, 530 and 553;\n  - +0x658 and +0x684 from id dwords, resolved to handles by FUN_141269EF0; +0x678 is a copy of +0x658 at MLSetup_Run's return (659 of 659);\n  - +0x598 is -1 in every record.\n- **Shortcuts**: regulation +0x310's fee factor is taken as 1 (both 9-bit fields hold 100 in all 199 regulations of probes 62, 62b and 62c). The user club as seller and the loan path's execution are reported, not run (neither occurs on the three probes).\n- **Still open for probe 62b**: the January BuildSeason itself (S1, the match table, the regulation lists). It needs RunMLSteps' keys 1, 2 and 4 (`Competition_Season_YearTurnStepA` with key 1, `Competition_Season_Dec31StepA` with key 2, `Competition_Season_Dec31StepB` with key 4). The constructor's K6 build has only the 1 July keys 0 and 3. Probe 62e logs that build (StoreEntrants, every draw, both dumps)."
+    },
+    {
+      "date": "2026-11-28",
+      "title": "K9 January creation build exact; probe 62b exact end to end (Track C, VM plus offline)",
+      "body": "- **Probes 62e to 62l** (`private-reference/probe62e`..`62l`, user-run 2026-11-28; generators `gen62X.py`, probe 59's BuildSeason logging: StoreEntrants calls, every Below and Next, S0, S1, both dumps):\n  - January creations: 62e, 62g and 62i (Original Lineup: Wuhan Zall, Guangzhou Evergrande, and Melbourne Victory placed in the Chinese league); 62j, 62k and 62l (Club Team Lineup: Wuhan, Guangzhou, Flamengo). Each logged keys 1, 2, 4.\n  - July creations with special clubs: 62f (Racing Club) and 62h (Alianza Lima, kind 0x49, placed in the Argentinian league). Each logged keys 0, 3.\n  - **confirmed** (capture).\n- **What changed** (`season_creation_january` test over all eight):\n  - **Event keys.** `ml::creation_event_keys` takes the season events (exe 0x14298CA30, now `MlTables::season_events`) due on the creation day: day 0 gives 1, 2, 4 and day 181 gives 0, 3 (8 of 8 logged vectors). **probable**: the table rule; the driver's filter is not read.\n  - **Steps.** `creation_entrants` runs RunMLSteps' steps per key (read, 0x141367290):\n    - keys 0 and 1: `Competition_Season_YearTurnStepA` (confederation 1);\n    - keys 2 and 3: `Competition_Season_Dec31StepA` (5);\n    - key 4: `Competition_Season_Dec31StepB` (2);\n    - key 2 adds the Libertadores, plus reg 106 in 2020;\n    - key 4 adds the AFC (`Competition_Afc_BuildCreationList`), because `Competition_Season_UseResultsFor` is false at creation.\n  - **StoreEntrants' split, read (disassembly 0x14135BDE9).** When the store's mode is set:\n    - a type-2 regulation gives each child (`Competition_Regulation_GetChildIds`, +0x76) an equal slice;\n    - a type-5 aggregate gives each child its whole list (regs 51 and 119 into 166/167 and 168/169).\n    This replaces the hand-written reg-2 pairs; probes 58 to 60 are unchanged.\n  - **Libertadores and AFC lists** (`ml/creation_continental.{h,cpp}`, porter; BuildByKind types 3 and 4, the AFC builder, the association limits, the deals). Regs 9, 8 and 15 and every child list are exact on all six January probes, with the draw counts as logged.\n    - One rule is a fit, not read, and marked as a shortcut: the AFC league pick of a country with a cup row takes the first unplaced club of the cup's two-club entry key (kickoff key + 1: keys 104 and 121). **probable** (fit on six probes). TieredByRank's AFC tier key is the constant 30, so it is not the source.\n  - **Reg 106** (`Competition_Reg106_BuildCreationList`, read; its eligibility and entry key are relocated ordinary bodies): exact on six of six. **confirmed** (capture) over a read rule.\n  - **Fixture dates.** Cases 3 (ids 8 to 10, 76 to 78: legs, groups, knockout with the mode filter), 4 (ids 15, 16) and 35 (id 106) are now ported, read from `Competition_Calendar_DatesReg10`, `DatesReg16` and case 0x6A of `Competition_Calendar_GetRoundDates`. A 1 January creation dates its fixtures from 1 January of the year. AFC groups are filed in `group_stage_matches` kind 2 order (measured on probe 38, and equal on the six probes; the builder itself is not read).\n- **Results**:\n  - 6 of 8 probes exact through the whole build: every store, S1, and every match record (the 366th day row excepted as before).\n  - The two others are the Original Lineup user club holding a super-cup place (62g reg 132, 62f reg 92: the unported refill, reported by `original_lineup_unported`).\n  - **Probe 62b (`OL_PROBE=62b OL_CLUB=4095 original_lineup_test`) is exact end to end**: BuildSeason entry, S0, finance, the build and S1. Probe 62 is unchanged.\n- **Relocated ordinary functions** (feasibility check `private-reference/k9/protected_feasibility.md`, user decision 2026-11-28):\n  - The `.impdata` bodies met here are `ordinary` in the `relocated` table: plain compiled code that ghidra_batch decompiles when given the body address.\n  - Runtime return addresses in probes 30, 42 and 51 fall right after calls in the file image's bodies, so they run as stored. **probable**.\n  - The earlier \"not read, protected\" notes on 0x144ACACE0 (start_type.h), 0x144B39840 and 0x1447E9090 were a habit, not a rule. CLAUDE.md now says so.\n  - Bodies the protector mutated, such as 0x144B22560 behind `Calendar_IsAugustStart`, stay out of scope."
+    },
+    {
+      "date": "2026-11-28",
+      "title": "K9 constructor exact on all eleven captured careers; the user club's own MapTeam call ported (Track C, offline)",
+      "body": "- **What changed:**\n  - **The user club's MapTeam call (read, `Competition_MLSetup_BuildTeams` 0x14126C8E3).** After `MapAllTeams`, BuildTeams walks the mapped records and compares each handle's id bits (`& 0xFFFFC000`, so the exact id, not the base id) with the user club's handle (`EditData_FindTeamByKind`). When none matches, it maps the user club there, before the extra-team list. `ml::club_record_order` takes the user id for this step, and `ml_club_records`, `ml_team_records`, `career_clubs`, `career_team_files` and `rank_career_clubs` pass it through. The default 0 leaves every other caller unchanged. The call's gate (`GameMode_GetKind` == 10 with EditData +0x17893F5 clear skips it) is not ported. A Master League career passes it: the user club is mapped on probe 62h.\n  - The super-cup refill (`StoreSuperCupsFromKeys`, `FixUpA`/`FixUpB`, `FillFromRanked`) and the special-kind branches of `SwapUserClubDivision` (0x141262300) are ported as read in the entries above. Super cup 88, which has no source record, reports an issue instead of reading the caller's stack. No captured career reaches it.\n  - `original_lineup_test` accepts Club Team Lineup dumps (`OL_PROBE`/`OL_CLUB`). `career_population_test`'s special-kind case now expects branch A.\n- **Evidence:**\n  - Each career is checked at BuildSeason entry (every constructed field, then the finance block), on S0, on the build's fields at BuildSeason return, and on S1.\n  - Result: 0 fields differ, finance equal, S0 and S1 equal, 0 built fields differ. This holds for all eleven careers:\n    - probe 62 (Arsenal 101);\n    - 62b and 62e (Wuhan Zall 4095);\n    - 62f (Racing Club 1237);\n    - 62g (Guangzhou Evergrande 310);\n    - 62h (Alianza Lima 2287, kind 0x49, placed in the Argentinian league);\n    - 62i (Melbourne Victory 69703, placed in the Chinese league);\n    - 62j, 62k and 62l (Club Team Lineup: Wuhan 4095, Guangzhou 310, Flamengo 1248).\n  - The constructor raised no issues on any of them.\n  - On 62h the user club now sits at record 480, after the 480 regulation-list teams and before the extra-key blocks (502 before the fix). The record order, the club ranking and the handles in the regulation and match lists follow from it. **confirmed** (capture, 62h and 62i) over a read rule.\n- **Not reached by any captured career (still reported as issues, not ported):**\n  - the club pass's user-club offer branch (`FUN_14151F330`, the user side of the offer check);\n  - `MLTransfer_PostUserMove`;\n  - ContractLength's user rule;\n  - AddToTeam's rule for a state-3 player who joins from no club;\n  - the removal of a loaned player from his owner's squad.\n  None of the six January careers made a creation-day offer to or from the user club. A port needs a career whose creation-day pass reaches one of these; none is known.\n- **K9 residual shortcuts (kept, marked in code):**\n  - the AFC cup-row league pick (a fit over six probes, **probable**);\n  - `MLSetup_CapState3Players`' cap (more than 40 state-3 players);\n  - FUN_141352020's short-list fill;\n  - the extra list's EditData +0x1789468 skip and its variant ranking (0x1428BFB30);\n  - BuildTeams' game-mode gate.\n  None applies to the captured careers."
     }
   ]
 }
