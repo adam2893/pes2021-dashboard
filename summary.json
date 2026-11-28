@@ -1,5 +1,5 @@
 {
-  "updated": "2026-11-28 03:16 UTC",
+  "updated": "2026-11-28 03:40 UTC",
   "headline": {
     "sim_percent": [
       80,
@@ -258,7 +258,7 @@
       "behavioural": 39,
       "free": 1
     },
-    "findings_entries": 252
+    "findings_entries": 253
   },
   "match_metrics": {
     "unique_signatures": {
@@ -283,5 +283,5 @@
       "as_of": "2026-11-02"
     }
   },
-  "source_commit": "c2de93b"
+  "source_commit": "ba278a8"
 }
