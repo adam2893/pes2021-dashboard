@@ -1,5 +1,5 @@
 {
-  "updated": "2026-11-27",
+  "updated": "2026-11-28",
   "description": "Community research metadata, not game source or assets. Confidence labels are provisional.",
   "functions": [
     {
@@ -9925,6 +9925,22 @@
       "source": "db/seeds/data/s1b1.tsv"
     },
     {
+      "address": "0x1427dbbd8",
+      "field1": "table",
+      "field2": "OwnerSeasonTaskRequest_ClOrReveOrAclEntry_vtable",
+      "field3": "confirmed",
+      "evidence": "no",
+      "source": "db/seeds/data/s1b1.tsv"
+    },
+    {
+      "address": "0x1427dbed8",
+      "field1": "table",
+      "field2": "OwnerEventListTaskRequest_NextLgWin_vtable",
+      "field3": "confirmed",
+      "evidence": "no",
+      "source": "db/seeds/data/s1b1.tsv"
+    },
+    {
       "address": "0x1427fa4b8",
       "field1": "table",
       "field2": "PlayerSearch_LayerRows",
@@ -12482,6 +12498,16 @@
       "date": "2026-11-28",
       "title": "S1b owner objectives: the record layout and where the condition objects come from (Track C, static read; not ported)",
       "body": "- **Record layout** (main, read from `OwnerObjective_Evaluate` 0x140EC34B0, `OwnerObjective_CanActivate` 0x140EC35A0, `OwnerObjective_HasEvaluator` 0x140EC2860 and the static initializer): 89 records of 0x38 at 0x1434C4630. +0x00 is the block `FUN_140EC27A0` checks (the date gate), +0x10 the activation condition object, +0x18 the evaluation condition object, +0x20 the definition `OwnerObjective_Definition` returns (0x1434C4650 + id x 0x38: four bit-field dwords, then the flag dword at definition +0x10). The earlier \"definition +0x10 / +0x18\" placement of the objects was wrong (corrected above). **confirmed** (read).\n- **Static state**: `OwnerObjective_DefinitionTable_Init` (0x1401D9720) writes only the definitions (simulated: +0x10..+0x37 of every 0x38 stride beyond the bit fields and flag stay zero), so both object pointers are null in the image; it registers `OwnerObjective_Records_AtExitDestroy` (0x14251C7D0), which walks the 89 records calling 0x140EC2510. **confirmed** (read).\n- **Writer not found statically**: a RIP-relative scan of every ordinary code section, clipped at the protected range (`private-reference/oracle/s1b/xref_scan.py`, the 8 KB around the records) finds the record base only in the readers, the initializer and the destructor; nothing stores +0x10 / +0x18. So the objects are created through a passed pointer or in relocated code (not read). **probable**.\n- **Next step, runtime and read-only**: probe 62b's BuildSeason-entry script now also writes the 89 records (`obj62b_table.bin`) and logs each object with its vtable and first 0x40 bytes (`B62B_OBJ`). The vtables (in the ordinary image) enumerate the condition classes; each class's +0x8/+0x10/+0x18 virtuals are then ordinary functions to read. No breakpoint is added."
+    },
+    {
+      "date": "2026-11-28",
+      "title": "S1b owner-objective condition classes, from probe 62b (Track C, runtime read plus RTTI; not ported)",
+      "body": "- **Capture**: probe 62b (Original Lineup, Wuhan Zall) logged, at BuildSeason entry, the 89 records of 0x1434C4630 (`obj62b_table.bin`) and every condition object with its vtable (`B62B_OBJ`, 165 objects). Memory reads only. **confirmed** (capture).\n- **Population**: 82 records hold both objects; record 40 only an activation object; records 0, 2, 3, 35, 36 and 37 none (so they never activate or are evaluated through these objects). **confirmed** (one capture; the objects are built at startup, so the set is expected per executable, not per career: **probable**).\n- **Classes** (MSVC RTTI: vtable[-1] -> complete object locator -> type descriptor, read from the exe file, all below the protected range): 121 vtables, each a distinct class in namespace `menuutility`, in six families: `OwnerEventListTaskJudge` 35, `OwnerEventListTaskRequest` 17, `OwnerMiddleTaskJudge` 14, `OwnerMiddleTaskRequest` 14, `OwnerSeasonTaskJudge` 26, `OwnerSeasonTaskRequest` 15. The Judge classes are the +0x10 (activation) objects, the Request classes the +0x18 (evaluation) objects, without exception. **confirmed**.\n- **Shared classes** (one class, several records): 18, e.g. `NextLgWin` (vtable 0x1427DBED8) evaluates records 21-34; `ClOrReveOrAclEntry` (0x1427DBBD8) evaluates 56-59, 66-69, 75, 78 and 88; `LeagueWin` 55, 65, 73, 82; `ElEntryTicket` 60, 70, 77, 79; `DummyJudge` (slot 2 returns false) activates 82, 86, 87, 88. The per-record variation sits in the object's data (its first 0x40 bytes differ between records of one class: the parameters). **confirmed** (vtables), **probable** (parameters).\n- **Virtual slots**: slot 0 (destructor) and slot 3 (+0x18, the step before the test in OwnerObjective_Evaluate) are common to each family (Judge: 0x140EBF830, 0x140EBFBE0; Request: 0x140EBF500, 0x140EBF490); slot 1 (+0x8) is a small per-class function; slot 2 (+0x10) is the class's condition. The 121 condition functions total 27 KB (69 to 516 bytes) over a shared helper set in 0x140ED6540-0x140ED7CA0 and `FUN_140EBE370` (107 calls), plus the ported competition queries (`Competition_Team_GetLeagueRegulation` 84 calls, `Competition_Regulation_IsComplete`, `Competition_Standings_Get`). All decompiled (`private-reference/oracle/s1b/cond/`, class table `classes.txt`); not yet read. **confirmed** (decompiles exist).\n- **S1b port plan**: the helper set first, then the classes family by family, each condition with its record parameters from the capture; acceptance against a capture spanning an activation and a result (none yet: probe 40 holds results only)."
+    },
+    {
+      "date": "2026-11-28",
+      "title": "K9 probe 62b (Original Lineup, Wuhan Zall): a January-start gap, and which refusals vanilla careers reach (Track C, VM plus offline)",
+      "body": "- **Probe 62b** (`private-reference/probe62b/`, user-run 2026-11-28): Original Lineup (start type 0 logged), Wuhan Zall (4095), reg 120 (EditData +0x1789400 = 0x78), default settings; generator at MLSetup_Run entry (0x0987744E), BuildSeason entry (S0) and return (S1); EditData at those three points. **confirmed** (capture).\n- **Against the constructor** (`OL_PROBE=62b OL_CLUB=4095 original_lineup_test`): the setup is nearly exact (every player field at least 17,283 of 17,289, team rosters 650 of 659), but six players differ, S0 and S1 differ, and so does the build. The six are moves the constructor does not make: two new loans of players whose file contracts end 2020-06-30 (44780 at club 1957 owned by 270, 61231 at 5174 owned by 2215, both with contracts to 2024), one more loan (id 0x40001213 at 4044 owned by its home club), and three players released from Wuhan Zall's squad by the Original Lineup strip signed by other clubs. The career starts 1 January 2020 (date and season start equal in dump and constructor), which no regression career did (probes 58, 60, 62: August). So a January creation runs transfers and signings with draws that the August careers do not. Neither middle pass of `MLSetup_TransferSteps_Run` does it (FUN_140F0A230 walks the user squad's tracker, FUN_140F1DEB0 sets three window records; both read). **confirmed** (capture), step not localised.\n- **Probe 62c** (staged 2026-11-28, `private-reference/probe62c/`): the same career with probe 62's 21 step boundaries, the generator at each, and EditData after RebuildFromList, LoadLoans, the user lineup, at TransferSteps entry and after it, at MLSetup_Run's return and at BuildSeason entry and return. It localises the January moves.\n- **Reachability of the constructor's refusals on vanilla data** (offline: `private-reference/k9/regions_scan.txt`, `refusal_scan.txt`):\n  - `MLSetup_CapState3Players` (more than 40 state-3 records): at most 32 in every league region 0-9 and newface list 0-3. **Not reachable** on vanilla data (edited data only). **confirmed** (count).\n  - A user club holding a reg 7 or national super-cup entry place (Original Lineup only): 31 of 555 clubs (Boca 138, Racing 1237, Guangzhou Evergrande 310, ...). **Reachable**; the refill (`StoreSuperCupsFromKeys`, `StoreHoldersFromKey`, `Competition_SuperCup_FillFromRanked`) is static code still to read.\n  - Special kinds 0x45/0x46/0x49/0x4B (the `0x53` mask of `SwapUserClubDivision`): 75 of 555 clubs, in no league. Their branches, now read, run in both start types: the user league is +0x1789400 (the menu's league) when the club has none; with a division below, the user club takes the slot of the lowest-valued club of the division below (`CopySortedByValue`, last entry), else of its league (its own slot if already listed); it takes that club's kind, its +0x418 association code (above 0x1FF becomes 1) and +0x41C bit 7 from the regulation's +0x304 bit 7; the replaced club takes the user's old kind and leaves the list. **probable** (read). Still refused: every other setup step also needs the user league for a club in no league, and their fallbacks are not read; whether the menu offers these clubs is not verified."
     }
   ]
 }
