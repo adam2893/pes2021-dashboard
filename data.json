@@ -6853,9 +6853,9 @@
     {
       "address": "0x140ed6630",
       "name": "OwnerObjective_Cond_MonthGateIcc6Else12",
-      "confidence": "guess",
+      "confidence": "probable",
       "reviewed": "yes",
-      "evidence": "Date_Today, gate 0x141576950(0x20, date) else 0; byte date+2 == 6 if Competition_Team_IccEligible(ctx[0]) else == 12 (month byte unverified) (pes-skeptic)",
+      "evidence": "Date_Today (EditData +0x1642A24: u16 year, month byte +2, day +3; 62b 0x010107E4 = 2020-01-01, 62 0x010807E4 = 2020-08-01), gate 0x141576950(0x20, date) else 0; month == 6 if Competition_Team_IccEligible(ctx[0]) else month == 12; the gate kind 0x20 unread",
       "source": "db/seeds/s1b2.tsv"
     },
     {
@@ -7180,18 +7180,18 @@
     },
     {
       "address": "0x140edb930",
-      "name": "OwnerObjective_Cond_Round0x33Flagged",
-      "confidence": "guess",
+      "name": "OwnerObjective_Cond_QuarterFinalFlagged",
+      "confidence": "probable",
       "reviewed": "no",
-      "evidence": "round == 0x33, u32@0xc nonzero, not bonus-excluded",
+      "evidence": "next-match round == 0x33 (quarter-final, round codes of competition/fixtures.h), u32@0xc non-zero, not bonus-excluded",
       "source": "db/seeds/s1b2.tsv"
     },
     {
       "address": "0x140edbc60",
-      "name": "OwnerObjective_Cond_Round0x34Flagged",
-      "confidence": "guess",
+      "name": "OwnerObjective_Cond_SemiFinalFlagged",
+      "confidence": "probable",
       "reviewed": "no",
-      "evidence": "same with round 0x34",
+      "evidence": "next-match round == 0x34 (semi-final), u32@0xc non-zero, not bonus-excluded",
       "source": "db/seeds/s1b2.tsv"
     },
     {
@@ -7284,10 +7284,10 @@
     },
     {
       "address": "0x141546f40",
-      "name": "Competition_Standings_IsTeamInBottomN",
-      "confidence": "guess",
+      "name": "Competition_Standings_IsTeamInRelegationZone",
+      "confidence": "probable",
       "reviewed": "yes",
-      "evidence": "(competition id, team): +0x7e != 0xffff, 0x141546c70 true, team among the last N standings entries, N = FUN_1414ccbd0(competition) (meaning of N unread) (pes-skeptic)",
+      "evidence": "(competition id, team): +0x7e != 0xffff (a division below), 0x141546c70 true, team among the last N standings entries; N = FUN_1414ccbd0 = kick-off config row +0x34, 3 for regs 17-19, 2 for 20, 4 for 29, 0 for 30 (Argentina 2020/21, no relegation), 120, 162 (kotable rebuild 2026-11-28): the relegation count",
       "source": "db/seeds/s1b2.tsv"
     },
     {

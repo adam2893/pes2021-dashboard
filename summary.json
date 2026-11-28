@@ -1,5 +1,5 @@
 {
-  "updated": "2026-11-28 00:32 UTC",
+  "updated": "2026-11-28 00:40 UTC",
   "headline": {
     "sim_percent": [
       80,
@@ -283,5 +283,5 @@
       "as_of": "2026-11-02"
     }
   },
-  "source_commit": "5ba60e9"
+  "source_commit": "a2a479c"
 }
