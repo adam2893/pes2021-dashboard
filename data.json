@@ -5819,6 +5819,278 @@
       "source": "db/seeds/k9a1.tsv"
     },
     {
+      "address": "0x140f2cfa0",
+      "name": "ComAgent_Offer_SquadBlocked",
+      "confidence": "probable",
+      "reviewed": "no",
+      "evidence": "(agent, buyer, ref, seller): 1 when the buyer cannot take one more (FUN_140EE8380 +1), or, the player's state not 3, the seller cannot lose one (-1), or the user tracker holds the player (FUN_140EE9BB0 twice), or ComAgent_Player_Unsignable; else 0 (disassembly)",
+      "source": "db/seeds/k9b1.tsv"
+    },
+    {
+      "address": "0x140f2d520",
+      "name": "ComAgent_Player_Unsignable",
+      "confidence": "probable",
+      "reviewed": "no",
+      "evidence": "(agent, team, ref): 1 when the record's +0x13C bit 26 is set, its age (field 0x2D) is 45 or more, or its state nibble is 4; else 0 (disassembly)",
+      "source": "db/seeds/k9b1.tsv"
+    },
+    {
+      "address": "0x140f2d1d0",
+      "name": "ComAgent_Offer_FeeRefused",
+      "confidence": "probable",
+      "reviewed": "no",
+      "evidence": "(agent, transfer offer): 1 when buyer and seller name each other in +0x684 (FUN_140F1C740, three each), or the fee is above 3,200,000, or above the buyer's limit (+0x648 * 1.1f, or the table DAT_1427ED588 by the buyer's ranking byte when +0x648 is 0); else 0",
+      "source": "db/seeds/k9b1.tsv"
+    },
+    {
+      "address": "0x140ee8380",
+      "name": "Team_SquadChangeAllowed",
+      "confidence": "probable",
+      "reviewed": "no",
+      "evidence": "(team, delta): an invalid team -> 1; squad + delta below 11 (delta < 0) or above 40 (delta > 0) -> 0; the same bounds on FUN_140EE2AA0's counts (without loaned-in players for a loss, with loaned-out players for a gain) -> 0; else 1",
+      "source": "db/seeds/k9b1.tsv"
+    },
+    {
+      "address": "0x140ee2aa0",
+      "name": "Team_SquadCountWithLoans",
+      "confidence": "probable",
+      "reviewed": "no",
+      "evidence": "(team, no_loaned_out, keep_loaned_in): the squad count, plus every record on loan (+0x14A bit 0) whose +0x160 is the team unless the 2nd flag, minus the roster's loaned-in players unless the 3rd flag; the user club also counts its negotiations (tracker lists)",
+      "source": "db/seeds/k9b1.tsv"
+    },
+    {
+      "address": "0x140ee9bb0",
+      "name": "UserClub_TrackerHoldsPlayer",
+      "confidence": "probable",
+      "reviewed": "no",
+      "evidence": "(ref, flag, list): whether one of the user club's tracker lists (UserClub_TrackerSlots, side by FUN_14151EDD0) holds an offer for the player; empty at creation",
+      "source": "db/seeds/k9b1.tsv"
+    },
+    {
+      "address": "0x140eec060",
+      "name": "Transfer_OfferFee",
+      "confidence": "probable",
+      "reviewed": "no",
+      "evidence": "(ref, buyer, seller, loan, check): 0 for an invalid ref, buyer or seller, or (check) when Transfer_FeeWaived; else trunc(FeeMultiplier * (float(Finance_Player_Value) * LeagueFeeFactor)), x0.3 for a loan, clamped to the buyer's +0x598 when within 1.1 of it, capped at 99,999,900 (disassembly)",
+      "source": "db/seeds/k9b1.tsv"
+    },
+    {
+      "address": "0x140eec3a0",
+      "name": "Transfer_LeagueFeeFactor",
+      "confidence": "probable",
+      "reviewed": "no",
+      "evidence": "(team): the team's league regulation +0x310: ((bits 17-25) + (bits 8-16)) / 200; 1 without a league or for 0; 0 when negative",
+      "source": "db/seeds/k9b1.tsv"
+    },
+    {
+      "address": "0x140eee020",
+      "name": "Transfer_FeeMultiplier",
+      "confidence": "probable",
+      "reviewed": "no",
+      "evidence": "(ref, buyer, seller): (buyer rank byte - seller rank byte) / 10 + 1 + the seller plan entry's flag terms (0x02 +0.5, 0x04 +0.2, 0x08 -0.1, 0x10 -0.2, 0x20 +0.2, 0x40 -0.1, 0x80 -0.2), -0.2 when the contract ends within 365 days, at least 0.65",
+      "source": "db/seeds/k9b1.tsv"
+    },
+    {
+      "address": "0x140ee1ac0",
+      "name": "ComAgent_PlanFlagsOfPlayer",
+      "confidence": "probable",
+      "reviewed": "no",
+      "evidence": "(ref, team): the player's entry flags (+0x1C) in the team's club plan (FUN_140EE1920, FUN_140F5D460); FUN_140F5D270's value when he is not in it (disassembly)",
+      "source": "db/seeds/k9b1.tsv"
+    },
+    {
+      "address": "0x141574e90",
+      "name": "Transfer_FeeWaived",
+      "confidence": "probable",
+      "reviewed": "no",
+      "evidence": "(ref): 1 when the state nibble is not 0, 1 or 6, or the contract ends within 366 days and fewer than two window starts (FUN_14156F330 steps, plus one when a window is open) fall before it",
+      "source": "db/seeds/k9b1.tsv"
+    },
+    {
+      "address": "0x14156f080",
+      "name": "Calendar_NextContractWindowEnd",
+      "confidence": "probable",
+      "reviewed": "no",
+      "evidence": "(out, date): of the event 5 and 8 dates (Date_FromMonthDay, day clamped to the month, 0 -> 1) in the date's year, the first after the date, else the earlier one's month and day a year on",
+      "source": "db/seeds/k9b1.tsv"
+    },
+    {
+      "address": "0x14156f330",
+      "name": "Calendar_NextWindowStart",
+      "confidence": "probable",
+      "reviewed": "no",
+      "evidence": "the same as Calendar_NextContractWindowEnd over events 3 and 6",
+      "source": "db/seeds/k9b1.tsv"
+    },
+    {
+      "address": "0x141576a20",
+      "name": "Calendar_EventPassedThisSeason",
+      "confidence": "probable",
+      "reviewed": "no",
+      "evidence": "(event type, date): a day-table slot of the type dated inside the ML season of the date (from the first of month +0x1789470) and before the date",
+      "source": "db/seeds/k9b1.tsv"
+    },
+    {
+      "address": "0x141576fa0",
+      "name": "Calendar_EventStartedThisSeason",
+      "confidence": "probable",
+      "reviewed": "no",
+      "evidence": "as Calendar_EventPassedThisSeason, the slot on or before the date",
+      "source": "db/seeds/k9b1.tsv"
+    },
+    {
+      "address": "0x141571ae0",
+      "name": "Calendar_TransferWindowOpen",
+      "confidence": "probable",
+      "reviewed": "no",
+      "evidence": "(date): event 3 started and event 5 not passed, or event 6 started and event 8 not passed",
+      "source": "db/seeds/k9b1.tsv"
+    },
+    {
+      "address": "0x141576360",
+      "name": "Calendar_SeasonStartOf",
+      "confidence": "probable",
+      "reviewed": "no",
+      "evidence": "(out, date): (year less one when the month is before +0x1789470, month +0x1789470, day 1)",
+      "source": "db/seeds/k9b1.tsv"
+    },
+    {
+      "address": "0x14151edd0",
+      "name": "UserClub_SquadHoldsPlayer",
+      "confidence": "probable",
+      "reviewed": "no",
+      "evidence": "(ref, side, loans): whether the user club's squad (kind 3 team) holds the ref; with the loan flag also a player on loan from it",
+      "source": "db/seeds/k9b1.tsv"
+    },
+    {
+      "address": "0x14151f330",
+      "name": "Player_BelongsToUserClub",
+      "confidence": "probable",
+      "reviewed": "no",
+      "evidence": "(ref): state nibble 3, or the player's slot-0 team is the user club's reserve link (Team_GetReserveLink)",
+      "source": "db/seeds/k9b1.tsv"
+    },
+    {
+      "address": "0x140f2bfd0",
+      "name": "ComAgent_OfferSeller",
+      "confidence": "probable",
+      "reviewed": "no",
+      "evidence": "(out, ref): on loan -> +0x160 (the owner); Player_BelongsToUserClub -> the user club; state 4 -> invalid; else slot-0 team",
+      "source": "db/seeds/k9b1.tsv"
+    },
+    {
+      "address": "0x140f1c740",
+      "name": "Team_RelatedClub",
+      "confidence": "probable",
+      "reviewed": "no",
+      "evidence": "(team record, out, k): +0x684 + 4k for k < 3, else invalid",
+      "source": "db/seeds/k9b1.tsv"
+    },
+    {
+      "address": "0x140f94340",
+      "name": "ComAgent_PostDealMessage",
+      "confidence": "probable",
+      "reviewed": "no",
+      "evidence": "(agent, deal record): message 0x10C0005 with the record (TransferManager_ExecuteDealList runs it)",
+      "source": "db/seeds/k9b1.tsv"
+    },
+    {
+      "address": "0x140f12ff0",
+      "name": "TransferManager_RecordLoanHistory",
+      "confidence": "guess",
+      "reviewed": "no",
+      "evidence": "(manager, move record): records of a player whose field 0x30 is above 2 go into a 100-entry list at +0x108 +0x48 (not in the World)",
+      "source": "db/seeds/k9b1.tsv"
+    },
+    {
+      "address": "0x140f178d0",
+      "name": "TransferManager_ApplyLoanTerms",
+      "confidence": "probable",
+      "reviewed": "no",
+      "evidence": "(manager, move record, offer): when the offer's ref is the record's, +0x148 |= 0x10000 (on loan) and +0x16C = the offer's date",
+      "source": "db/seeds/k9b1.tsv"
+    },
+    {
+      "address": "0x141566bb0",
+      "name": "Finance_Player_OfferValue",
+      "confidence": "probable",
+      "reviewed": "no",
+      "evidence": "(ref, team): Finance_Player_Value scaled by FUN_141566D30 and a morale / class / rating term; stored in the contract offer +0x10 (AddToTeam: +0x144 bit 30 when positive)",
+      "source": "db/seeds/k9b1.tsv"
+    },
+    {
+      "address": "0x140a7f230",
+      "name": "MoveRecord_From",
+      "confidence": "probable",
+      "reviewed": "no",
+      "evidence": "(record, out): +0x10, the team the player leaves",
+      "source": "db/seeds/k9b1.tsv"
+    },
+    {
+      "address": "0x140f40790",
+      "name": "MoveRecord_To",
+      "confidence": "probable",
+      "reviewed": "no",
+      "evidence": "(record, out): +0xC, the team the player joins",
+      "source": "db/seeds/k9b1.tsv"
+    },
+    {
+      "address": "0x140adf6c0",
+      "name": "Offer_Buyer",
+      "confidence": "probable",
+      "reviewed": "no",
+      "evidence": "(offer, out): the offer data's +8 (the offering club)",
+      "source": "db/seeds/k9b1.tsv"
+    },
+    {
+      "address": "0x140b510b0",
+      "name": "Offer_Seller",
+      "confidence": "probable",
+      "reviewed": "no",
+      "evidence": "(offer, out): the transfer offer data's +0 (the selling club)",
+      "source": "db/seeds/k9b1.tsv"
+    },
+    {
+      "address": "0x140f16b20",
+      "name": "MoveRecord_ContractOffer",
+      "confidence": "probable",
+      "reviewed": "no",
+      "evidence": "(record, out): the handle at +0x20 (the deal's contract offer)",
+      "source": "db/seeds/k9b1.tsv"
+    },
+    {
+      "address": "0x140f2c750",
+      "name": "ComAgent_Offer_Check",
+      "confidence": "probable",
+      "reviewed": "no",
+      "evidence": "(agent, offer): 1 refuses, 0 accepts (disassembly: AL at each return). Kind 9 with the user club as buyer or seller: its own branch (ComAgent_Player_Unsignable per player, an age test); else ComAgent_Offer_SquadBlocked, the free-agent accept, ComAgent_SellerMinStrength, a seller squad under 20, then a transfer through ComAgent_Offer_FeeRefused",
+      "source": "db/seeds/k9b1.tsv"
+    },
+    {
+      "address": "0x14150d990",
+      "name": "Calendar_TransferWindowStatus",
+      "confidence": "probable",
+      "reviewed": "no",
+      "evidence": "(date, ...): 2 runs the club pass. FUN_14151CC70 twice (today's matches) -> 2; else today's day events through a switch until 2 (kind 9: event 3 -> 2, ...); SeasonEvents dates turn a non-2 into 1; 2 -> 1 when EditData +0x1795D25 (read in full 2026-11-28; several cases call unread functions)",
+      "source": "db/seeds/k9b1.tsv"
+    },
+    {
+      "address": "0x140f30bf0",
+      "name": "ComAgent_FlushDeals",
+      "confidence": "probable",
+      "reviewed": "no",
+      "evidence": "(agent): per queued deal (+0x250, 0x20 each) a record {1, today, FUN_140F93B00} posted through ComAgent_PostDealMessage with +0xAE8 = the pass kind; then +0xAE8 = 0 and the queue cleared",
+      "source": "db/seeds/k9b1.tsv"
+    },
+    {
+      "address": "0x140f2eaf0",
+      "name": "ComAgent_DailyClubPass",
+      "confidence": "probable",
+      "reviewed": "no",
+      "evidence": "MLMode_DailyComponentsStep component: ComAgent_FlushDeals when deals are queued, then ComAgent_SearchPassClubs when Calendar_TransferWindowStatus gives 2, then ComAgent_FlushDeals again",
+      "source": "db/seeds/k9b1.tsv"
+    },
+    {
       "address": "0x1413179a0",
       "name": "NationalSquad_SelectSlots",
       "confidence": "confirmed",
@@ -10333,6 +10605,46 @@
       "source": "db/seeds/data/k6b1.tsv"
     },
     {
+      "address": "0x1427f5a80",
+      "field1": "table",
+      "field2": "ComAgent_SellerMinStrength",
+      "field3": "probable",
+      "evidence": "no",
+      "source": "db/seeds/data/k9b1.tsv"
+    },
+    {
+      "address": "0x1427ed588",
+      "field1": "table",
+      "field2": "ComAgent_FeeLimitByRank",
+      "field3": "probable",
+      "evidence": "no",
+      "source": "db/seeds/data/k9b1.tsv"
+    },
+    {
+      "address": "0x1427ed580",
+      "field1": "table",
+      "field2": "ComAgent_ContractYearsByAge",
+      "field3": "probable",
+      "evidence": "no",
+      "source": "db/seeds/data/k9b1.tsv"
+    },
+    {
+      "address": "0x1425a3590",
+      "field1": "const",
+      "field2": "ComAgent_FeeLimitScale",
+      "field3": "probable",
+      "evidence": "no",
+      "source": "db/seeds/data/k9b1.tsv"
+    },
+    {
+      "address": "0x1427e7b30",
+      "field1": "const",
+      "field2": "Transfer_FeeClampScale",
+      "field3": "probable",
+      "evidence": "no",
+      "source": "db/seeds/data/k9b1.tsv"
+    },
+    {
       "address": "0x14297d290",
       "field1": "table",
       "field2": "Competition_Regulation_PotKeyTable",
@@ -12111,6 +12423,110 @@
       "source": "db/seeds/ports/k9.tsv"
     },
     {
+      "address": "0x140f29a50",
+      "status": "reimplemented",
+      "fidelity": "exact",
+      "implementation": "src/game/scout/club_pass.cpp",
+      "evidence": "ComAgent_PlanTransfer: Pass::plan_transfer; clubpass_search (probe 62c S0) and original_lineup OL_PROBE=62b (S0)",
+      "source": "db/seeds/ports/k9.tsv"
+    },
+    {
+      "address": "0x140f2c750",
+      "status": "reimplemented",
+      "fidelity": "exact",
+      "implementation": "src/game/scout/club_pass.cpp",
+      "evidence": "ComAgent_Offer_Check: Pass::check, the CPU-buyer path (the user-club branch is reported as an issue)",
+      "source": "db/seeds/ports/k9.tsv"
+    },
+    {
+      "address": "0x140f2cfa0",
+      "status": "reimplemented",
+      "fidelity": "exact",
+      "implementation": "src/game/scout/club_pass.cpp",
+      "evidence": "ComAgent_Offer_SquadBlocked: Pass::check",
+      "source": "db/seeds/ports/k9.tsv"
+    },
+    {
+      "address": "0x140f2d520",
+      "status": "reimplemented",
+      "fidelity": "exact",
+      "implementation": "src/game/scout/club_pass.cpp",
+      "evidence": "ComAgent_Player_Unsignable: Pass::blocked",
+      "source": "db/seeds/ports/k9.tsv"
+    },
+    {
+      "address": "0x140f2d1d0",
+      "status": "reimplemented",
+      "fidelity": "exact",
+      "implementation": "src/game/scout/club_pass.cpp",
+      "evidence": "ComAgent_Offer_FeeRefused: Pass::check",
+      "source": "db/seeds/ports/k9.tsv"
+    },
+    {
+      "address": "0x140ee8380",
+      "status": "reimplemented",
+      "fidelity": "exact",
+      "implementation": "src/game/scout/club_pass.cpp",
+      "evidence": "Team_SquadChangeAllowed: Pass::squad_ok (CPU clubs)",
+      "source": "db/seeds/ports/k9.tsv"
+    },
+    {
+      "address": "0x140f2c110",
+      "status": "reimplemented",
+      "fidelity": "exact",
+      "implementation": "src/game/scout/club_pass.cpp",
+      "evidence": "ComAgent_SaleProbability: Pass::sale_probability",
+      "source": "db/seeds/ports/k9.tsv"
+    },
+    {
+      "address": "0x140f2bce0",
+      "status": "reimplemented",
+      "fidelity": "exact",
+      "implementation": "src/game/scout/club_pass.cpp",
+      "evidence": "ComAgent_PickWindow: Pass::pick_window",
+      "source": "db/seeds/ports/k9.tsv"
+    },
+    {
+      "address": "0x140f2bb30",
+      "status": "reimplemented",
+      "fidelity": "exact",
+      "implementation": "src/game/scout/club_pass.cpp",
+      "evidence": "ComAgent_ContractLength: Pass::contract_length (CPU buyers)",
+      "source": "db/seeds/ports/k9.tsv"
+    },
+    {
+      "address": "0x140eec060",
+      "status": "reimplemented",
+      "fidelity": "exact",
+      "implementation": "src/game/scout/club_pass.cpp",
+      "evidence": "Transfer_OfferFee: Pass::fee (league factor 1 on vanilla data)",
+      "source": "db/seeds/ports/k9.tsv"
+    },
+    {
+      "address": "0x140f2bfd0",
+      "status": "reimplemented",
+      "fidelity": "exact",
+      "implementation": "src/game/scout/club_pass.cpp",
+      "evidence": "ComAgent_OfferSeller: Pass::seller_of",
+      "source": "db/seeds/ports/k9.tsv"
+    },
+    {
+      "address": "0x140f15770",
+      "status": "reimplemented",
+      "fidelity": "exact",
+      "implementation": "src/game/scout/club_pass.cpp",
+      "evidence": "TransferManager_ExecuteDeal_Mode0: Pass::execute (one player per deal)",
+      "source": "db/seeds/ports/k9.tsv"
+    },
+    {
+      "address": "0x14150d990",
+      "status": "reimplemented",
+      "fidelity": "behavioural",
+      "implementation": "src/game/scout/club_pass.cpp",
+      "evidence": "Calendar_TransferWindowStatus: creation_window_status: the creation day's cases; cases needing unread calls are issues",
+      "source": "db/seeds/ports/k9.tsv"
+    },
+    {
       "address": "0x1414f6e20",
       "status": "reimplemented",
       "fidelity": "exact",
@@ -13147,6 +13563,11 @@
       "date": "2026-11-28",
       "title": "K9 probe 62d: the January-start moves are the creation day's CPU-agent club pass (Track C, VM)",
       "body": "- **Probe 62d** (`private-reference/probe62d/`, user-run 2026-11-28; the end marker printed `PROBE65C_DONE` because of a rename slip in the generator, now fixed): the same Wuhan Zall Original Lineup career. 24 advances from MLSetup_Run's return to BuildSeason entry:\n  - advances 1-6 on the job thread, as on Arsenal (`MLCreation_PostSetupJob`: Below(21) from `Finance_InitClub`, then 5 coach-shuffle draws);\n  - advances 7-24 on BuildSeason's own thread, in `ML_DayStep_Outer` -> `MLMode_DailyComponentsStep` (0x140F67630) -> FUN_140F2EAF0 -> `ComAgent_SearchPassClubs`. They come as six triples, one per planned deal: `ComAgent_TopUpPositions` (Below(4), the last Below at a second site), `ComAgent_PlanTransfer` Below(64), and `ComAgent_ContractLength` (0x140F2BB30) Below(3) via FUN_140F2A020;\n  - the loan write (record 14542 +0x160) comes after the 24th advance, in `MLTransfer_Player_RemoveFromTeam` (0x140F142B0), under `TransferManager_ExecuteDeal_Mode0` (0x140F15770) and `TransferManager_ExecuteDealList` (0x140F12C40), inside nested task frames.\n  So the creation day's step runs before EventDriver calls BuildSeason, and the club pass plus the deal execution make the five moves. **confirmed** (stacks; functions resolved by Ghidra, not by the nearest seed).\n- **The pass and its gate, read**: FUN_140F2EAF0 runs FUN_140F30BF0 if the agent's deal list (+0x250..+0x258, 0x20 each) is not empty. It then calls `ComAgent_SearchPassClubs` only when FUN_14150D990(Date_Invalid, ...) returns 2, and runs FUN_140F30BF0 again if deals were planned. FUN_14150D990 is a transfer-window status over today's date, the game kind and window tables. 2 is the state that runs the pass; its meaning is a **guess**. **confirmed** (read; FUN_14150D990 only in part).\n  - `ComAgent_SearchPassClubs` covers each club team (class bits clear) not 0x136B or 0x1409, with +0x424 & 0x7F0000 set and +0x41D != 0 (or game kind 10). Each selects a search layer through `ComAgent_ClubPlan_RebuildOnChange` and `PlayerSearch_Layer_Select`, then plans each result.\n  - `ComAgent_DailyWork` (0x140F2E190), run earlier in the same step, is **not** the path. Its gate FUN_141571900 needs EditData +0x178947C, which is 0 in every dump of both careers. The renewals therefore do not run on these creation days. **confirmed** (read, dumps).\n- **Arsenal (1 July 2020) against Wuhan (1 January 2020)**: the likely difference is the window status on the creation day (2 on 1 January), or no squad deficit on 1 July. **Not established**; FUN_14150D990 is next.\n- **Scope (user decision 2026-11-28: port exactly in K9)**:\n  - the window status;\n  - the club plan;\n  - `PlayerSearch_Process_Run` with the quota step;\n  - `ComAgent_PlanTransfer` (sale probability, window pick, buyer search, contract length);\n  - FUN_140F30BF0 and the deal execution.\n  The test bed is exact: the constructor rebuilds the world at MLSetup_Run's return, which is the state the 2026-11-15 replay lacked. Probe 62b stays the open K9 criterion.\n- **Why Arsenal's creation day has no club pass (2026-11-28, read plus dumps)**: FUN_14150D990 walks today's day events (FUN_141516930). In game kind 9, event 3 (present on both creation days) yields 2. At the end a result of 2 becomes 1 when EditData +0x1795D25 is set. That byte is the August-start flag `Competition_MLSetup_BuildRankings` sets (`lineup_rebuild_flag`, built by the constructor as `ml::august_start`): 1 on Arsenal (1 July), 0 on Wuhan (1 January) in every dump. So the creation day's club pass runs exactly when the user league does not start in August. **probable**: the rule is read and matches both careers. Its early exit (FUN_14151CC70 twice true returns 2 before the flag test) is not read, and neither are the other event cases.\n- **Draw bounds corrected**: cdb printed the bounds in hex. The club pass's draws are Below(4) in `ComAgent_TopUpPositions`, Below(100) in `ComAgent_PlanTransfer` (the sale-probability roll) and Below(3) in `ComAgent_ContractLength`.\n- **Port map** (read so far):\n  - `ComAgent_PlanTransfer`: `ComAgent_SaleProbability` against Below(100). On success `ComAgent_PickWindow` gives a date, else the date stays invalid.\n  - A player whose state nibble (+0x13C & 0xF) is not 2 or 5 gets the transfer offer FUN_140F2A2B0. With an invalid date it also gets the second offer FUN_140F2A020, whose contract length comes from `ComAgent_ContractLength`.\n  - FUN_140F2C750 checks each offer. Accepted offers are wrapped and queued on the agent's deal list (+0x250, via FUN_140F344C0), which FUN_140F30BF0 executes (`TransferManager_ExecuteDealList` -> `ExecuteDeal_Mode0` -> `MLTransfer_Player_RemoveFromTeam`).\n  - The candidates come from search layer 1's processes (`PlayerSearch_Process_Run`: quota slot 3, criteria slot 4, slots 5 and 6 unread) over the club plan (`ComAgent_ClubPlan_Build`)."
+    },
+    {
+      "date": "2026-11-28",
+      "title": "K9 creation-day club pass ported whole: offers, checks, fee and deal execution; probe 62b exact at BuildSeason entry (Track C, offline)",
+      "body": "- **What changed**: `src/game/scout/club_pass.{h,cpp}` runs the creation day's club pass after the search (`run_creation_club_pass`): the window status, `ComAgent_PlanTransfer` per found player, its two offers and their checks, the fee, and the deals executed in queue order. The constructor runs it, with the same day step's end for the user club (`ml::step_end_finance`, Finance_AccrueStepIncome's item 1), between the creation job and BuildSeason, and keeps the World at BuildSeason entry (`world_s0`). The team fields the pass reads come from Team.bin (`platform::career_team_pass_fields`).\n- **Results**:\n  - probe 62b (`OL_PROBE=62b OL_CLUB=4095 original_lineup_test`): every field at BuildSeason entry equal (it was 13 fields: wages, contracts, slot-0 teams, loan owners, the listing and loan bits, development state and phase, 9 rosters and slot maps), S0 equal, the finance block equal. Six planned, six deals. **confirmed** (capture).\n  - probe 62c (`clubpass_search`, from the MLSetup_Run-return dump): the generator after the pass equals the logged S0, and every player, development and team field equals the BuildSeason-entry dump. Six planned, five deals (record 17147, state 4, refused). **confirmed** (capture).\n  - probe 62 (Arsenal, 1 July): unchanged, every check exact.\n- **The rules, read** (decompiles and disassembly; each **probable** until a capture covers its branch):\n  - `ComAgent_PlanTransfer` (0x140F29A50): the seller is `ComAgent_OfferSeller` (0x140F2BFD0; a loaned player's owner, a free agent's none). Below(100) against `ComAgent_SaleProbability`; below it, `ComAgent_PickWindow` draws a loan end. A transfer offer is made when the state nibble is not 2 or 4 (**correction**: the earlier entry read \"2 or 5\"), a contract offer when no loan end was picked. Both are made before either is checked; one refusal cancels both.\n  - `ComAgent_SaleProbability`: the tier is the **buyer's** (+0x63C bits 5-8; the earlier ledger said the seller's). The 100 rule tests the seller's +0x63C and the player's +0x148 bit 18. The 50 and 30 rules test events 6 and 3 through `Calendar_TransferWindowOpen` (0x141571AE0) and `Calendar_EventPassedThisSeason` (0x141576A20).\n  - The offer check (FUN_140F2C750) for a CPU buyer: `ComAgent_Offer_SquadBlocked` (0x140F2CFA0: squad limits 11 and 40 through `Team_SquadChangeAllowed` 0x140EE8380 and `Team_SquadCountWithLoans` 0x140EE2AA0, then `ComAgent_Player_Unsignable` 0x140F2D520: +0x13C bit 26, age 45 or more, state 4) refuses. A free agent is accepted. Otherwise the seller's best-11 average without the player below `ComAgent_SellerMinStrength` (0x1427F5A80) refuses, and so does a seller squad under 20. A transfer then goes to `ComAgent_Offer_FeeRefused` (0x140F2D1D0: related clubs at team +0x684, a fee above 3,200,000, or above the buyer's limit, team +0x648 x 1.1 or `ComAgent_FeeLimitByRank` 0x1427ED588).\n  - The fee (`Transfer_OfferFee` 0x140EEC060): Finance_Player_Value x `Transfer_LeagueFeeFactor` x `Transfer_FeeMultiplier` (rank-byte difference, the seller's plan flags, the contract's last year). It is 0 under `Transfer_FeeWaived` (0x141574E90), x0.3 for a loan, and clamped to team +0x598.\n  - `ComAgent_ContractLength` (0x140F2BB30): the event 5 date, or the event 8 date when the user club's and the buyer's ICC eligibility differ, in the season's year (`Calendar_SeasonStartOf` 0x141576360). One more year if that date has passed. Then plus min + Below(max - min + 1) from `ComAgent_ContractYearsByAge` (0x1427ED580: {1,3}, {3,5}, {1,2} for ages up to 23, 24 to 29, 30 and over).\n  - The deal (`TransferManager_ExecuteDeal_Mode0`, through FUN_140F30BF0 and `ComAgent_PostDealMessage` 0x140F94340): a move record from the seller (`MoveRecord_From` +0x10) to the buyer (`MoveRecord_To` +0xC). `MLTransfer_Player_RemoveFromTeam` removes the player (Team_Squad_RemovePlayer, the mode 1 repair), writes +0x160 = the seller, clears +0x148 bits 17-18 and slot 0. `MLTransfer_Player_AddToTeam` appends him (the mode 3 rebuild for a CPU club), sets state 0, the contract's wage and end, slot 0, and +0x13C bits 4-5. Then the phase rule; a loan also sets the loan flag and end (`TransferManager_ApplyLoanTerms` 0x140F178D0).\n- **When the day step runs**: on probes 62b and 62c, the creation date is the season start (1 January) and the step runs before BuildSeason. On probe 62, created 1 July for a 1 August start, it does not: S0 holds without Finance_AccrueStepIncome's Below(21) pair on a day-3 event, and item 1 stays 0. **probable** (two careers; the step's scheduling is not read). The window status (`creation_window_status`) ports the creation day's cases of FUN_14150D990. FUN_14151CC70 finds no match before BuildSeason. Cases that need unread calls are reported as issues.\n- **Team.bin fields** (mapped against probe 62c's MLSetup_Run-entry and -return dumps, 669 of 669 teams each; the loader's setters are not read, **probable**):\n  - +0x63C from record bits 571-574, 640-644, 646-650, 659-662 and 667-668;\n  - +0x648 from dword +0x38 (low 23 bits);\n  - +0x664 from three 9-bit fields at bits 544, 530 and 553;\n  - +0x658 and +0x684 from id dwords, resolved to handles by FUN_141269EF0; +0x678 is a copy of +0x658 at MLSetup_Run's return (659 of 659);\n  - +0x598 is -1 in every record.\n- **Shortcuts**: regulation +0x310's fee factor is taken as 1 (both 9-bit fields hold 100 in all 199 regulations of probes 62, 62b and 62c). The user club as seller and the loan path's execution are reported, not run (neither occurs on the three probes).\n- **Still open for probe 62b**: the January BuildSeason itself (S1, the match table, the regulation lists). It needs RunMLSteps' keys 1, 2 and 4 (`Competition_Season_YearTurnStepA` with key 1, `Competition_Season_Dec31StepA` with key 2, `Competition_Season_Dec31StepB` with key 4). The constructor's K6 build has only the 1 July keys 0 and 3. Probe 62e logs that build (StoreEntrants, every draw, both dumps)."
     }
   ]
 }

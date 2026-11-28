@@ -1,5 +1,5 @@
 {
-  "updated": "2026-11-28 06:00 UTC",
+  "updated": "2026-11-28 09:41 UTC",
   "headline": {
     "sim_percent": [
       80,
@@ -244,21 +244,21 @@
     }
   ],
   "counts": {
-    "named_addresses": 1342,
+    "named_addresses": 1381,
     "tests": 93,
-    "port_rows_total": 196,
+    "port_rows_total": 209,
     "port_rows_by_status": {
-      "reimplemented": 185,
+      "reimplemented": 198,
       "in host": 11,
       "verified": 0,
       "named": 0
     },
     "port_rows_by_fidelity": {
-      "exact": 153,
-      "behavioural": 42,
+      "exact": 165,
+      "behavioural": 43,
       "free": 1
     },
-    "findings_entries": 253
+    "findings_entries": 254
   },
   "match_metrics": {
     "unique_signatures": {
@@ -283,5 +283,5 @@
       "as_of": "2026-11-02"
     }
   },
-  "source_commit": "c89d7a2"
+  "source_commit": "01366b2"
 }
