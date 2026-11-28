@@ -1,5 +1,5 @@
 {
-  "updated": "2026-11-28 12:38 UTC",
+  "updated": "2026-11-28 13:30 UTC",
   "headline": {
     "sim_percent": [
       80,
@@ -255,7 +255,7 @@
   ],
   "counts": {
     "named_addresses": 1390,
-    "tests": 96,
+    "tests": 98,
     "port_rows_total": 209,
     "port_rows_by_status": {
       "reimplemented": 198,
@@ -293,5 +293,5 @@
       "as_of": "2026-11-02"
     }
   },
-  "source_commit": "0339173"
+  "source_commit": "c2b4c7e"
 }
