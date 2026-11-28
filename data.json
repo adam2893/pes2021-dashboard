@@ -11999,6 +11999,118 @@
       "source": "db/seeds/ports/k9.tsv"
     },
     {
+      "address": "0x140f2b310",
+      "status": "reimplemented",
+      "fidelity": "exact",
+      "implementation": "src/game/scout/player_search.cpp search_pass_clubs",
+      "evidence": "probe 62d replay from probe 62c MLSetup_Run-return dump (ctest clubpass_search): search draws 4 4 4 4 4 5 equal, 6 planned, 5 movers among them; one scenario",
+      "source": "db/seeds/ports/k9.tsv"
+    },
+    {
+      "address": "0x140f9ad40",
+      "status": "reimplemented",
+      "fidelity": "exact",
+      "implementation": "src/game/scout/player_search.cpp (layer 1)",
+      "evidence": "probe 62d replay from probe 62c MLSetup_Run-return dump (ctest clubpass_search): search draws 4 4 4 4 4 5 equal, 6 planned, 5 movers among them; one scenario",
+      "source": "db/seeds/ports/k9.tsv"
+    },
+    {
+      "address": "0x140fb4c00",
+      "status": "reimplemented",
+      "fidelity": "exact",
+      "implementation": "src/game/scout/player_search.cpp",
+      "evidence": "probe 62d replay from probe 62c MLSetup_Run-return dump (ctest clubpass_search): search draws 4 4 4 4 4 5 equal, 6 planned, 5 movers among them; one scenario",
+      "source": "db/seeds/ports/k9.tsv"
+    },
+    {
+      "address": "0x140fb28a0",
+      "status": "reimplemented",
+      "fidelity": "exact",
+      "implementation": "src/game/scout/player_search.cpp",
+      "evidence": "probe 62d replay from probe 62c MLSetup_Run-return dump (ctest clubpass_search): search draws 4 4 4 4 4 5 equal, 6 planned, 5 movers among them; one scenario",
+      "source": "db/seeds/ports/k9.tsv"
+    },
+    {
+      "address": "0x140fb5510",
+      "status": "reimplemented",
+      "fidelity": "exact",
+      "implementation": "src/game/scout/player_search.cpp",
+      "evidence": "probe 62d replay from probe 62c MLSetup_Run-return dump (ctest clubpass_search): search draws 4 4 4 4 4 5 equal, 6 planned, 5 movers among them; one scenario",
+      "source": "db/seeds/ports/k9.tsv"
+    },
+    {
+      "address": "0x140f98630",
+      "status": "reimplemented",
+      "fidelity": "exact",
+      "implementation": "src/game/scout/player_search.cpp",
+      "evidence": "probe 62d replay from probe 62c MLSetup_Run-return dump (ctest clubpass_search): search draws 4 4 4 4 4 5 equal, 6 planned, 5 movers among them; one scenario; the 100-draw path not exercised",
+      "source": "db/seeds/ports/k9.tsv"
+    },
+    {
+      "address": "0x140f97c40",
+      "status": "reimplemented",
+      "fidelity": "exact",
+      "implementation": "src/game/scout/player_search.cpp",
+      "evidence": "probe 62d replay from probe 62c MLSetup_Run-return dump (ctest clubpass_search): search draws 4 4 4 4 4 5 equal, 6 planned, 5 movers among them; one scenario",
+      "source": "db/seeds/ports/k9.tsv"
+    },
+    {
+      "address": "0x140f98b50",
+      "status": "reimplemented",
+      "fidelity": "exact",
+      "implementation": "src/game/scout/player_search.cpp",
+      "evidence": "probe 62d replay from probe 62c MLSetup_Run-return dump (ctest clubpass_search): search draws 4 4 4 4 4 5 equal, 6 planned, 5 movers among them; one scenario",
+      "source": "db/seeds/ports/k9.tsv"
+    },
+    {
+      "address": "0x140f98900",
+      "status": "reimplemented",
+      "fidelity": "exact",
+      "implementation": "src/game/scout/player_search.cpp",
+      "evidence": "probe 62d replay from probe 62c MLSetup_Run-return dump (ctest clubpass_search): search draws 4 4 4 4 4 5 equal, 6 planned, 5 movers among them; one scenario; kinds 8..13 not exercised",
+      "source": "db/seeds/ports/k9.tsv"
+    },
+    {
+      "address": "0x140f98fd0",
+      "status": "reimplemented",
+      "fidelity": "behavioural",
+      "implementation": "src/game/scout/player_search.cpp",
+      "evidence": "probe 62d replay from probe 62c MLSetup_Run-return dump (ctest clubpass_search): search draws 4 4 4 4 4 5 equal, 6 planned, 5 movers among them; one scenario; rebuilt from the dump, exclusion list and tracker read as empty (shortcut), flags 0x3800 not built",
+      "source": "db/seeds/ports/k9.tsv"
+    },
+    {
+      "address": "0x140f98ee0",
+      "status": "reimplemented",
+      "fidelity": "behavioural",
+      "implementation": "src/game/scout/player_search.cpp",
+      "evidence": "probe 62d replay from probe 62c MLSetup_Run-return dump (ctest clubpass_search): search draws 4 4 4 4 4 5 equal, 6 planned, 5 movers among them; one scenario; FUN_140F993A0 tracker read as empty",
+      "source": "db/seeds/ports/k9.tsv"
+    },
+    {
+      "address": "0x140f989b0",
+      "status": "reimplemented",
+      "fidelity": "behavioural",
+      "implementation": "src/game/scout/player_search.cpp",
+      "evidence": "probe 62d replay from probe 62c MLSetup_Run-return dump (ctest clubpass_search): search draws 4 4 4 4 4 5 equal, 6 planned, 5 movers among them; one scenario; kind-3 team read as the user club (shortcut)",
+      "source": "db/seeds/ports/k9.tsv"
+    },
+    {
+      "address": "0x140fb1970",
+      "status": "reimplemented",
+      "fidelity": "exact",
+      "implementation": "src/game/scout/player_search.cpp",
+      "evidence": "probe 62d replay from probe 62c MLSetup_Run-return dump (ctest clubpass_search): search draws 4 4 4 4 4 5 equal, 6 planned, 5 movers among them; one scenario",
+      "source": "db/seeds/ports/k9.tsv"
+    },
+    {
+      "address": "0x140fb1a30",
+      "status": "reimplemented",
+      "fidelity": "exact",
+      "implementation": "src/game/scout/player_search.cpp",
+      "evidence": "probe 62d replay from probe 62c MLSetup_Run-return dump (ctest clubpass_search): search draws 4 4 4 4 4 5 equal, 6 planned, 5 movers among them; one scenario",
+      "source": "db/seeds/ports/k9.tsv"
+    },
+    {
       "address": "0x1414f6e20",
       "status": "reimplemented",
       "fidelity": "exact",
